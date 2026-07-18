@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import StarRating from "./StarRating";
 import type { QuestionDTO } from "@/lib/types";
 
@@ -307,31 +307,8 @@ export default function QuestionInput({
         />
       );
 
-    case "SLIDER": {
-      const min = Number(cfg.min ?? 0);
-      const max = Number(cfg.max ?? 100);
-      const step = Number(cfg.step ?? 1);
-      const val = value === "" || value === undefined ? Math.round((min + max) / 2) : Number(value);
-      return (
-        <div>
-          <input
-            type="range"
-            min={min}
-            max={max}
-            step={step}
-            value={val}
-            style={style}
-            className="w-full"
-            onChange={(e) => onChange(Number(e.target.value))}
-          />
-          <div className="mt-1 flex justify-between text-xs text-slate-500">
-            <span>{min}</span>
-            <span className="rounded-lg bg-naf-50 px-2 py-0.5 font-bold text-naf-700">{val}</span>
-            <span>{max}</span>
-          </div>
-        </div>
-      );
-    }
+    case "SLIDER":
+      return <SliderField cfg={cfg} value={value} onChange={onChange} style={style} />;
 
     case "RANKING": {
       const opts: string[] = cfg.options || [];
@@ -419,6 +396,48 @@ export default function QuestionInput({
         />
       );
   }
+}
+
+function SliderField({
+  cfg,
+  value,
+  onChange,
+  style,
+}: {
+  cfg: Record<string, any>;
+  value: any;
+  onChange: (v: any) => void;
+  style: React.CSSProperties;
+}) {
+  const min = Number(cfg.min ?? 0);
+  const max = Number(cfg.max ?? 100);
+  const step = Number(cfg.step ?? 1);
+  const mid = Math.round((min + max) / 2);
+  // تسجيل القيمة الابتدائية حتى يُحتسب السؤال ولو لم يحرّك المستخدم المؤشر
+  useEffect(() => {
+    if (value === "" || value === undefined || value === null) onChange(mid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const val = value === "" || value === undefined || value === null ? mid : Number(value);
+  return (
+    <div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={val}
+        style={style}
+        className="w-full"
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+      <div className="mt-1 flex justify-between text-xs text-slate-500">
+        <span>{min}</span>
+        <span className="rounded-lg bg-naf-50 px-2 py-0.5 font-bold text-naf-700">{val}</span>
+        <span>{max}</span>
+      </div>
+    </div>
+  );
 }
 
 function SignaturePad({

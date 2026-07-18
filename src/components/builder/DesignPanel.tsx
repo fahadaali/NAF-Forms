@@ -278,9 +278,20 @@ export default function DesignPanel({
             label="منع تكرار التقديم بنفس البريد الإلكتروني"
             checked={!!settings.access?.oneResponsePerEmail}
             onChange={(v) =>
-              patch({ access: { ...settings.access, oneResponsePerEmail: v } })
+              patch({
+                access: { ...settings.access, oneResponsePerEmail: v },
+                // المنع يتطلب جمع البريد، فنُفعّله تلقائيًا
+                behavior: v
+                  ? { ...settings.behavior, collectEmail: true }
+                  : settings.behavior,
+              })
             }
           />
+          {settings.access?.oneResponsePerEmail && (
+            <p className="mt-1 text-xs text-slate-400">
+              يتطلب جمع بريد المستفيد (مُفعّل تلقائيًا).
+            </p>
+          )}
         </div>
 
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
