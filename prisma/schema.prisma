@@ -1,0 +1,89 @@
+// NAF Forms — نظام استبانات ناف
+// SQLite for self-contained local/dev runs. JSON payloads are stored as
+// strings (SQLite has no native JSON type in Prisma) and parsed in the app layer.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  color       String   @default("#1c59f5")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  forms       Form[]
+}
+
+model Form {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  projectId   String
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String     @default("")
+  // نوع النموذج: SURVEY (استبيان/استطلاع) | EXAM (اختبار) | JOB (تقديم وظيفي)
+  type        String     @default("SURVEY")
+  // حالة النموذج: DRAFT | PUBLISHED | CLOSED
+  status      String     @default("DRAFT")
+  // إعدادات صفحة التقديم: الألوان، الصور، الفيديو، الروابط، الملفات، رسالة ما بعد الإرسال ...
+  settings    String     @default("{}")
+  isTemplate  Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  questions   Question[]
+  responses   Response[]
+
+  @@index([projectId])
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  formId      String
+  form        Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  order       Int      @default(0)
+  // نوع البيانات: SHORT_TEXT, PARAGRAPH, PHONE, EMAIL, NUMBER, DATE,
+  // MULTIPLE_CHOICE, CHECKBOXES, DROPDOWN, LINEAR_SCALE, GRID, RATING,
+  // LOCATION, ADDRESS, FILE, SECTION
+  type        String
+  label       String
+  description String   @default("")
+  required    Boolean  @default(false)
+  // خيارات السؤال: options, min/max, labels, rows/cols, correctAnswer, points ...
+  config      String   @default("{}")
+  createdAt   DateTime @default(now())
+  answers     Answer[]
+
+  @@index([formId])
+}
+
+model Response {
+  id          String   @id @default(cuid())
+  formId      String
+  form        Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  submittedAt DateTime @default(now())
+  // بيانات إضافية: userAgent, score للاختبارات ...
+  meta        String   @default("{}")
+  answers     Answer[]
+
+  @@index([formId])
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  responseId String
+  response   Response @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  // القيمة مخزنة كنص JSON (نص، رقم، مصفوفة خيارات، إحداثيات، مسار ملف ...)
+  value      String   @default("")
+
+  @@index([responseId])
+  @@index([questionId])
+}
