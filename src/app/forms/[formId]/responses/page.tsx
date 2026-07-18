@@ -49,8 +49,11 @@ export default async function ResponsesPage({
     const values = (valuesByQ[q.id] || []).filter(notEmpty);
     const answered = values.length;
 
-    if (["MULTIPLE_CHOICE", "DROPDOWN", "CHECKBOXES"].includes(q.type)) {
-      const options: string[] = cfg.options || [];
+    if (["MULTIPLE_CHOICE", "DROPDOWN", "CHECKBOXES", "IMAGE_CHOICE"].includes(q.type)) {
+      const options: string[] =
+        q.type === "IMAGE_CHOICE"
+          ? (cfg.options || []).map((o: any) => o.label)
+          : cfg.options || [];
       const counts: Record<string, number> = {};
       for (const o of options) counts[o] = 0;
       for (const v of values) {

@@ -63,3 +63,45 @@ body {
 .leaflet-container {
   z-index: 0;
 }
+
+/* الوضع الليلي (للوحة التحكم) */
+.dark body {
+  background: #0b1220;
+  color: #e2e8f0;
+}
+.dark .card {
+  background: #111a2e;
+  border-color: #1e293b;
+}
+.dark .input {
+  background: #0b1220;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+.dark .btn-ghost {
+  background: #111a2e;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+.dark .btn-ghost:hover {
+  background: #1e293b;
+}
+.dark .label {
+  color: #cbd5e1;
+}
+.dark header {
+  background: rgba(17, 26, 46, 0.85) !important;
+  border-color: #1e293b;
+}
+.dark .text-slate-700,
+.dark .text-slate-600,
+.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+.dark .bg-slate-50,
+.dark .bg-slate-100 {
+  background: #1e293b !important;
+}
+.dark .divide-slate-100 > * {
+  border-color: #1e293b !important;
+}

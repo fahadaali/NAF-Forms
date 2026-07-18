@@ -94,6 +94,12 @@ export function answerToText(type: string, value: any): string {
       return String(value);
     case "RATING":
       return `${value} / 5`;
+    case "RANKING":
+      return Array.isArray(value)
+        ? value.map((v, i) => `${i + 1}. ${v}`).join("، ")
+        : String(value);
+    case "SIGNATURE":
+      return value ? "[توقيع]" : "";
     default:
       return Array.isArray(value) ? value.join("، ") : String(value);
   }

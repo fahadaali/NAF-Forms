@@ -17,6 +17,11 @@ export type FieldTypeId =
   | "LOCATION"
   | "ADDRESS"
   | "FILE"
+  | "TIME"
+  | "SLIDER"
+  | "RANKING"
+  | "IMAGE_CHOICE"
+  | "SIGNATURE"
   | "SECTION";
 
 export interface FieldTypeDef {
@@ -171,6 +176,56 @@ export const FIELD_TYPES: FieldTypeDef[] = [
     icon: "📎",
     group: "special",
     defaultConfig: { accept: ".pdf,.doc,.docx,.png,.jpg", maxSizeMB: 10 },
+    gradable: false,
+  },
+  {
+    id: "TIME",
+    label: "وقت",
+    hint: "اختيار وقت (ساعة/دقيقة)",
+    icon: "🕐",
+    group: "text",
+    defaultConfig: {},
+    gradable: false,
+  },
+  {
+    id: "SLIDER",
+    label: "شريط تمرير",
+    hint: "قيمة رقمية عبر سحب المؤشر",
+    icon: "🎚️",
+    group: "scale",
+    defaultConfig: { min: 0, max: 100, step: 5 },
+    gradable: false,
+  },
+  {
+    id: "RANKING",
+    label: "ترتيب / تفضيل",
+    hint: "ترتيب الخيارات حسب الأفضلية",
+    icon: "↕️",
+    group: "choice",
+    defaultConfig: { options: ["العنصر 1", "العنصر 2", "العنصر 3"] },
+    gradable: false,
+  },
+  {
+    id: "IMAGE_CHOICE",
+    label: "اختيار بالصور",
+    hint: "اختيار من بطاقات مصوّرة",
+    icon: "🖼️",
+    group: "choice",
+    defaultConfig: {
+      options: [
+        { label: "خيار 1", url: "" },
+        { label: "خيار 2", url: "" },
+      ],
+    },
+    gradable: true,
+  },
+  {
+    id: "SIGNATURE",
+    label: "توقيع إلكتروني",
+    hint: "رسم توقيع باليد",
+    icon: "✍️",
+    group: "special",
+    defaultConfig: {},
     gradable: false,
   },
   {

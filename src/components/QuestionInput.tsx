@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import StarRating from "./StarRating";
 import type { QuestionDTO } from "@/lib/types";
 
@@ -297,6 +297,113 @@ export default function QuestionInput({
         />
       );
 
+    case "TIME":
+      return (
+        <input
+          type="time"
+          className="input"
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+
+    case "SLIDER": {
+      const min = Number(cfg.min ?? 0);
+      const max = Number(cfg.max ?? 100);
+      const step = Number(cfg.step ?? 1);
+      const val = value === "" || value === undefined ? Math.round((min + max) / 2) : Number(value);
+      return (
+        <div>
+          <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={val}
+            style={style}
+            className="w-full"
+            onChange={(e) => onChange(Number(e.target.value))}
+          />
+          <div className="mt-1 flex justify-between text-xs text-slate-500">
+            <span>{min}</span>
+            <span className="rounded-lg bg-naf-50 px-2 py-0.5 font-bold text-naf-700">{val}</span>
+            <span>{max}</span>
+          </div>
+        </div>
+      );
+    }
+
+    case "RANKING": {
+      const opts: string[] = cfg.options || [];
+      const ordered: string[] = Array.isArray(value) && value.length ? value : opts;
+      const move = (i: number, dir: -1 | 1) => {
+        const j = i + dir;
+        if (j < 0 || j >= ordered.length) return;
+        const copy = [...ordered];
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+        onChange(copy);
+      };
+      return (
+        <div className="space-y-2">
+          {ordered.map((o, i) => (
+            <div
+              key={o}
+              className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3"
+            >
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-naf-600 text-sm font-bold text-white">
+                {i + 1}
+              </span>
+              <span className="flex-1 text-sm">{o}</span>
+              <button
+                type="button"
+                onClick={() => move(i, -1)}
+                disabled={i === 0}
+                className="rounded px-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                onClick={() => move(i, 1)}
+                disabled={i === ordered.length - 1}
+                className="rounded px-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+              >
+                ↓
+              </button>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    case "IMAGE_CHOICE": {
+      const opts: { label: string; url: string }[] = cfg.options || [];
+      return (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {opts.map((o) => (
+            <button
+              key={o.label}
+              type="button"
+              onClick={() => onChange(o.label)}
+              className={`overflow-hidden rounded-xl border-2 text-center transition ${
+                value === o.label ? "border-naf-500 ring-2 ring-naf-200" : "border-slate-200"
+              }`}
+            >
+              {o.url ? (
+                <img src={o.url} alt={o.label} className="h-28 w-full object-cover" />
+              ) : (
+                <div className="grid h-28 w-full place-items-center bg-slate-100 text-3xl">🖼️</div>
+              )}
+              <div className="truncate p-2 text-sm">{o.label}</div>
+            </button>
+          ))}
+        </div>
+      );
+    }
+
+    case "SIGNATURE":
+      return <SignaturePad value={value} onChange={onChange} />;
+
     case "FILE":
       return <FileField question={question} value={value} onChange={onChange} />;
 
@@ -312,6 +419,75 @@ export default function QuestionInput({
         />
       );
   }
+}
+
+function SignaturePad({
+  value,
+  onChange,
+}: {
+  value: any;
+  onChange: (v: any) => void;
+}) {
+  const ref = useRef<HTMLCanvasElement | null>(null);
+  const drawing = useRef(false);
+
+  function pos(e: React.PointerEvent) {
+    const c = ref.current!;
+    const rect = c.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+  function start(e: React.PointerEvent) {
+    drawing.current = true;
+    const ctx = ref.current!.getContext("2d")!;
+    const p = pos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  }
+  function draw(e: React.PointerEvent) {
+    if (!drawing.current) return;
+    const ctx = ref.current!.getContext("2d")!;
+    ctx.strokeStyle = "#0f172a";
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    const p = pos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  }
+  function end() {
+    if (!drawing.current) return;
+    drawing.current = false;
+    onChange(ref.current!.toDataURL("image/png"));
+  }
+  function clear() {
+    const c = ref.current!;
+    c.getContext("2d")!.clearRect(0, 0, c.width, c.height);
+    onChange("");
+  }
+
+  return (
+    <div>
+      <canvas
+        ref={ref}
+        width={500}
+        height={180}
+        onPointerDown={start}
+        onPointerMove={draw}
+        onPointerUp={end}
+        onPointerLeave={end}
+        className="w-full touch-none rounded-xl border-2 border-dashed border-slate-300 bg-white"
+        style={{ touchAction: "none" }}
+      />
+      <div className="mt-2 flex items-center justify-between">
+        <span className="text-xs text-slate-400">وقّع بالماوس أو الإصبع داخل الإطار</span>
+        <button type="button" onClick={clear} className="text-sm text-red-500 hover:underline">
+          مسح
+        </button>
+      </div>
+      {value && (
+        <p className="mt-1 text-xs text-green-600">✓ تم التوقيع</p>
+      )}
+    </div>
+  );
 }
 
 function FileField({

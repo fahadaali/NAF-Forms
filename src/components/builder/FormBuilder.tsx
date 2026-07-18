@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fieldType, FORM_TYPE_LABELS } from "@/lib/field-types";
@@ -72,6 +72,20 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
     });
     mark();
   };
+  const dragIndex = useRef<number | null>(null);
+  const reorder = (to: number) => {
+    const from = dragIndex.current;
+    dragIndex.current = null;
+    if (from === null || from === to) return;
+    setQuestions((prev) => {
+      const copy = [...prev];
+      const [moved] = copy.splice(from, 1);
+      copy.splice(to, 0, moved);
+      return copy;
+    });
+    mark();
+  };
+
   const moveQuestion = (id: string, dir: -1 | 1) => {
     setQuestions((prev) => {
       const idx = prev.findIndex((q) => q.id === id);
@@ -232,6 +246,8 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                   onRemove={() => removeQuestion(q.id)}
                   onMove={(dir) => moveQuestion(q.id, dir)}
                   onDuplicate={() => duplicateQuestion(q.id)}
+                  onDragStartItem={() => (dragIndex.current = i)}
+                  onDropItem={() => reorder(i)}
                   priorQuestions={questions
                     .slice(0, i)
                     .filter((p) => p.type !== "SECTION")

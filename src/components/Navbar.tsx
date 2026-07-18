@@ -1,5 +1,6 @@
 import Link from "next/link";
 import LogoutButton from "./LogoutButton";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar({ crumbs = [] }: { crumbs?: { label: string; href?: string }[] }) {
   return (
@@ -25,7 +26,10 @@ export default function Navbar({ crumbs = [] }: { crumbs?: { label: string; href
             </span>
           ))}
         </div>
-        <LogoutButton />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <LogoutButton />
+        </div>
       </div>
     </header>
   );

@@ -2,6 +2,7 @@
 import { fieldType } from "@/lib/field-types";
 import type { QuestionDTO } from "@/lib/types";
 import OptionsEditor from "./OptionsEditor";
+import ImageOptionsEditor from "./ImageOptionsEditor";
 
 export default function QuestionEditor({
   q,
@@ -12,6 +13,8 @@ export default function QuestionEditor({
   onRemove,
   onMove,
   onDuplicate,
+  onDragStartItem,
+  onDropItem,
   priorQuestions,
 }: {
   q: QuestionDTO;
@@ -22,6 +25,8 @@ export default function QuestionEditor({
   onRemove: () => void;
   onMove: (dir: -1 | 1) => void;
   onDuplicate: () => void;
+  onDragStartItem: () => void;
+  onDropItem: () => void;
   priorQuestions: { id: string; label: string; type: string }[];
 }) {
   const def = fieldType(q.type);
@@ -31,7 +36,11 @@ export default function QuestionEditor({
 
   if (q.type === "SECTION") {
     return (
-      <div className="card border-r-4 border-r-naf-400 p-4">
+      <div
+        className="card border-r-4 border-r-naf-400 p-4"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={onDropItem}
+      >
         <Toolbar
           def={def}
           index={index}
@@ -41,6 +50,7 @@ export default function QuestionEditor({
           onMove={onMove}
           onRemove={onRemove}
           onDuplicate={onDuplicate}
+          onDragStartItem={onDragStartItem}
           onToggleRequired={() => {}}
         />
         <input
@@ -60,7 +70,11 @@ export default function QuestionEditor({
   }
 
   return (
-    <div className="card p-4">
+    <div
+      className="card p-4"
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={onDropItem}
+    >
       <Toolbar
         def={def}
         index={index}
@@ -70,6 +84,7 @@ export default function QuestionEditor({
         onMove={onMove}
         onRemove={onRemove}
         onDuplicate={onDuplicate}
+        onDragStartItem={onDragStartItem}
         onToggleRequired={() => onChange({ required: !q.required })}
       />
 
@@ -135,6 +150,29 @@ export default function QuestionEditor({
             label="عدد النجوم"
             value={cfg.max ?? 5}
             onChange={(v) => setCfg({ max: v })}
+          />
+        )}
+
+        {q.type === "SLIDER" && (
+          <div className="grid grid-cols-3 gap-3">
+            <NumField label="من" value={cfg.min ?? 0} onChange={(v) => setCfg({ min: v })} />
+            <NumField label="إلى" value={cfg.max ?? 100} onChange={(v) => setCfg({ max: v })} />
+            <NumField label="الخطوة" value={cfg.step ?? 1} onChange={(v) => setCfg({ step: v })} />
+          </div>
+        )}
+
+        {q.type === "RANKING" && (
+          <OptionsEditor
+            label="العناصر المراد ترتيبها"
+            options={cfg.options || []}
+            onChange={(options) => setCfg({ options })}
+          />
+        )}
+
+        {q.type === "IMAGE_CHOICE" && (
+          <ImageOptionsEditor
+            options={cfg.options || []}
+            onChange={(options) => setCfg({ options })}
           />
         )}
 
@@ -348,12 +386,23 @@ function Toolbar({
   onMove,
   onRemove,
   onDuplicate,
+  onDragStartItem,
   onToggleRequired,
 }: any) {
   return (
     <div className="flex items-center justify-between">
-      <span className="chip bg-slate-100 text-slate-600">
-        {def?.icon} {def?.label} · سؤال {index + 1}
+      <span className="flex items-center gap-1.5">
+        <span
+          draggable
+          onDragStart={onDragStartItem}
+          className="cursor-grab select-none text-slate-400 active:cursor-grabbing"
+          title="اسحب لإعادة الترتيب"
+        >
+          ⠿
+        </span>
+        <span className="chip bg-slate-100 text-slate-600">
+          {def?.icon} {def?.label} · سؤال {index + 1}
+        </span>
       </span>
       <div className="flex items-center gap-1">
         {showRequired && (
