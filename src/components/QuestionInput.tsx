@@ -1,0 +1,385 @@
+"use client";
+import dynamic from "next/dynamic";
+import { useState } from "react";
+import StarRating from "./StarRating";
+import type { QuestionDTO } from "@/lib/types";
+
+const MapPicker = dynamic(() => import("./MapPicker"), {
+  ssr: false,
+  loading: () => (
+    <div className="grid h-64 place-items-center rounded-xl border border-slate-300 bg-slate-50 text-sm text-slate-400">
+      جارٍ تحميل الخريطة…
+    </div>
+  ),
+});
+
+const OTHER = "__other__";
+
+export default function QuestionInput({
+  question,
+  value,
+  onChange,
+  accent = "#1c59f5",
+}: {
+  question: QuestionDTO;
+  value: any;
+  onChange: (v: any) => void;
+  accent?: string;
+}) {
+  const cfg = question.config || {};
+  const style = { accentColor: accent } as React.CSSProperties;
+
+  switch (question.type) {
+    case "PARAGRAPH":
+      return (
+        <textarea
+          className="input min-h-32 resize-y"
+          placeholder={cfg.placeholder || "اكتب إجابتك هنا…"}
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+
+    case "NUMBER":
+      return (
+        <input
+          type="number"
+          className="input"
+          min={cfg.min ?? undefined}
+          max={cfg.max ?? undefined}
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+
+    case "PHONE":
+      return (
+        <input
+          type="tel"
+          dir="ltr"
+          inputMode="tel"
+          className="input text-right"
+          placeholder={cfg.placeholder || "05xxxxxxxx"}
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+
+    case "EMAIL":
+      return (
+        <input
+          type="email"
+          dir="ltr"
+          className="input text-right"
+          placeholder={cfg.placeholder || "name@example.com"}
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+
+    case "DATE":
+      return (
+        <input
+          type="date"
+          className="input"
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+
+    case "MULTIPLE_CHOICE":
+    case "DROPDOWN": {
+      const options: string[] = cfg.options || [];
+      if (question.type === "DROPDOWN") {
+        return (
+          <select
+            className="input"
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+          >
+            <option value="">— اختر —</option>
+            {options.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </select>
+        );
+      }
+      const isOther = value && !options.includes(value) ? value : "";
+      return (
+        <div className="space-y-2.5">
+          {options.map((o) => (
+            <label
+              key={o}
+              className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 hover:bg-slate-50 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50"
+            >
+              <input
+                type="radio"
+                style={style}
+                className="h-4 w-4"
+                checked={value === o}
+                onChange={() => onChange(o)}
+              />
+              <span className="text-sm">{o}</span>
+            </label>
+          ))}
+          {cfg.allowOther && (
+            <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50">
+              <input
+                type="radio"
+                style={style}
+                className="h-4 w-4"
+                checked={!!isOther}
+                onChange={() => onChange("")}
+              />
+              <span className="text-sm">أخرى:</span>
+              <input
+                type="text"
+                className="input flex-1 py-1.5"
+                value={isOther}
+                onChange={(e) => onChange(e.target.value)}
+              />
+            </label>
+          )}
+        </div>
+      );
+    }
+
+    case "CHECKBOXES": {
+      const options: string[] = cfg.options || [];
+      const arr: string[] = Array.isArray(value) ? value : [];
+      const toggle = (o: string) =>
+        onChange(arr.includes(o) ? arr.filter((x) => x !== o) : [...arr, o]);
+      return (
+        <div className="space-y-2.5">
+          {options.map((o) => (
+            <label
+              key={o}
+              className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 hover:bg-slate-50 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50"
+            >
+              <input
+                type="checkbox"
+                style={style}
+                className="h-4 w-4 rounded"
+                checked={arr.includes(o)}
+                onChange={() => toggle(o)}
+              />
+              <span className="text-sm">{o}</span>
+            </label>
+          ))}
+        </div>
+      );
+    }
+
+    case "LINEAR_SCALE": {
+      const min = Number(cfg.min ?? 1);
+      const max = Number(cfg.max ?? 5);
+      const nums = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+      return (
+        <div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {nums.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => onChange(n)}
+                className={`h-12 w-12 rounded-full border text-sm font-bold transition ${
+                  value === n
+                    ? "border-naf-500 bg-naf-600 text-white"
+                    : "border-slate-300 bg-white hover:border-naf-400"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+          <div className="mt-2 flex justify-between text-xs text-slate-500">
+            <span>{cfg.minLabel}</span>
+            <span>{cfg.maxLabel}</span>
+          </div>
+        </div>
+      );
+    }
+
+    case "RATING":
+      return (
+        <StarRating
+          value={Number(value) || 0}
+          max={Number(cfg.max ?? 5)}
+          onChange={onChange}
+        />
+      );
+
+    case "GRID": {
+      const rows: string[] = cfg.rows || [];
+      const cols: string[] = cfg.cols || [];
+      const multi = !!cfg.multi;
+      const grid: Record<string, any> = value && typeof value === "object" ? value : {};
+      const setCell = (row: string, col: string) => {
+        if (multi) {
+          const cur: string[] = Array.isArray(grid[row]) ? grid[row] : [];
+          const next = cur.includes(col)
+            ? cur.filter((c) => c !== col)
+            : [...cur, col];
+          onChange({ ...grid, [row]: next });
+        } else {
+          onChange({ ...grid, [row]: col });
+        }
+      };
+      const checked = (row: string, col: string) =>
+        multi ? (grid[row] || []).includes(col) : grid[row] === col;
+      return (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[420px] text-center text-sm">
+            <thead>
+              <tr>
+                <th></th>
+                {cols.map((c) => (
+                  <th key={c} className="p-2 text-xs font-medium text-slate-600">
+                    {c}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={r} className={i % 2 ? "bg-slate-50/60" : ""}>
+                  <td className="p-2 text-right text-sm font-medium text-slate-700">
+                    {r}
+                  </td>
+                  {cols.map((c) => (
+                    <td key={c} className="p-2">
+                      <input
+                        type={multi ? "checkbox" : "radio"}
+                        name={`grid-${question.id}-${r}`}
+                        style={style}
+                        className="h-4 w-4"
+                        checked={checked(r, c)}
+                        onChange={() => setCell(r, c)}
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    case "ADDRESS": {
+      const fields: string[] = cfg.fields || [];
+      const obj: Record<string, string> =
+        value && typeof value === "object" ? value : {};
+      return (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {fields.map((f) => (
+            <input
+              key={f}
+              className="input"
+              placeholder={f}
+              value={obj[f] || ""}
+              onChange={(e) => onChange({ ...obj, [f]: e.target.value })}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    case "LOCATION":
+      return (
+        <MapPicker
+          value={value && typeof value === "object" ? value : null}
+          defaultCenter={{ lat: cfg.lat ?? 24.7136, lng: cfg.lng ?? 46.6753 }}
+          zoom={cfg.zoom ?? 5}
+          onChange={onChange}
+        />
+      );
+
+    case "FILE":
+      return <FileField question={question} value={value} onChange={onChange} />;
+
+    case "SHORT_TEXT":
+    default:
+      return (
+        <input
+          type="text"
+          className="input"
+          placeholder={cfg.placeholder || "اكتب إجابتك هنا…"}
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+  }
+}
+
+function FileField({
+  question,
+  value,
+  onChange,
+}: {
+  question: QuestionDTO;
+  value: any;
+  onChange: (v: any) => void;
+}) {
+  const cfg = question.config || {};
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function upload(file: File) {
+    setError("");
+    const maxMB = Number(cfg.maxSizeMB ?? 10);
+    if (file.size > maxMB * 1024 * 1024) {
+      setError(`الحد الأقصى ${maxMB} ميجابايت`);
+      return;
+    }
+    setBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      onChange({ name: file.name, url: data.url, size: file.size });
+    } catch {
+      setError("تعذّر رفع الملف");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div>
+      <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center hover:border-naf-400 hover:bg-naf-50">
+        <span className="text-3xl">📎</span>
+        <span className="text-sm font-medium text-slate-700">
+          {busy ? "جارٍ الرفع…" : "اضغط لرفع ملف"}
+        </span>
+        <span className="text-xs text-slate-400">
+          {cfg.accept} — حتى {cfg.maxSizeMB ?? 10}MB
+        </span>
+        <input
+          type="file"
+          className="hidden"
+          accept={cfg.accept}
+          disabled={busy}
+          onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
+        />
+      </label>
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {value?.url && (
+        <div className="mt-3 flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 text-sm">
+          <span className="truncate text-green-800">✓ {value.name}</span>
+          <a
+            href={value.url}
+            target="_blank"
+            className="text-naf-600 hover:underline"
+          >
+            عرض
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
