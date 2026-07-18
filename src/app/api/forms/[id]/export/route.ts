@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import * as XLSX from "xlsx";
 import { safeParse, answerToText, formatDateTime } from "@/lib/utils";
 
-// تصدير الردود بصيغة CSV أو JSON مع تاريخ ووقت كل رد
+export const runtime = "nodejs";
+
+// تصدير الردود بصيغة CSV أو JSON أو XLSX مع تاريخ ووقت كل رد
 export async function GET(
   req: Request,
   { params }: { params: { id: string } }
@@ -67,6 +70,24 @@ export async function GET(
     ...(form.type === "EXAM" ? ["الدرجة"] : []),
     ...questions.map((q) => q.label),
   ];
+
+  // تصدير Excel (.xlsx)
+  if (format === "xlsx") {
+    const aoa = [headers, ...rows.map((row) => headers.map((h) => row[h] ?? ""))];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"] = headers.map(() => ({ wch: 22 }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "الردود");
+    const buf = XLSX.write(wb, { type: "array", bookType: "xlsx" });
+    return new NextResponse(new Uint8Array(buf), {
+      headers: {
+        "Content-Type":
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": disposition("xlsx"),
+      },
+    });
+  }
+
   const esc = (v: any) => {
     const s = String(v ?? "").replace(/"/g, '""');
     return `"${s}"`;

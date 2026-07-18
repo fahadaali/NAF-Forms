@@ -159,6 +159,7 @@ export default async function ResponsesPage({
     return {
       id: r.id,
       submittedAt: formatDateTime(r.submittedAt),
+      ts: r.submittedAt.toISOString(),
       email: meta.email || undefined,
       score:
         form.type === "EXAM" && meta.total != null
