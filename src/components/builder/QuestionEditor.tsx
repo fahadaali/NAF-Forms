@@ -243,9 +243,14 @@ export default function QuestionEditor({
         {formType === "EXAM" && def?.gradable && (
           <div className="rounded-xl bg-amber-50 p-3">
             <label className="label text-amber-800">الإجابة الصحيحة (اختبار)</label>
-            {q.type === "CHECKBOXES" ? (
+            {/* تطبيع الخيارات: نصوص عادية أو كائنات {label} لحقل الاختيار بالصور */}
+            {(() => {
+              const opts: string[] = (cfg.options || []).map((o: any) =>
+                typeof o === "string" ? o : o.label
+              );
+              return q.type === "CHECKBOXES" ? (
               <div className="space-y-1.5">
-                {(cfg.options || []).map((o: string) => {
+                {opts.map((o: string) => {
                   const arr: string[] = Array.isArray(cfg.correctAnswer)
                     ? cfg.correctAnswer
                     : [];
@@ -267,14 +272,14 @@ export default function QuestionEditor({
                   );
                 })}
               </div>
-            ) : cfg.options ? (
+            ) : opts.length ? (
               <select
                 className="input"
                 value={cfg.correctAnswer || ""}
                 onChange={(e) => setCfg({ correctAnswer: e.target.value })}
               >
                 <option value="">— لا شيء —</option>
-                {(cfg.options || []).map((o: string) => (
+                {opts.map((o: string) => (
                   <option key={o} value={o}>
                     {o}
                   </option>
@@ -287,7 +292,8 @@ export default function QuestionEditor({
                 value={cfg.correctAnswer || ""}
                 onChange={(e) => setCfg({ correctAnswer: e.target.value })}
               />
-            )}
+            );
+            })()}
             <div className="mt-2 w-32">
               <NumField
                 label="الدرجة"

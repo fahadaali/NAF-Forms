@@ -27,14 +27,9 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(24px) scale(0.98)" },
           "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
         },
-        "card-out": {
-          "0%": { opacity: "1", transform: "translateY(0)" },
-          "100%": { opacity: "0", transform: "translateY(-24px)" },
-        },
       },
       animation: {
         "card-in": "card-in 0.35s cubic-bezier(0.16,1,0.3,1)",
-        "card-out": "card-out 0.25s ease-in",
       },
     },
   },
