@@ -58,15 +58,20 @@ export default async function FillPage({
     type: form.type,
     status: form.status,
     settings: fullSettings,
-    questions: form.questions.map((q) => ({
-      id: q.id,
-      order: q.order,
-      type: q.type as any,
-      label: q.label,
-      description: q.description,
-      required: q.required,
-      config: safeParse<Record<string, any>>(q.config, {}),
-    })),
+    questions: form.questions.map((q) => {
+      const cfg = safeParse<Record<string, any>>(q.config, {});
+      // عدم كشف الإجابات الصحيحة والدرجات للمستفيد (للاختبارات)
+      const { correctAnswer, points, ...safeCfg } = cfg;
+      return {
+        id: q.id,
+        order: q.order,
+        type: q.type as any,
+        label: q.label,
+        description: q.description,
+        required: q.required,
+        config: safeCfg,
+      };
+    }),
   };
 
   return (

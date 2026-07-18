@@ -104,19 +104,30 @@ export async function POST(
     }
   }
 
-  // حساب الدرجة للاختبارات
+  // حساب الدرجة للاختبارات + بناء مراجعة الإجابات
   let score = 0;
   let total = 0;
+  const review: any[] = [];
   if (form.type === "EXAM") {
     for (const q of form.questions) {
       const cfg = safeParse<Record<string, any>>(q.config, {});
       if (cfg.correctAnswer !== undefined && cfg.correctAnswer !== "") {
         total += Number(cfg.points ?? 1);
-        const { points } = gradeAnswer(q.type, cfg, answers[q.id]);
-        score += points;
+        const graded = gradeAnswer(q.type, cfg, answers[q.id]);
+        score += graded.points;
+        if (settings.exam?.showAnswers)
+          review.push({
+            label: q.label,
+            correct: graded.correct,
+            your: answers[q.id] ?? "",
+            correctAnswer: cfg.correctAnswer,
+          });
       }
     }
   }
+  const passScore = settings.exam?.passScore;
+  const passed =
+    form.type === "EXAM" && passScore != null ? score >= passScore : undefined;
 
   const meta = {
     userAgent: req.headers.get("user-agent") || "",
@@ -193,5 +204,7 @@ export async function POST(
     responseId: response.id,
     score: meta.score,
     total: meta.total,
+    passed,
+    review: settings.exam?.showAnswers ? review : undefined,
   });
 }

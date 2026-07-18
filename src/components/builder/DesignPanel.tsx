@@ -5,9 +5,11 @@ import { youtubeEmbed } from "@/lib/utils";
 export default function DesignPanel({
   settings,
   onChange,
+  formType,
 }: {
   settings: FormSettings;
   onChange: (s: FormSettings) => void;
+  formType: string;
 }) {
   const patch = (part: Partial<FormSettings>) => onChange({ ...settings, ...part });
   const theme = settings.theme || {};
@@ -15,6 +17,7 @@ export default function DesignPanel({
   const content = settings.content || {};
   const after = settings.afterSubmit || {};
   const behavior = settings.behavior || {};
+  const exam = settings.exam || {};
 
   async function uploadCover(file: File, key: "imageUrl" | "logoUrl") {
     const fd = new FormData();
@@ -379,6 +382,63 @@ export default function DesignPanel({
           </div>
         )}
       </section>
+
+      {/* إعدادات الاختبار */}
+      {formType === "EXAM" && (
+        <section className="card p-5">
+          <h3 className="mb-4 font-bold">📝 إعدادات الاختبار</h3>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="label">مدة الاختبار (دقائق)</label>
+              <input
+                type="number"
+                min={0}
+                className="input"
+                placeholder="بلا حد"
+                value={exam.timeLimitMin ?? ""}
+                onChange={(e) =>
+                  patch({
+                    exam: {
+                      ...exam,
+                      timeLimitMin: e.target.value ? Number(e.target.value) : null,
+                    },
+                  })
+                }
+              />
+            </div>
+            <div>
+              <label className="label">درجة النجاح</label>
+              <input
+                type="number"
+                min={0}
+                className="input"
+                placeholder="بدون"
+                value={exam.passScore ?? ""}
+                onChange={(e) =>
+                  patch({
+                    exam: {
+                      ...exam,
+                      passScore: e.target.value ? Number(e.target.value) : null,
+                    },
+                  })
+                }
+              />
+            </div>
+          </div>
+          <div className="mt-3 space-y-2">
+            <Toggle
+              label="خلط ترتيب الأسئلة عشوائيًا"
+              checked={!!exam.shuffle}
+              onChange={(v) => patch({ exam: { ...exam, shuffle: v } })}
+            />
+            <Toggle
+              label="إظهار الإجابات الصحيحة بعد التسليم"
+              checked={!!exam.showAnswers}
+              onChange={(v) => patch({ exam: { ...exam, showAnswers: v } })}
+            />
+          </div>
+        </section>
+      )}
     </div>
   );
 }

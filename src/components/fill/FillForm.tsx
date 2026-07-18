@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import QuestionInput from "@/components/QuestionInput";
 import { youtubeEmbed, isInputQuestion, isVisibleByLogic } from "@/lib/utils";
 import type { FormDTO } from "@/lib/types";
@@ -24,7 +24,17 @@ export default function FillForm({
   const [error, setError] = useState("");
   const [anim, setAnim] = useState("animate-card-in");
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{ score?: number; total?: number } | null>(null);
+  const [result, setResult] = useState<{
+    score?: number;
+    total?: number;
+    passed?: boolean;
+    review?: any[];
+  } | null>(null);
+
+  // إعدادات الاختبار: خلط الأسئلة والمؤقّت
+  const exam = s.exam || {};
+  const timeLimit = form.type === "EXAM" ? exam.timeLimitMin : null;
+  const [remaining, setRemaining] = useState<number | null>(null);
 
   // حماية بكلمة مرور + جمع بريد المستفيد
   const [unlocked, setUnlocked] = useState(!locked);
@@ -49,10 +59,22 @@ export default function FillForm({
     else setPwError("كلمة المرور غير صحيحة");
   }
 
+  // ترتيب الأسئلة (مع خلطها للاختبارات عند التفعيل) — يُحسب مرة واحدة
+  const baseOrder = useMemo(() => {
+    if (form.type === "EXAM" && exam.shuffle) {
+      const arr = [...form.questions];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+    return form.questions;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // تطبيق المنطق الشرطي: عرض الأسئلة التي تتحقق شروطها فقط
-  const questions = form.questions.filter((q) =>
-    isVisibleByLogic(q.config, answers)
-  );
+  const questions = baseOrder.filter((q) => isVisibleByLogic(q.config, answers));
   const safeStep = Math.min(step, Math.max(0, questions.length - 1));
   const current = questions[safeStep];
 
@@ -120,9 +142,31 @@ export default function FillForm({
       return;
     }
     const data = await res.json();
-    setResult({ score: data.score, total: data.total });
+    setResult({
+      score: data.score,
+      total: data.total,
+      passed: data.passed,
+      review: data.review,
+    });
     setPhase("done");
   }
+
+  // مؤقّت الاختبار: العدّ التنازلي والتسليم التلقائي عند انتهاء الوقت
+  useEffect(() => {
+    if (phase !== "question" || !timeLimit) return;
+    if (remaining === null) {
+      setRemaining(timeLimit * 60);
+      return;
+    }
+    if (remaining <= 0) return;
+    const id = setTimeout(() => setRemaining((r) => (r ?? 0) - 1), 1000);
+    return () => clearTimeout(id);
+  }, [phase, remaining, timeLimit]);
+
+  useEffect(() => {
+    if (remaining === 0 && phase === "question" && !submitting) submit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remaining]);
 
   const progress = useMemo(
     () => (questions.length ? Math.round(((safeStep + 1) / questions.length) * 100) : 0),
@@ -188,6 +232,50 @@ export default function FillForm({
               </div>
             </div>
           ) : null}
+
+          {result?.passed !== undefined && after.showScore && (
+            <div
+              className={`mx-auto mt-4 inline-block rounded-full px-6 py-2 text-sm font-bold ${
+                result.passed
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+              {result.passed ? "✅ ناجح" : "❌ لم تجتز"}
+            </div>
+          )}
+
+          {result?.review && result.review.length > 0 && (
+            <div className="mt-6 space-y-2 text-right">
+              <h3 className="font-bold">مراجعة الإجابات</h3>
+              {result.review.map((r: any, i: number) => (
+                <div
+                  key={i}
+                  className={`rounded-xl border p-3 text-sm ${
+                    r.correct
+                      ? "border-green-200 bg-green-50"
+                      : "border-red-200 bg-red-50"
+                  }`}
+                >
+                  <div className="font-semibold">
+                    {r.correct ? "✅" : "❌"} {r.label}
+                  </div>
+                  {!r.correct && (
+                    <div className="mt-1 text-xs text-slate-600">
+                      إجابتك: {String(Array.isArray(r.your) ? r.your.join("، ") : r.your) || "—"}
+                      {" · "}الصحيحة:{" "}
+                      {String(
+                        Array.isArray(r.correctAnswer)
+                          ? r.correctAnswer.join("، ")
+                          : r.correctAnswer
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           {after.redirectUrl && (
             <a href={after.redirectUrl} className="mt-6 inline-block font-medium underline" style={{ color: accent }}>
               متابعة ↗
@@ -365,9 +453,20 @@ export default function FillForm({
           <div className="h-1.5 overflow-hidden rounded-full bg-black/10">
             <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: accent }} />
           </div>
-          <p className="mt-2 text-center text-xs text-slate-400">
-            {safeStep + 1} من {questions.length}
-          </p>
+          <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
+            <span>
+              {safeStep + 1} من {questions.length}
+            </span>
+            {timeLimit && remaining !== null && (
+              <span
+                className={`font-bold ${remaining <= 30 ? "text-red-500" : ""}`}
+                dir="ltr"
+              >
+                ⏱ {String(Math.floor(remaining / 60)).padStart(2, "0")}:
+                {String(remaining % 60).padStart(2, "0")}
+              </span>
+            )}
+          </div>
         </div>
       )}
 
