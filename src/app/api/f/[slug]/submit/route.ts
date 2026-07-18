@@ -7,6 +7,7 @@ import {
   isVisibleByLogic,
 } from "@/lib/utils";
 import { sendMail } from "@/lib/mailer";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 // استلام رد على النموذج (عام) مع تسجيل تاريخ ووقت التقديم وحساب درجة الاختبار
 export async function POST(
@@ -15,6 +16,16 @@ export async function POST(
 ) {
   const body = await req.json();
   const answers: Record<string, any> = body.answers || {};
+
+  // مصيدة السبام (honeypot): حقل مخفي يجب أن يبقى فارغًا
+  if (body.hp) return NextResponse.json({ ok: true });
+
+  // تحديد معدّل الإرسال لكل عنوان IP
+  if (!rateLimit(`submit:${clientIp(req)}`))
+    return NextResponse.json(
+      { error: "محاولات كثيرة، حاول لاحقًا" },
+      { status: 429 }
+    );
 
   const form = await prisma.form.findUnique({
     where: { slug: params.slug },
@@ -56,6 +67,22 @@ export async function POST(
       return NextResponse.json(
         { error: "البريد الإلكتروني مطلوب" },
         { status: 400 }
+      );
+  }
+
+  // منع تكرار التقديم بنفس البريد
+  if (settings.access?.oneResponsePerEmail && email) {
+    const prior = await prisma.response.findMany({
+      where: { formId: form.id },
+      select: { meta: true },
+    });
+    const already = prior.some(
+      (r) => safeParse<any>(r.meta, {}).email === email
+    );
+    if (already)
+      return NextResponse.json(
+        { error: "سبق أن قدّمت ردًا بهذا البريد" },
+        { status: 409 }
       );
   }
 
@@ -129,6 +156,35 @@ export async function POST(
           ${email ? `<p>بريد المستفيد: ${email}</p>` : ""}
           <p>إجمالي الردود الآن: ${respCount}</p>
         </div>`,
+    }).catch(() => {});
+  }
+
+  // رسالة تأكيد للمستفيد
+  if (settings.notify?.confirmToRespondent && email) {
+    void sendMail({
+      to: email,
+      subject: settings.notify.confirmSubject || `تأكيد استلام ردك — ${form.title}`,
+      html: `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif">
+        <p>${settings.notify.confirmMessage || "شكرًا لك، تم استلام ردك بنجاح."}</p>
+      </div>`,
+    }).catch(() => {});
+  }
+
+  // Webhook: إرسال بيانات الرد إلى نظام خارجي
+  if (settings.notify?.webhookUrl) {
+    void fetch(settings.notify.webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        formId: form.id,
+        formTitle: form.title,
+        responseId: response.id,
+        submittedAt: response.submittedAt,
+        email: email || null,
+        score: meta.score,
+        total: meta.total,
+        answers,
+      }),
     }).catch(() => {});
   }
 

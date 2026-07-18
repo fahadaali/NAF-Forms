@@ -8,6 +8,7 @@ import type { FormDTO, FormSettings, QuestionDTO } from "@/lib/types";
 import QuestionEditor from "./QuestionEditor";
 import AddQuestionPalette from "./AddQuestionPalette";
 import DesignPanel from "./DesignPanel";
+import ShareTools from "./ShareTools";
 
 let tmpCounter = 0;
 
@@ -299,6 +300,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                 فتح صفحة التقديم ↗
               </Link>
             </div>
+            <ShareTools url={publicUrl} />
           </div>
         )}
       </main>

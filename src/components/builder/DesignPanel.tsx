@@ -270,6 +270,15 @@ export default function DesignPanel({
             patch({ access: { ...settings.access, password: e.target.value } })
           }
         />
+        <div className="mt-3">
+          <Toggle
+            label="منع تكرار التقديم بنفس البريد الإلكتروني"
+            checked={!!settings.access?.oneResponsePerEmail}
+            onChange={(v) =>
+              patch({ access: { ...settings.access, oneResponsePerEmail: v } })
+            }
+          />
+        </div>
 
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
@@ -325,6 +334,50 @@ export default function DesignPanel({
             patch({ notify: { ...settings.notify, email: e.target.value } })
           }
         />
+
+        <label className="label mt-4">رابط Webhook (اختياري)</label>
+        <input
+          className="input"
+          dir="ltr"
+          placeholder="https://example.com/webhook"
+          value={settings.notify?.webhookUrl || ""}
+          onChange={(e) =>
+            patch({ notify: { ...settings.notify, webhookUrl: e.target.value } })
+          }
+        />
+        <p className="mt-1 text-xs text-slate-400">
+          يُرسل بيانات كل رد إلى هذا الرابط (يعمل مع Slack/Zapier وغيرها).
+        </p>
+
+        <div className="mt-4">
+          <Toggle
+            label="إرسال رسالة تأكيد للمستفيد بعد التقديم"
+            checked={!!settings.notify?.confirmToRespondent}
+            onChange={(v) =>
+              patch({ notify: { ...settings.notify, confirmToRespondent: v } })
+            }
+          />
+        </div>
+        {settings.notify?.confirmToRespondent && (
+          <div className="mt-3 space-y-2">
+            <input
+              className="input"
+              placeholder="عنوان رسالة التأكيد"
+              value={settings.notify?.confirmSubject || ""}
+              onChange={(e) =>
+                patch({ notify: { ...settings.notify, confirmSubject: e.target.value } })
+              }
+            />
+            <textarea
+              className="input"
+              placeholder="نص رسالة التأكيد"
+              value={settings.notify?.confirmMessage || ""}
+              onChange={(e) =>
+                patch({ notify: { ...settings.notify, confirmMessage: e.target.value } })
+              }
+            />
+          </div>
+        )}
       </section>
     </div>
   );

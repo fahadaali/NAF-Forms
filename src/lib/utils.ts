@@ -23,6 +23,7 @@ export function parseSettings(raw: string | null | undefined): FormSettings {
     access: { ...DEFAULT_SETTINGS.access, ...parsed.access },
     limits: { ...DEFAULT_SETTINGS.limits, ...parsed.limits },
     notify: { ...DEFAULT_SETTINGS.notify, ...parsed.notify },
+    exam: { ...DEFAULT_SETTINGS.exam, ...parsed.exam },
   };
 }
 

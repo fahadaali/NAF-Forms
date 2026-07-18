@@ -33,6 +33,7 @@ export default function FillForm({
   const [checking, setChecking] = useState(false);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [hp, setHp] = useState(""); // مصيدة سبام
 
   async function unlock() {
     setChecking(true);
@@ -110,7 +111,7 @@ export default function FillForm({
     const res = await fetch(`/api/f/${form.slug}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers, password, email }),
+      body: JSON.stringify({ answers, password, email, hp }),
     });
     setSubmitting(false);
     if (!res.ok) {
@@ -348,6 +349,17 @@ export default function FillForm({
         }
       }}
     >
+      {/* مصيدة سبام مخفية عن المستخدم */}
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        value={hp}
+        onChange={(e) => setHp(e.target.value)}
+        style={{ position: "absolute", left: "-9999px", opacity: 0 }}
+        aria-hidden
+      />
       {behavior.showProgress !== false && (
         <div className="mx-auto w-full max-w-2xl">
           <div className="h-1.5 overflow-hidden rounded-full bg-black/10">

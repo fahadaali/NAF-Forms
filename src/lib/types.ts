@@ -33,6 +33,7 @@ export interface FormSettings {
   };
   access?: {
     password?: string; // كلمة مرور لحماية النموذج (لا تُرسل للعميل)
+    oneResponsePerEmail?: boolean; // منع تكرار التقديم بنفس البريد
   };
   limits?: {
     maxResponses?: number | null; // حد أقصى لعدد الردود
@@ -40,6 +41,16 @@ export interface FormSettings {
   };
   notify?: {
     email?: string; // بريد لاستقبال إشعار عند وصول رد جديد
+    webhookUrl?: string; // إرسال بيانات الرد إلى رابط خارجي (Webhook)
+    confirmToRespondent?: boolean; // إرسال رسالة تأكيد للمستفيد
+    confirmSubject?: string;
+    confirmMessage?: string;
+  };
+  exam?: {
+    timeLimitMin?: number | null; // مدة الاختبار بالدقائق
+    shuffle?: boolean; // خلط ترتيب الأسئلة
+    showAnswers?: boolean; // إظهار الإجابات الصحيحة بعد التسليم
+    passScore?: number | null; // درجة النجاح
   };
 }
 
@@ -94,4 +105,5 @@ export const DEFAULT_SETTINGS: FormSettings = {
   access: {},
   limits: { maxResponses: null, closeAt: null },
   notify: {},
+  exam: { timeLimitMin: null, shuffle: false, showAnswers: false, passScore: null },
 };
