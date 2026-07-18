@@ -54,6 +54,23 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
     setQuestions((prev) => prev.filter((q) => q.id !== id));
     mark();
   };
+  const duplicateQuestion = (id: string) => {
+    setQuestions((prev) => {
+      const idx = prev.findIndex((q) => q.id === id);
+      if (idx < 0) return prev;
+      const src = prev[idx];
+      const clone: QuestionDTO = {
+        ...src,
+        id: `tmp-${++tmpCounter}`,
+        label: src.label ? `${src.label} (نسخة)` : "",
+        config: JSON.parse(JSON.stringify(src.config || {})),
+      };
+      const copy = [...prev];
+      copy.splice(idx + 1, 0, clone);
+      return copy;
+    });
+    mark();
+  };
   const moveQuestion = (id: string, dir: -1 | 1) => {
     setQuestions((prev) => {
       const idx = prev.findIndex((q) => q.id === id);
@@ -213,6 +230,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                   onChange={(patch) => updateQuestion(q.id, patch)}
                   onRemove={() => removeQuestion(q.id)}
                   onMove={(dir) => moveQuestion(q.id, dir)}
+                  onDuplicate={() => duplicateQuestion(q.id)}
                 />
               ))}
             </div>

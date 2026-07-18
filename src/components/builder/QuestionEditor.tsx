@@ -11,6 +11,7 @@ export default function QuestionEditor({
   onChange,
   onRemove,
   onMove,
+  onDuplicate,
 }: {
   q: QuestionDTO;
   index: number;
@@ -19,6 +20,7 @@ export default function QuestionEditor({
   onChange: (patch: Partial<QuestionDTO>) => void;
   onRemove: () => void;
   onMove: (dir: -1 | 1) => void;
+  onDuplicate: () => void;
 }) {
   const def = fieldType(q.type);
   const cfg = q.config || {};
@@ -36,6 +38,7 @@ export default function QuestionEditor({
           showRequired={false}
           onMove={onMove}
           onRemove={onRemove}
+          onDuplicate={onDuplicate}
           onToggleRequired={() => {}}
         />
         <input
@@ -64,6 +67,7 @@ export default function QuestionEditor({
         showRequired
         onMove={onMove}
         onRemove={onRemove}
+        onDuplicate={onDuplicate}
         onToggleRequired={() => onChange({ required: !q.required })}
       />
 
@@ -266,6 +270,7 @@ function Toolbar({
   showRequired,
   onMove,
   onRemove,
+  onDuplicate,
   onToggleRequired,
 }: any) {
   return (
@@ -300,6 +305,13 @@ function Toolbar({
           className="rounded-lg px-2 py-1 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
         >
           ↓
+        </button>
+        <button
+          onClick={onDuplicate}
+          className="rounded-lg px-2 py-1 text-slate-500 hover:bg-slate-100"
+          title="نسخ السؤال"
+        >
+          📄
         </button>
         <button
           onClick={onRemove}

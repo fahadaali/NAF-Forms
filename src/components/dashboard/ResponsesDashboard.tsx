@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export interface QuestionStat {
   id: string;
@@ -30,6 +31,7 @@ export default function ResponsesDashboard({
   examAvg,
   stats,
   rows,
+  timeline,
 }: {
   formId: string;
   formType: string;
@@ -37,8 +39,19 @@ export default function ResponsesDashboard({
   examAvg: string | null;
   stats: QuestionStat[];
   rows: ResponseRow[];
+  timeline: { label: string; count: number }[];
 }) {
+  const router = useRouter();
   const [tab, setTab] = useState<"summary" | "individual">("summary");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function deleteResponse(id: string) {
+    if (!confirm("حذف هذا الرد نهائيًا؟")) return;
+    setBusy(id);
+    await fetch(`/api/responses/${id}`, { method: "DELETE" });
+    setBusy(null);
+    router.refresh();
+  }
 
   return (
     <div>
@@ -92,6 +105,7 @@ export default function ResponsesDashboard({
 
       {total > 0 && tab === "summary" && (
         <div className="space-y-4">
+          {timeline.length > 1 && <TimelineChart data={timeline} />}
           {stats.map((q) => (
             <StatBlock key={q.id} q={q} />
           ))}
@@ -104,7 +118,16 @@ export default function ResponsesDashboard({
             <div key={r.id} className="card p-5">
               <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2">
                 <span className="font-bold">رد #{rows.length - i}</span>
-                <span className="text-xs text-slate-400">🕓 {r.submittedAt}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-slate-400">🕓 {r.submittedAt}</span>
+                  <button
+                    onClick={() => deleteResponse(r.id)}
+                    disabled={busy === r.id}
+                    className="rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-50"
+                  >
+                    {busy === r.id ? "…" : "🗑 حذف"}
+                  </button>
+                </div>
               </div>
               {r.score && (
                 <div className="mb-2 inline-block rounded-lg bg-naf-50 px-3 py-1 text-sm font-bold text-naf-700">
@@ -210,6 +233,27 @@ function StatBlock({ q }: { q: QuestionStat }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function TimelineChart({ data }: { data: { label: string; count: number }[] }) {
+  const max = Math.max(...data.map((d) => d.count), 1);
+  return (
+    <div className="card p-5">
+      <h3 className="mb-4 font-bold">📈 الردود عبر الزمن</h3>
+      <div className="flex items-end gap-1.5 overflow-x-auto pb-1" style={{ height: 140 }}>
+        {data.map((d) => (
+          <div key={d.label} className="flex min-w-[28px] flex-1 flex-col items-center justify-end gap-1">
+            <span className="text-[10px] font-bold text-naf-700">{d.count}</span>
+            <div
+              className="w-full rounded-t-md bg-naf-500"
+              style={{ height: `${(d.count / max) * 100}%`, minHeight: d.count ? 4 : 0 }}
+            />
+            <span className="whitespace-nowrap text-[10px] text-slate-400">{d.label}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

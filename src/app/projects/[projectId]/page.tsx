@@ -6,6 +6,7 @@ import { formatDateTime } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import NewFormButton from "@/components/NewFormButton";
 import FormRowActions from "@/components/FormRowActions";
+import ProjectSettings from "@/components/ProjectSettings";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +60,17 @@ export default async function ProjectPage({
               )}
             </div>
           </div>
-          <NewFormButton projectId={project.id} templates={templates} />
+          <div className="flex items-center gap-2">
+            <ProjectSettings
+              project={{
+                id: project.id,
+                name: project.name,
+                description: project.description,
+                color: project.color,
+              }}
+            />
+            <NewFormButton projectId={project.id} templates={templates} />
+          </div>
         </div>
 
         {project.forms.length === 0 ? (

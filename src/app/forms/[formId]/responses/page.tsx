@@ -176,6 +176,24 @@ export default async function ResponsesPage({
     };
   });
 
+  // توزيع الردود حسب اليوم (آخر النتائج)
+  const dayFmt = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
+    day: "numeric",
+    month: "numeric",
+  });
+  const byDay = new Map<string, number>();
+  // ترتيب تصاعدي زمنيًا للعرض
+  const ordered = [...form.responses].sort(
+    (a, b) => a.submittedAt.getTime() - b.submittedAt.getTime()
+  );
+  for (const r of ordered) {
+    const key = dayFmt.format(r.submittedAt);
+    byDay.set(key, (byDay.get(key) || 0) + 1);
+  }
+  const timeline = Array.from(byDay.entries())
+    .slice(-30)
+    .map(([label, count]) => ({ label, count }));
+
   // متوسط درجات الاختبار
   let examAvg: string | null = null;
   if (form.type === "EXAM" && form.responses.length) {
@@ -217,6 +235,7 @@ export default async function ResponsesPage({
           examAvg={examAvg}
           stats={stats}
           rows={rows}
+          timeline={timeline}
         />
       </main>
     </div>
