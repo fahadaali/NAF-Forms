@@ -231,6 +231,10 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                   onRemove={() => removeQuestion(q.id)}
                   onMove={(dir) => moveQuestion(q.id, dir)}
                   onDuplicate={() => duplicateQuestion(q.id)}
+                  priorQuestions={questions
+                    .slice(0, i)
+                    .filter((p) => p.type !== "SECTION")
+                    .map((p) => ({ id: p.id, label: p.label, type: p.type }))}
                 />
               ))}
             </div>

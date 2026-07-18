@@ -21,7 +21,31 @@ export function parseSettings(raw: string | null | undefined): FormSettings {
     afterSubmit: { ...DEFAULT_SETTINGS.afterSubmit, ...parsed.afterSubmit },
     behavior: { ...DEFAULT_SETTINGS.behavior, ...parsed.behavior },
     access: { ...DEFAULT_SETTINGS.access, ...parsed.access },
+    limits: { ...DEFAULT_SETTINGS.limits, ...parsed.limits },
+    notify: { ...DEFAULT_SETTINGS.notify, ...parsed.notify },
   };
+}
+
+// تقييم المنطق الشرطي للسؤال: هل يظهر السؤال بناءً على إجابة سابقة؟
+export function isVisibleByLogic(
+  config: Record<string, any> | undefined,
+  answers: Record<string, any>
+): boolean {
+  const logic = config?.logic;
+  if (!logic || !logic.whenQuestionId) return true;
+  const src = answers[logic.whenQuestionId];
+  const target = String(logic.value ?? "");
+  const asArray = Array.isArray(src) ? src.map(String) : [String(src ?? "")];
+  switch (logic.operator) {
+    case "eq":
+      return String(src ?? "") === target;
+    case "neq":
+      return String(src ?? "") !== target;
+    case "contains":
+      return asArray.includes(target);
+    default:
+      return true;
+  }
 }
 
 // تحويل رابط يوتيوب إلى رابط تضمين

@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { safeParse, gradeAnswer, parseSettings } from "@/lib/utils";
+import {
+  safeParse,
+  gradeAnswer,
+  parseSettings,
+  isVisibleByLogic,
+} from "@/lib/utils";
+import { sendMail } from "@/lib/mailer";
 
 // استلام رد على النموذج (عام) مع تسجيل تاريخ ووقت التقديم وحساب درجة الاختبار
 export async function POST(
@@ -21,6 +27,23 @@ export async function POST(
 
   const settings = parseSettings(form.settings);
 
+  // الإغلاق التلقائي بحسب التاريخ أو حد الردود
+  const closeAt = settings.limits?.closeAt;
+  if (closeAt && new Date(closeAt).getTime() < Date.now())
+    return NextResponse.json(
+      { error: "انتهى وقت استقبال الردود" },
+      { status: 403 }
+    );
+  const maxResponses = settings.limits?.maxResponses;
+  if (maxResponses && maxResponses > 0) {
+    const count = await prisma.response.count({ where: { formId: form.id } });
+    if (count >= maxResponses)
+      return NextResponse.json(
+        { error: "اكتمل العدد الأقصى للردود" },
+        { status: 403 }
+      );
+  }
+
   // التحقق من كلمة المرور إن وُجدت
   const password = settings.access?.password || "";
   if (password && String(body.password || "") !== password)
@@ -36,9 +59,10 @@ export async function POST(
       );
   }
 
-  // التحقق من الأسئلة الإلزامية
+  // التحقق من الأسئلة الإلزامية (مع تجاهل المخفية بالمنطق الشرطي)
   for (const q of form.questions) {
-    if (q.required) {
+    const cfg = safeParse<Record<string, any>>(q.config, {});
+    if (q.required && isVisibleByLogic(cfg, answers)) {
       const v = answers[q.id];
       const empty =
         v === undefined ||
@@ -88,6 +112,25 @@ export async function POST(
       },
     },
   });
+
+  // إشعار بريد للمشرف عند وصول رد جديد (غير حاجب — لا يؤخّر الاستجابة)
+  const notifyTo = settings.notify?.email;
+  if (notifyTo) {
+    const respCount = await prisma.response.count({
+      where: { formId: form.id },
+    });
+    void sendMail({
+      to: notifyTo,
+      subject: `رد جديد على «${form.title}»`,
+      html: `
+        <div dir="rtl" style="font-family:Tahoma,Arial,sans-serif">
+          <h2>وصل رد جديد على النموذج «${form.title}»</h2>
+          <p>وقت التقديم: ${new Date().toLocaleString("ar-SA")}</p>
+          ${email ? `<p>بريد المستفيد: ${email}</p>` : ""}
+          <p>إجمالي الردود الآن: ${respCount}</p>
+        </div>`,
+    }).catch(() => {});
+  }
 
   return NextResponse.json({
     ok: true,

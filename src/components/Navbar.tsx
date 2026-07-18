@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LogoutButton from "./LogoutButton";
 
 export default function Navbar({ crumbs = [] }: { crumbs?: { label: string; href?: string }[] }) {
   return (
@@ -24,6 +25,7 @@ export default function Navbar({ crumbs = [] }: { crumbs?: { label: string; href
             </span>
           ))}
         </div>
+        <LogoutButton />
       </div>
     </header>
   );

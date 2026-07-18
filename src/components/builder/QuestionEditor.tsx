@@ -12,6 +12,7 @@ export default function QuestionEditor({
   onRemove,
   onMove,
   onDuplicate,
+  priorQuestions,
 }: {
   q: QuestionDTO;
   index: number;
@@ -21,6 +22,7 @@ export default function QuestionEditor({
   onRemove: () => void;
   onMove: (dir: -1 | 1) => void;
   onDuplicate: () => void;
+  priorQuestions: { id: string; label: string; type: string }[];
 }) {
   const def = fieldType(q.type);
   const cfg = q.config || {};
@@ -257,7 +259,82 @@ export default function QuestionEditor({
             </div>
           </div>
         )}
+
+        {/* منطق شرطي */}
+        {priorQuestions.length > 0 && (
+          <LogicEditor
+            logic={cfg.logic}
+            priorQuestions={priorQuestions}
+            onChange={(logic) => setCfg({ logic })}
+          />
+        )}
       </div>
+    </div>
+  );
+}
+
+function LogicEditor({
+  logic,
+  priorQuestions,
+  onChange,
+}: {
+  logic: any;
+  priorQuestions: { id: string; label: string; type: string }[];
+  onChange: (logic: any) => void;
+}) {
+  const enabled = !!(logic && logic.whenQuestionId);
+  const src = priorQuestions.find((p) => p.id === logic?.whenQuestionId);
+  const srcConfig = src as any;
+  return (
+    <div className="rounded-xl bg-indigo-50/60 p-3">
+      <label className="flex items-center gap-2 text-sm font-semibold text-indigo-900">
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) =>
+            onChange(
+              e.target.checked
+                ? {
+                    whenQuestionId: priorQuestions[0].id,
+                    operator: "eq",
+                    value: "",
+                  }
+                : undefined
+            )
+          }
+        />
+        🔀 إظهار هذا السؤال بشرط
+      </label>
+      {enabled && (
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <select
+            className="input py-1.5"
+            value={logic.whenQuestionId}
+            onChange={(e) => onChange({ ...logic, whenQuestionId: e.target.value })}
+          >
+            {priorQuestions.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.label || "سؤال بلا عنوان"}
+              </option>
+            ))}
+          </select>
+          <select
+            className="input py-1.5"
+            value={logic.operator}
+            onChange={(e) => onChange({ ...logic, operator: e.target.value })}
+          >
+            <option value="eq">يساوي</option>
+            <option value="neq">لا يساوي</option>
+            <option value="contains">يتضمّن</option>
+          </select>
+          <input
+            className="input py-1.5"
+            placeholder="القيمة"
+            value={logic.value || ""}
+            onChange={(e) => onChange({ ...logic, value: e.target.value })}
+          />
+        </div>
+      )}
     </div>
   );
 }

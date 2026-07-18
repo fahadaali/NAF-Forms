@@ -1,8 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import QuestionInput from "@/components/QuestionInput";
-import { youtubeEmbed } from "@/lib/utils";
-import { isInputQuestion } from "@/lib/utils";
+import { youtubeEmbed, isInputQuestion, isVisibleByLogic } from "@/lib/utils";
 import type { FormDTO } from "@/lib/types";
 
 type Phase = "intro" | "question" | "done";
@@ -49,8 +48,12 @@ export default function FillForm({
     else setPwError("كلمة المرور غير صحيحة");
   }
 
-  const questions = form.questions;
-  const current = questions[step];
+  // تطبيق المنطق الشرطي: عرض الأسئلة التي تتحقق شروطها فقط
+  const questions = form.questions.filter((q) =>
+    isVisibleByLogic(q.config, answers)
+  );
+  const safeStep = Math.min(step, Math.max(0, questions.length - 1));
+  const current = questions[safeStep];
 
   const pageStyle: React.CSSProperties = {
     background: theme.background,
@@ -78,17 +81,17 @@ export default function FillForm({
   function goNext() {
     if (current && !validate(current)) return;
     setError("");
-    if (step < questions.length - 1) {
+    if (safeStep < questions.length - 1) {
       setAnim("animate-card-in");
-      setStep((s) => s + 1);
+      setStep(safeStep + 1);
     } else {
       submit();
     }
   }
   function goBack() {
     setError("");
-    if (step > 0) {
-      setStep((s) => s - 1);
+    if (safeStep > 0) {
+      setStep(safeStep - 1);
     } else {
       setPhase("intro");
     }
@@ -121,8 +124,8 @@ export default function FillForm({
   }
 
   const progress = useMemo(
-    () => (questions.length ? Math.round(((step + 1) / questions.length) * 100) : 0),
-    [step, questions.length]
+    () => (questions.length ? Math.round(((safeStep + 1) / questions.length) * 100) : 0),
+    [safeStep, questions.length]
   );
 
   // ===== بوابة كلمة المرور =====
@@ -351,13 +354,13 @@ export default function FillForm({
             <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: accent }} />
           </div>
           <p className="mt-2 text-center text-xs text-slate-400">
-            {step + 1} من {questions.length}
+            {safeStep + 1} من {questions.length}
           </p>
         </div>
       )}
 
       <div className="flex flex-1 items-center justify-center py-6">
-        <div key={step} className={`w-full max-w-2xl rounded-3xl p-8 shadow-xl ${anim}`} style={{ background: theme.cardBg }}>
+        <div key={safeStep} className={`w-full max-w-2xl rounded-3xl p-8 shadow-xl ${anim}`} style={{ background: theme.cardBg }}>
           <QuestionCard
             q={current}
             value={answers[current.id]}
@@ -366,7 +369,7 @@ export default function FillForm({
               setError("");
             }}
             accent={accent}
-            index={step}
+            index={safeStep}
           />
           {error && <p className="mt-4 font-medium text-red-600">{error}</p>}
 
@@ -386,7 +389,7 @@ export default function FillForm({
             >
               {submitting
                 ? "جارٍ الإرسال…"
-                : step === questions.length - 1
+                : safeStep === questions.length - 1
                 ? "إرسال ✓"
                 : "التالي →"}
             </button>

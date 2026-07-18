@@ -34,6 +34,20 @@ export interface FormSettings {
   access?: {
     password?: string; // كلمة مرور لحماية النموذج (لا تُرسل للعميل)
   };
+  limits?: {
+    maxResponses?: number | null; // حد أقصى لعدد الردود
+    closeAt?: string | null; // تاريخ/وقت الإغلاق التلقائي (ISO)
+  };
+  notify?: {
+    email?: string; // بريد لاستقبال إشعار عند وصول رد جديد
+  };
+}
+
+// قاعدة منطق شرطي على مستوى السؤال (تُخزَّن في config.logic)
+export interface QuestionLogic {
+  whenQuestionId: string;
+  operator: "eq" | "neq" | "contains";
+  value: string;
 }
 
 export interface QuestionDTO {
@@ -78,4 +92,6 @@ export const DEFAULT_SETTINGS: FormSettings = {
     collectEmail: false,
   },
   access: {},
+  limits: { maxResponses: null, closeAt: null },
+  notify: {},
 };

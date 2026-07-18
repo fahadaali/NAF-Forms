@@ -13,16 +13,28 @@ export default async function FillPage({
 }) {
   const form = await prisma.form.findUnique({
     where: { slug: params.slug },
-    include: { questions: { orderBy: { order: "asc" } } },
+    include: {
+      questions: { orderBy: { order: "asc" } },
+      _count: { select: { responses: true } },
+    },
   });
   if (!form) notFound();
 
-  if (form.status === "CLOSED") {
+  // حساب حالة الإغلاق (يدوي، أو بانتهاء الوقت، أو باكتمال العدد)
+  const s = parseSettings(form.settings);
+  const closeAt = s.limits?.closeAt;
+  const maxResponses = s.limits?.maxResponses;
+  const timeUp = !!closeAt && new Date(closeAt).getTime() < Date.now();
+  const full = !!maxResponses && maxResponses > 0 && form._count.responses >= maxResponses;
+
+  if (form.status === "CLOSED" || timeUp || full) {
     return (
       <div className="grid min-h-screen place-items-center bg-slate-50 px-4 text-center">
         <div>
           <div className="mb-3 text-5xl">🔒</div>
-          <h1 className="text-xl font-bold">هذا النموذج مغلق حاليًا</h1>
+          <h1 className="text-xl font-bold">
+            {full ? "اكتمل العدد الأقصى للردود" : timeUp ? "انتهى وقت استقبال الردود" : "هذا النموذج مغلق حاليًا"}
+          </h1>
           <p className="mt-2 text-slate-500">لم يعد بالإمكان استقبال ردود جديدة.</p>
         </div>
       </div>
@@ -35,9 +47,8 @@ export default async function FillPage({
   }
 
   // إزالة كلمة المرور قبل الإرسال للعميل، مع تمرير مؤشر وجودها فقط
-  const parsed = parseSettings(form.settings);
-  const locked = !!parsed.access?.password;
-  const fullSettings = { ...parsed, access: {} };
+  const locked = !!s.access?.password;
+  const fullSettings = { ...s, access: {} };
 
   const dto: FormDTO = {
     id: form.id,

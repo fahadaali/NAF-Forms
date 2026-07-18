@@ -270,6 +270,61 @@ export default function DesignPanel({
             patch({ access: { ...settings.access, password: e.target.value } })
           }
         />
+
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label">حد أقصى لعدد الردود</label>
+            <input
+              type="number"
+              min={0}
+              className="input"
+              placeholder="بلا حد"
+              value={settings.limits?.maxResponses ?? ""}
+              onChange={(e) =>
+                patch({
+                  limits: {
+                    ...settings.limits,
+                    maxResponses: e.target.value ? Number(e.target.value) : null,
+                  },
+                })
+              }
+            />
+          </div>
+          <div>
+            <label className="label">تاريخ الإغلاق التلقائي</label>
+            <input
+              type="datetime-local"
+              className="input"
+              value={settings.limits?.closeAt || ""}
+              onChange={(e) =>
+                patch({
+                  limits: {
+                    ...settings.limits,
+                    closeAt: e.target.value || null,
+                  },
+                })
+              }
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* الإشعارات */}
+      <section className="card p-5">
+        <h3 className="mb-2 font-bold">🔔 إشعار بريد عند وصول رد</h3>
+        <p className="mb-3 text-sm text-slate-500">
+          أدخل بريدًا لاستقبال إشعار عند كل رد جديد (يتطلب ضبط SMTP في الخادم).
+        </p>
+        <label className="label">بريد الإشعارات</label>
+        <input
+          className="input"
+          dir="ltr"
+          placeholder="notify@example.com"
+          value={settings.notify?.email || ""}
+          onChange={(e) =>
+            patch({ notify: { ...settings.notify, email: e.target.value } })
+          }
+        />
       </section>
     </div>
   );
