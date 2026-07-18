@@ -246,7 +246,30 @@ export default function DesignPanel({
             checked={behavior.showProgress !== false}
             onChange={(v) => patch({ behavior: { ...behavior, showProgress: v } })}
           />
+          <Toggle
+            label="طلب بريد المستفيد قبل البدء"
+            checked={!!behavior.collectEmail}
+            onChange={(v) => patch({ behavior: { ...behavior, collectEmail: v } })}
+          />
         </div>
+      </section>
+
+      {/* الوصول والخصوصية */}
+      <section className="card p-5">
+        <h3 className="mb-2 font-bold">🔒 الوصول والخصوصية</h3>
+        <p className="mb-3 text-sm text-slate-500">
+          اترك الحقل فارغًا لجعل النموذج متاحًا للجميع، أو حدّد كلمة مرور لحمايته.
+        </p>
+        <label className="label">كلمة مرور النموذج</label>
+        <input
+          className="input"
+          dir="ltr"
+          placeholder="بدون كلمة مرور"
+          value={settings.access?.password || ""}
+          onChange={(e) =>
+            patch({ access: { ...settings.access, password: e.target.value } })
+          }
+        />
       </section>
     </div>
   );

@@ -32,6 +32,7 @@ export async function GET(
       "رقم الرد": r.id,
       "تاريخ ووقت التقديم": formatDateTime(r.submittedAt),
     };
+    if (meta.email) record["البريد الإلكتروني"] = meta.email;
     if (form.type === "EXAM")
       record["الدرجة"] = `${meta.score ?? 0} / ${meta.total ?? 0}`;
     for (const q of questions) {
@@ -56,9 +57,13 @@ export async function GET(
   }
 
   // CSV مع BOM لدعم العربية في Excel
+  const hasEmail = form.responses.some(
+    (r) => safeParse<any>(r.meta, {}).email
+  );
   const headers = [
     "رقم الرد",
     "تاريخ ووقت التقديم",
+    ...(hasEmail ? ["البريد الإلكتروني"] : []),
     ...(form.type === "EXAM" ? ["الدرجة"] : []),
     ...questions.map((q) => q.label),
   ];

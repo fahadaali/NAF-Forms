@@ -29,7 +29,10 @@ export interface FormSettings {
     oneQuestionPerCard?: boolean; // بطاقة لكل سؤال
     allowBack?: boolean; // السماح بالرجوع
     showProgress?: boolean; // شريط التقدم
-    collectEmail?: boolean;
+    collectEmail?: boolean; // طلب بريد المستفيد قبل البدء
+  };
+  access?: {
+    password?: string; // كلمة مرور لحماية النموذج (لا تُرسل للعميل)
   };
 }
 
@@ -72,5 +75,7 @@ export const DEFAULT_SETTINGS: FormSettings = {
     oneQuestionPerCard: true,
     allowBack: true,
     showProgress: true,
+    collectEmail: false,
   },
+  access: {},
 };

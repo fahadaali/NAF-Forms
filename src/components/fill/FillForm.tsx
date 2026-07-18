@@ -7,7 +7,13 @@ import type { FormDTO } from "@/lib/types";
 
 type Phase = "intro" | "question" | "done";
 
-export default function FillForm({ form }: { form: FormDTO }) {
+export default function FillForm({
+  form,
+  locked = false,
+}: {
+  form: FormDTO;
+  locked?: boolean;
+}) {
   const s = form.settings;
   const theme = s.theme || {};
   const behavior = s.behavior || {};
@@ -20,6 +26,28 @@ export default function FillForm({ form }: { form: FormDTO }) {
   const [anim, setAnim] = useState("animate-card-in");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ score?: number; total?: number } | null>(null);
+
+  // حماية بكلمة مرور + جمع بريد المستفيد
+  const [unlocked, setUnlocked] = useState(!locked);
+  const [password, setPassword] = useState("");
+  const [pwError, setPwError] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+  async function unlock() {
+    setChecking(true);
+    setPwError("");
+    const res = await fetch(`/api/f/${form.slug}/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    const data = await res.json();
+    setChecking(false);
+    if (data.ok) setUnlocked(true);
+    else setPwError("كلمة المرور غير صحيحة");
+  }
 
   const questions = form.questions;
   const current = questions[step];
@@ -79,7 +107,7 @@ export default function FillForm({ form }: { form: FormDTO }) {
     const res = await fetch(`/api/f/${form.slug}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers }),
+      body: JSON.stringify({ answers, password, email }),
     });
     setSubmitting(false);
     if (!res.ok) {
@@ -96,6 +124,42 @@ export default function FillForm({ form }: { form: FormDTO }) {
     () => (questions.length ? Math.round(((step + 1) / questions.length) * 100) : 0),
     [step, questions.length]
   );
+
+  // ===== بوابة كلمة المرور =====
+  if (!unlocked) {
+    return (
+      <div style={pageStyle} className="grid place-items-center px-4">
+        <div
+          className="w-full max-w-sm rounded-3xl p-8 text-center shadow-xl"
+          style={{ background: theme.cardBg }}
+        >
+          <div className="mb-3 text-5xl">🔒</div>
+          <h1 className="text-xl font-extrabold">{form.title}</h1>
+          <p className="mt-2 text-sm text-slate-500">
+            هذا النموذج محمي بكلمة مرور. أدخلها للمتابعة.
+          </p>
+          <input
+            type="password"
+            className="input mt-5 text-center"
+            placeholder="كلمة المرور"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && unlock()}
+            autoFocus
+          />
+          {pwError && <p className="mt-2 text-sm text-red-600">{pwError}</p>}
+          <button
+            onClick={unlock}
+            disabled={checking || !password}
+            className="mt-4 w-full rounded-xl px-6 py-3 font-bold text-white shadow-lg disabled:opacity-50"
+            style={{ background: accent }}
+          >
+            {checking ? "جارٍ التحقق…" : "دخول"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ===== شاشة النهاية =====
   if (phase === "done") {
@@ -194,9 +258,38 @@ export default function FillForm({ form }: { form: FormDTO }) {
                 </div>
               )}
 
+              {behavior.collectEmail && (
+                <div className="mt-6 text-right">
+                  <label className="label">
+                    بريدك الإلكتروني <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    dir="ltr"
+                    className="input text-right"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setEmailError("");
+                    }}
+                  />
+                  {emailError && (
+                    <p className="mt-1 text-sm text-red-600">{emailError}</p>
+                  )}
+                </div>
+              )}
+
               <button
                 onClick={() => {
                   if (questions.length === 0) return;
+                  if (
+                    behavior.collectEmail &&
+                    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+                  ) {
+                    setEmailError("يرجى إدخال بريد إلكتروني صحيح");
+                    return;
+                  }
                   setPhase("question");
                   setStep(0);
                 }}

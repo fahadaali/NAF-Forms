@@ -20,6 +20,7 @@ export function parseSettings(raw: string | null | undefined): FormSettings {
     content: { ...DEFAULT_SETTINGS.content, ...parsed.content },
     afterSubmit: { ...DEFAULT_SETTINGS.afterSubmit, ...parsed.afterSubmit },
     behavior: { ...DEFAULT_SETTINGS.behavior, ...parsed.behavior },
+    access: { ...DEFAULT_SETTINGS.access, ...parsed.access },
   };
 }
 

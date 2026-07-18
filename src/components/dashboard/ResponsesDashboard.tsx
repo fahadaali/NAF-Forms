@@ -21,6 +21,7 @@ export interface ResponseRow {
   id: string;
   submittedAt: string;
   score?: string;
+  email?: string;
   cells: { label: string; type: string; text: string; url?: string; loc?: { lat: number; lng: number } }[];
 }
 
@@ -44,6 +45,21 @@ export default function ResponsesDashboard({
   const router = useRouter();
   const [tab, setTab] = useState<"summary" | "individual">("summary");
   const [busy, setBusy] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+
+  const filteredRows = query.trim()
+    ? rows.filter((r) => {
+        const hay = [
+          r.email || "",
+          r.submittedAt,
+          r.score || "",
+          ...r.cells.map((c) => c.text),
+        ]
+          .join(" ")
+          .toLowerCase();
+        return hay.includes(query.trim().toLowerCase());
+      })
+    : rows;
 
   async function deleteResponse(id: string) {
     if (!confirm("حذف هذا الرد نهائيًا؟")) return;
@@ -114,11 +130,27 @@ export default function ResponsesDashboard({
 
       {total > 0 && tab === "individual" && (
         <div className="space-y-4">
-          {rows.map((r, i) => (
+          <input
+            className="input"
+            placeholder="🔍 بحث في الردود…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {query && (
+            <p className="text-sm text-slate-400">
+              {filteredRows.length} نتيجة من {rows.length}
+            </p>
+          )}
+          {filteredRows.map((r) => (
             <div key={r.id} className="card p-5">
-              <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2">
-                <span className="font-bold">رد #{rows.length - i}</span>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                <span className="font-bold">رد #{rows.length - rows.indexOf(r)}</span>
                 <div className="flex items-center gap-3">
+                  {r.email && (
+                    <span className="chip bg-slate-100 text-slate-600" dir="ltr">
+                      ✉️ {r.email}
+                    </span>
+                  )}
                   <span className="text-xs text-slate-400">🕓 {r.submittedAt}</span>
                   <button
                     onClick={() => deleteResponse(r.id)}

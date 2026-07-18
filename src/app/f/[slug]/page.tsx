@@ -34,6 +34,11 @@ export default async function FillPage({
     // (النشر يتم من صفحة البناء)
   }
 
+  // إزالة كلمة المرور قبل الإرسال للعميل، مع تمرير مؤشر وجودها فقط
+  const parsed = parseSettings(form.settings);
+  const locked = !!parsed.access?.password;
+  const fullSettings = { ...parsed, access: {} };
+
   const dto: FormDTO = {
     id: form.id,
     slug: form.slug,
@@ -41,7 +46,7 @@ export default async function FillPage({
     description: form.description,
     type: form.type,
     status: form.status,
-    settings: parseSettings(form.settings),
+    settings: fullSettings,
     questions: form.questions.map((q) => ({
       id: q.id,
       order: q.order,
@@ -60,7 +65,7 @@ export default async function FillPage({
           وضع المعاينة — هذا النموذج لم يُنشر بعد
         </div>
       )}
-      <FillForm form={dto} />
+      <FillForm form={dto} locked={locked} />
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { safeParse, gradeAnswer } from "@/lib/utils";
+import { safeParse, gradeAnswer, parseSettings } from "@/lib/utils";
 
 // استلام رد على النموذج (عام) مع تسجيل تاريخ ووقت التقديم وحساب درجة الاختبار
 export async function POST(
@@ -18,6 +18,23 @@ export async function POST(
     return NextResponse.json({ error: "النموذج غير موجود" }, { status: 404 });
   if (form.status === "CLOSED")
     return NextResponse.json({ error: "النموذج مغلق" }, { status: 403 });
+
+  const settings = parseSettings(form.settings);
+
+  // التحقق من كلمة المرور إن وُجدت
+  const password = settings.access?.password || "";
+  if (password && String(body.password || "") !== password)
+    return NextResponse.json({ error: "كلمة المرور غير صحيحة" }, { status: 403 });
+
+  // التحقق من بريد المستفيد إن كان مطلوبًا
+  const email = String(body.email || "").trim();
+  if (settings.behavior?.collectEmail) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return NextResponse.json(
+        { error: "البريد الإلكتروني مطلوب" },
+        { status: 400 }
+      );
+  }
 
   // التحقق من الأسئلة الإلزامية
   for (const q of form.questions) {
@@ -52,6 +69,7 @@ export async function POST(
 
   const meta = {
     userAgent: req.headers.get("user-agent") || "",
+    email: email || undefined,
     score: form.type === "EXAM" ? score : undefined,
     total: form.type === "EXAM" ? total : undefined,
   };
