@@ -250,6 +250,11 @@ export default function DesignPanel({
             onChange={(v) => patch({ behavior: { ...behavior, showProgress: v } })}
           />
           <Toggle
+            label="الانتقال التلقائي عند اختيار إجابة واحدة أو الموافقة"
+            checked={behavior.autoAdvance !== false}
+            onChange={(v) => patch({ behavior: { ...behavior, autoAdvance: v } })}
+          />
+          <Toggle
             label="طلب بريد المستفيد قبل البدء"
             checked={!!behavior.collectEmail}
             onChange={(v) => patch({ behavior: { ...behavior, collectEmail: v } })}

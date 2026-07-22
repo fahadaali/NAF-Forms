@@ -10,6 +10,8 @@ import {
   gradeAnswer,
   parseSettings,
   isVisibleByLogic,
+  isInputQuestion,
+  validateAnswer,
 } from "@/lib/utils";
 import { sendMail } from "@/lib/mailer";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
@@ -85,22 +87,18 @@ export async function POST(
       );
   }
 
-  // التحقق من الأسئلة الإلزامية (مع تجاهل المخفية بالمنطق الشرطي)
+  // التحقق من الأسئلة (إلزامية + صحة الصيغة) مع تجاهل المخفية بالمنطق الشرطي
+  // وتجاهل عناصر العرض (نص/صورة/فيديو)
   for (const q of form.questions) {
+    if (!isInputQuestion(q.type)) continue;
     const cfg = safeParse<Record<string, any>>(q.config, {});
-    if (q.required && isVisibleByLogic(cfg, answers)) {
-      const v = answers[q.id];
-      const empty =
-        v === undefined ||
-        v === null ||
-        v === "" ||
-        (Array.isArray(v) && v.length === 0);
-      if (empty)
-        return NextResponse.json(
-          { error: `السؤال «${q.label}» إلزامي` },
-          { status: 400 }
-        );
-    }
+    if (!isVisibleByLogic(cfg, answers)) continue;
+    const err = validateAnswer(q.type, cfg, answers[q.id], q.required);
+    if (err)
+      return NextResponse.json(
+        { error: `«${q.label}»: ${err}` },
+        { status: 400 }
+      );
   }
 
   // حساب الدرجة للاختبارات + بناء مراجعة الإجابات

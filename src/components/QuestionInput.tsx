@@ -41,12 +41,15 @@ export default function QuestionInput({
       );
 
     case "NUMBER":
+      // نص + لوحة أرقام: نلتقط الإدخال غير الرقمي لنُظهر رسالة خطأ واضحة
+      // بدل أن يتجاهله المتصفح بصمت (type=number).
       return (
         <input
-          type="number"
-          className="input"
-          min={cfg.min ?? undefined}
-          max={cfg.max ?? undefined}
+          type="text"
+          dir="ltr"
+          inputMode="decimal"
+          className="input text-right"
+          placeholder={cfg.placeholder || "أدخل رقمًا"}
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
         />
@@ -375,6 +378,39 @@ export default function QuestionInput({
             </button>
           ))}
         </div>
+      );
+    }
+
+    case "CONSENT": {
+      const statement = cfg.statement || "أوافق على الشروط والأحكام";
+      return (
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 px-4 py-3.5 hover:bg-slate-50 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50">
+          <input
+            type="checkbox"
+            style={style}
+            className="mt-0.5 h-5 w-5 rounded"
+            checked={value === true}
+            onChange={(e) => onChange(e.target.checked)}
+          />
+          <span className="text-sm leading-relaxed">
+            {statement}
+            {cfg.linkUrl && (
+              <>
+                {" "}
+                <a
+                  href={cfg.linkUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium underline"
+                  style={{ color: accent }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {cfg.linkLabel || "التفاصيل"}
+                </a>
+              </>
+            )}
+          </span>
+        </label>
       );
     }
 

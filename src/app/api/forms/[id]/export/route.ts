@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getFormWithResponses } from "@/lib/repo";
 import * as XLSX from "xlsx";
-import { safeParse, answerToText, formatDateTime } from "@/lib/utils";
+import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
@@ -17,7 +17,7 @@ export async function GET(
   if (!form)
     return NextResponse.json({ error: "غير موجود" }, { status: 404 });
 
-  const questions = form.questions;
+  const questions = form.questions.filter((q) => isInputQuestion(q.type));
   const rows = form.responses.map((r) => {
     const byQ: Record<string, any> = {};
     for (const a of r.answers) byQ[a.questionId] = safeParse(a.value, "");
