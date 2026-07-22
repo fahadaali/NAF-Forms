@@ -1,7 +1,12 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import QuestionInput from "@/components/QuestionInput";
-import { youtubeEmbed, isInputQuestion, isVisibleByLogic } from "@/lib/utils";
+import {
+  youtubeEmbed,
+  isInputQuestion,
+  isVisibleByLogic,
+  validateAnswer,
+} from "@/lib/utils";
 import type { FormDTO } from "@/lib/types";
 
 type Phase = "intro" | "question" | "done";
@@ -86,22 +91,26 @@ export default function FillForm({
   const accent = theme.primary || "#44528a";
 
   function validate(q: (typeof questions)[number]): boolean {
-    if (!q.required || !isInputQuestion(q.type)) return true;
-    const v = answers[q.id];
-    const empty =
-      v === undefined ||
-      v === null ||
-      v === "" ||
-      (Array.isArray(v) && v.length === 0) ||
-      (typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0);
-    if (empty) {
-      setError("هذا السؤال إلزامي");
+    // عناصر العرض (نص/صورة/فيديو) لا تُتحقق
+    if (!isInputQuestion(q.type)) return true;
+    const err = validateAnswer(q.type, q.config || {}, answers[q.id], q.required);
+    if (err) {
+      setError(err);
       return false;
     }
     return true;
   }
 
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function clearAdvance() {
+    if (advanceTimer.current) {
+      clearTimeout(advanceTimer.current);
+      advanceTimer.current = null;
+    }
+  }
+
   function goNext() {
+    clearAdvance();
     if (current && !validate(current)) return;
     setError("");
     if (safeStep < questions.length - 1) {
@@ -112,12 +121,34 @@ export default function FillForm({
     }
   }
   function goBack() {
+    clearAdvance();
     setError("");
     if (safeStep > 0) {
       setStep(safeStep - 1);
     } else {
       setPhase("intro");
     }
+  }
+
+  // مرجع دائم لأحدث goNext حتى يستدعيه مؤقّت الانتقال التلقائي بقيمة محدّثة
+  const goNextRef = useRef(goNext);
+  goNextRef.current = goNext;
+
+  // الانتقال التلقائي عند اختيار إجابة واحدة (اختيار من متعدد) أو الموافقة
+  function maybeAutoAdvance(q: (typeof questions)[number], val: any) {
+    if (!cardMode || behavior.autoAdvance === false) return;
+    if (safeStep >= questions.length - 1) return; // لا ننتقل تلقائيًا في آخر بطاقة
+    const eligible =
+      (q.type === "MULTIPLE_CHOICE" &&
+        typeof val === "string" &&
+        (q.config?.options || []).includes(val)) ||
+      (q.type === "IMAGE_CHOICE" &&
+        typeof val === "string" &&
+        val !== "") ||
+      (q.type === "CONSENT" && val === true);
+    if (!eligible) return;
+    clearAdvance();
+    advanceTimer.current = setTimeout(() => goNextRef.current(), 350);
   }
 
   async function submit() {
@@ -391,7 +422,8 @@ export default function FillForm({
                 البدء ←
               </button>
               <p className="mt-3 text-center text-xs text-slate-400">
-                {questions.length} سؤال · اضغط Enter للانتقال
+                {questions.filter((q) => isInputQuestion(q.type)).length} سؤال ·
+                اضغط Enter للانتقال
               </p>
             </div>
           </div>
@@ -478,6 +510,7 @@ export default function FillForm({
             onChange={(v) => {
               setAnswers((a) => ({ ...a, [current.id]: v }));
               setError("");
+              maybeAutoAdvance(current, v);
             }}
             accent={accent}
             index={safeStep}
@@ -527,13 +560,69 @@ function QuestionCard({
   if (q.type === "SECTION") {
     return (
       <div>
-        <h2 className="text-2xl font-extrabold" style={{ color: accent }}>
-          {q.label}
-        </h2>
-        {q.description && <p className="mt-2 whitespace-pre-line text-slate-500">{q.description}</p>}
+        {q.label && (
+          <h2 className="text-2xl font-extrabold" style={{ color: accent }}>
+            {q.label}
+          </h2>
+        )}
+        {q.description && (
+          <p className="mt-2 whitespace-pre-line text-slate-600">{q.description}</p>
+        )}
       </div>
     );
   }
+
+  if (q.type === "IMAGE") {
+    const url = q.config?.url;
+    return (
+      <div>
+        {q.label && <h2 className="mb-3 text-xl font-bold">{q.label}</h2>}
+        {url ? (
+          <img
+            src={url}
+            alt={q.config?.caption || ""}
+            className="mx-auto max-h-[420px] w-full rounded-2xl object-contain"
+          />
+        ) : (
+          <div className="grid h-48 place-items-center rounded-2xl bg-slate-100 text-4xl">
+            🏞️
+          </div>
+        )}
+        {q.config?.caption && (
+          <p className="mt-3 text-center text-sm text-slate-500">{q.config.caption}</p>
+        )}
+        {q.description && (
+          <p className="mt-2 whitespace-pre-line text-slate-600">{q.description}</p>
+        )}
+      </div>
+    );
+  }
+
+  if (q.type === "VIDEO") {
+    const embed = youtubeEmbed(q.config?.youtubeUrl);
+    const fileUrl = q.config?.url;
+    return (
+      <div>
+        {q.label && <h2 className="mb-3 text-xl font-bold">{q.label}</h2>}
+        {embed ? (
+          <iframe className="aspect-video w-full rounded-2xl" src={embed} allowFullScreen />
+        ) : fileUrl ? (
+          <video src={fileUrl} controls className="w-full rounded-2xl" />
+        ) : (
+          <div className="grid h-48 place-items-center rounded-2xl bg-slate-100 text-4xl">
+            🎬
+          </div>
+        )}
+        {q.config?.caption && (
+          <p className="mt-3 text-center text-sm text-slate-500">{q.config.caption}</p>
+        )}
+        {q.description && (
+          <p className="mt-2 whitespace-pre-line text-slate-600">{q.description}</p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-1 text-sm font-medium" style={{ color: accent }}>

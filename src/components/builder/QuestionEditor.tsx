@@ -69,6 +69,60 @@ export default function QuestionEditor({
     );
   }
 
+  // عناصر عرض: صورة / فيديو (تُوضع في أي مكان بين الأسئلة، بلا إجابة)
+  if (q.type === "IMAGE" || q.type === "VIDEO") {
+    return (
+      <div
+        className="card border-r-4 border-r-naf-400 p-4"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={onDropItem}
+      >
+        <Toolbar
+          def={def}
+          index={index}
+          total={total}
+          required={false}
+          showRequired={false}
+          onMove={onMove}
+          onRemove={onRemove}
+          onDuplicate={onDuplicate}
+          onDragStartItem={onDragStartItem}
+          onToggleRequired={() => {}}
+        />
+        <input
+          className="input mt-3 font-semibold"
+          placeholder="عنوان (اختياري)"
+          value={q.label}
+          onChange={(e) => onChange({ label: e.target.value })}
+        />
+        {q.type === "VIDEO" && (
+          <TextField
+            label="رابط يوتيوب"
+            value={cfg.youtubeUrl || ""}
+            onChange={(v) => setCfg({ youtubeUrl: v })}
+          />
+        )}
+        <TextField
+          label={
+            q.type === "IMAGE"
+              ? "رابط الصورة"
+              : "رابط فيديو مباشر (mp4) — إن لم يكن يوتيوب"
+          }
+          value={cfg.url || ""}
+          onChange={(v) => setCfg({ url: v })}
+        />
+        <TextField
+          label="تعليق أسفل الوسيط (اختياري)"
+          value={cfg.caption || ""}
+          onChange={(v) => setCfg({ caption: v })}
+        />
+        <p className="mt-2 text-xs text-slate-400">
+          يظهر هذا العنصر كبطاقة عرض في مكانه بين الأسئلة (اسحبه لتغيير موضعه).
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div
       className="card p-4"
@@ -222,9 +276,35 @@ export default function QuestionEditor({
           </div>
         )}
 
+        {q.type === "CONSENT" && (
+          <div className="space-y-3">
+            <TextField
+              label="نص الموافقة"
+              value={cfg.statement || ""}
+              onChange={(v) => setCfg({ statement: v })}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <TextField
+                label="نص الرابط (اختياري)"
+                value={cfg.linkLabel || ""}
+                onChange={(v) => setCfg({ linkLabel: v })}
+              />
+              <TextField
+                label="رابط الشروط (اختياري)"
+                value={cfg.linkUrl || ""}
+                onChange={(v) => setCfg({ linkUrl: v })}
+              />
+            </div>
+            <p className="text-xs text-slate-400">
+              فعّل «إلزامي» ليُشترط وضع علامة الموافقة قبل المتابعة.
+            </p>
+          </div>
+        )}
+
         {q.type === "LOCATION" && (
           <p className="text-xs text-slate-400">
-            سيحدد المستفيد الموقع بالنقر على الخريطة عند التعبئة.
+            يحدد المستفيد الموقع بالنقر على الخريطة، أو بإدخال الإحداثيات، أو
+            باستخدام موقعه الحالي (بعد منح الإذن).
           </p>
         )}
 

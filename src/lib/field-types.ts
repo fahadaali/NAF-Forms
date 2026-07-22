@@ -22,7 +22,10 @@ export type FieldTypeId =
   | "RANKING"
   | "IMAGE_CHOICE"
   | "SIGNATURE"
-  | "SECTION";
+  | "CONSENT"
+  | "SECTION"
+  | "IMAGE"
+  | "VIDEO";
 
 export interface FieldTypeDef {
   id: FieldTypeId;
@@ -229,12 +232,43 @@ export const FIELD_TYPES: FieldTypeDef[] = [
     gradable: false,
   },
   {
+    id: "CONSENT",
+    label: "موافقة (صندوق اختيار)",
+    hint: "الموافقة على الشروط أو الإقرار",
+    icon: "✅",
+    group: "choice",
+    defaultConfig: {
+      statement: "أوافق على الشروط والأحكام",
+      linkLabel: "",
+      linkUrl: "",
+    },
+    gradable: false,
+  },
+  {
     id: "SECTION",
-    label: "عنوان / فاصل",
+    label: "عنوان / نص",
     hint: "عنوان أو نص توضيحي بين الأسئلة",
     icon: "➖",
     group: "layout",
     defaultConfig: {},
+    gradable: false,
+  },
+  {
+    id: "IMAGE",
+    label: "صورة",
+    hint: "عرض صورة بين الأسئلة (بدون إجابة)",
+    icon: "🏞️",
+    group: "layout",
+    defaultConfig: { url: "", caption: "" },
+    gradable: false,
+  },
+  {
+    id: "VIDEO",
+    label: "فيديو",
+    hint: "عرض مقطع فيديو أو يوتيوب (بدون إجابة)",
+    icon: "🎬",
+    group: "layout",
+    defaultConfig: { url: "", youtubeUrl: "", caption: "" },
     gradable: false,
   },
 ];
@@ -248,15 +282,15 @@ export const FIELD_GROUPS: { id: FieldTypeDef["group"]; label: string }[] = [
   { id: "choice", label: "اختيارات" },
   { id: "scale", label: "مقاييس وتقييم" },
   { id: "special", label: "حقول خاصة" },
-  { id: "layout", label: "تنسيق" },
+  { id: "layout", label: "عناوين ونصوص ووسائط" },
 ];
 
 export function fieldType(id: string): FieldTypeDef | undefined {
   return FIELD_TYPE_MAP[id];
 }
 
-// أنواع الأسئلة التي لا تُحسب كإجابة فعلية (فواصل/عناوين)
-export const NON_INPUT_TYPES: FieldTypeId[] = ["SECTION"];
+// أنواع العناصر التي لا تُحسب كإجابة فعلية (عناوين/نصوص/وسائط عرض)
+export const NON_INPUT_TYPES: FieldTypeId[] = ["SECTION", "IMAGE", "VIDEO"];
 
 export const FORM_TYPE_LABELS: Record<string, string> = {
   SURVEY: "استبيان / استطلاع",

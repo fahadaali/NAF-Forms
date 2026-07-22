@@ -30,6 +30,7 @@ export interface FormSettings {
     allowBack?: boolean; // السماح بالرجوع
     showProgress?: boolean; // شريط التقدم
     collectEmail?: boolean; // طلب بريد المستفيد قبل البدء
+    autoAdvance?: boolean; // الانتقال التلقائي عند اختيار إجابة واحدة (افتراضي مفعّل)
   };
   access?: {
     password?: string; // كلمة مرور لحماية النموذج (لا تُرسل للعميل)

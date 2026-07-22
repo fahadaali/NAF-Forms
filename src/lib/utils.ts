@@ -100,8 +100,71 @@ export function answerToText(type: string, value: any): string {
         : String(value);
     case "SIGNATURE":
       return value ? "[توقيع]" : "";
+    case "CONSENT":
+      return value === true || value === "true" ? "موافق" : "غير موافق";
     default:
       return Array.isArray(value) ? value.join("، ") : String(value);
+  }
+}
+
+// هل القيمة فارغة (لا إجابة)؟
+export function isEmptyAnswer(value: any): boolean {
+  return (
+    value === undefined ||
+    value === null ||
+    value === "" ||
+    value === false ||
+    (Array.isArray(value) && value.length === 0) ||
+    (typeof value === "object" &&
+      value !== null &&
+      !Array.isArray(value) &&
+      Object.keys(value).length === 0)
+  );
+}
+
+// نمط رقم الجوال (سعودي 05xxxxxxxx أو دولي +…)
+const PHONE_RE = /^(?:\+?\d{7,15}|0\d{9})$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// التحقق من صحة قيمة الحقل حسب نوعه، وإرجاع رسالة الخطأ أو null إن كانت صحيحة.
+// يُستخدم في صفحة التعبئة (قبل الانتقال) وفي الخادم (قبل القبول).
+export function validateAnswer(
+  type: string,
+  config: Record<string, any>,
+  value: any,
+  required: boolean
+): string | null {
+  const empty = isEmptyAnswer(value);
+  if (empty) {
+    if (type === "CONSENT" && required) return "يجب الموافقة للمتابعة";
+    return required ? "هذا الحقل إلزامي" : null;
+  }
+  switch (type) {
+    case "NUMBER": {
+      const raw = String(value).trim();
+      const n = Number(raw);
+      if (raw === "" || Number.isNaN(n))
+        return "هذه القيمة ليست رقمًا صحيحًا";
+      if (config?.min != null && config.min !== "" && n < Number(config.min))
+        return `القيمة يجب ألا تقل عن ${config.min}`;
+      if (config?.max != null && config.max !== "" && n > Number(config.max))
+        return `القيمة يجب ألا تزيد عن ${config.max}`;
+      return null;
+    }
+    case "EMAIL":
+      return EMAIL_RE.test(String(value).trim())
+        ? null
+        : "البريد الإلكتروني غير صالح (مثال: name@example.com)";
+    case "PHONE": {
+      const digits = String(value).replace(/[\s()-]/g, "");
+      return PHONE_RE.test(digits)
+        ? null
+        : "رقم الجوال غير صالح (مثال: 05xxxxxxxx)";
+    }
+    case "CONSENT":
+      return value === true || !required ? null : "يجب الموافقة للمتابعة";
+    default:
+      return null;
   }
 }
 
