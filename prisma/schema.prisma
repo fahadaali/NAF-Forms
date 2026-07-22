@@ -11,6 +11,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// حسابات لوحة التحكم (تُدار من صفحة «المستخدمون»)
+model User {
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  role               String   @default("member") // admin | member
+  passwordHash       String
+  mustChangePassword Boolean  @default(true)
+  createdAt          DateTime @default(now())
+}
+
 model Project {
   id          String   @id @default(cuid())
   name        String

@@ -1,14 +1,30 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { verifyPassword, signSession, SESSION_COOKIE } from "@/lib/auth";
 
-// تسجيل دخول المشرف: يضبط كوكي محمية عند تطابق كلمة المرور
+// تسجيل الدخول بالبريد وكلمة المرور
 export async function POST(req: Request) {
-  const { password } = await req.json();
-  const expected = process.env.ADMIN_PASSWORD || "naf-admin";
-  if (String(password || "") !== expected) {
-    return NextResponse.json({ ok: false }, { status: 401 });
+  const { email, password } = await req.json();
+  const user = await prisma.user.findUnique({
+    where: { email: String(email || "").trim().toLowerCase() },
+  });
+  if (!user || !(await verifyPassword(String(password || ""), user.passwordHash))) {
+    return NextResponse.json(
+      { ok: false, error: "البريد أو كلمة المرور غير صحيحة" },
+      { status: 401 }
+    );
   }
-  const res = NextResponse.json({ ok: true });
-  res.cookies.set("naf_admin", expected, {
+  const token = await signSession({
+    uid: user.id,
+    role: user.role,
+    mustChange: user.mustChangePassword,
+  });
+  const res = NextResponse.json({
+    ok: true,
+    mustChange: user.mustChangePassword,
+    role: user.role,
+  });
+  res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
