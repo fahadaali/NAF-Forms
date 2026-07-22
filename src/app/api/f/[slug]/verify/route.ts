@@ -5,11 +5,11 @@ import { parseSettings } from "@/lib/utils";
 // التحقق من كلمة مرور النموذج دون كشفها للعميل
 export async function POST(
   req: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   const body = await req.json();
   const form = await prisma.form.findUnique({
-    where: { slug: params.slug },
+    where: { slug: (await params).slug },
     select: { settings: true },
   });
   if (!form)

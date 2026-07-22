@@ -6,7 +6,7 @@ import { hashPassword, DEFAULT_PASSWORD } from "@/lib/auth";
 // تعديل مستخدم: تغيير الدور أو إعادة تعيين كلمة المرور (مسؤول فقط)
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdmin();
   if (!admin)
@@ -20,7 +20,7 @@ export async function PATCH(
     data.mustChangePassword = true;
   }
   const user = await prisma.user.update({
-    where: { id: params.id },
+    where: { id: (await params).id },
     data,
     select: { id: true, email: true, role: true, mustChangePassword: true },
   });
@@ -30,16 +30,16 @@ export async function PATCH(
 // حذف مستخدم (مسؤول فقط، ولا يحذف نفسه)
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdmin();
   if (!admin)
     return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
-  if (admin.uid === params.id)
+  if (admin.uid === (await params).id)
     return NextResponse.json(
       { error: "لا يمكنك حذف حسابك" },
       { status: 400 }
     );
-  await prisma.user.delete({ where: { id: params.id } });
+  await prisma.user.delete({ where: { id: (await params).id } });
   return NextResponse.json({ ok: true });
 }

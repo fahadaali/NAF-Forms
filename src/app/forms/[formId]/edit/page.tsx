@@ -9,10 +9,10 @@ export const dynamic = "force-dynamic";
 export default async function EditFormPage({
   params,
 }: {
-  params: { formId: string };
+  params: Promise<{ formId: string }>;
 }) {
   const form = await prisma.form.findUnique({
-    where: { id: params.formId },
+    where: { id: (await params).formId },
     include: { questions: { orderBy: { order: "asc" } } },
   });
   if (!form) notFound();

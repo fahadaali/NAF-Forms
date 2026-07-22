@@ -6,10 +6,10 @@ import { slugify } from "@/lib/utils";
 // نسخ نموذج بكامل أسئلته وإعداداته داخل نفس المشروع
 export async function POST(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const src = await prisma.form.findUnique({
-    where: { id: params.id },
+    where: { id: (await params).id },
     include: { questions: { orderBy: { order: "asc" } } },
   });
   if (!src)

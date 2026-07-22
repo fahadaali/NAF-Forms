@@ -10,7 +10,7 @@ import {
 
 // تعيين كلمة مرور جديدة (يُستخدم عند أول دخول أو لتغييرها لاحقًا)
 export async function POST(req: Request) {
-  const session = await verifySession(cookies().get(SESSION_COOKIE)?.value);
+  const session = await verifySession((await cookies()).get(SESSION_COOKIE)?.value);
   if (!session)
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
 

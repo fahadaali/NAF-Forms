@@ -8,15 +8,15 @@ export const dynamic = "force-dynamic";
 export default async function PrintResponsePage({
   params,
 }: {
-  params: { formId: string; responseId: string };
+  params: Promise<{ formId: string; responseId: string }>;
 }) {
   const [form, response] = await Promise.all([
     prisma.form.findUnique({
-      where: { id: params.formId },
+      where: { id: (await params).formId },
       include: { questions: { orderBy: { order: "asc" } } },
     }),
     prisma.response.findUnique({
-      where: { id: params.responseId },
+      where: { id: (await params).responseId },
       include: { answers: true },
     }),
   ]);

@@ -3,7 +3,7 @@ import { verifySession, SESSION_COOKIE, type Session } from "@/lib/auth";
 
 // قراءة الجلسة الحالية من الكوكي (لمكوّنات الخادم ومسارات الـ API)
 export async function currentSession(): Promise<Session | null> {
-  return verifySession(cookies().get(SESSION_COOKIE)?.value);
+  return verifySession((await cookies()).get(SESSION_COOKIE)?.value);
 }
 
 export async function requireAdmin(): Promise<Session | null> {
