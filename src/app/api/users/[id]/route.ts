@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { updateUser, deleteUser } from "@/lib/repo";
 import { requireAdmin } from "@/lib/session";
 import { hashPassword, DEFAULT_PASSWORD } from "@/lib/auth";
 
@@ -19,12 +19,15 @@ export async function PATCH(
     data.passwordHash = await hashPassword(DEFAULT_PASSWORD);
     data.mustChangePassword = true;
   }
-  const user = await prisma.user.update({
-    where: { id: (await params).id },
-    data,
-    select: { id: true, email: true, role: true, mustChangePassword: true },
+  const user = await updateUser((await params).id, data);
+  if (!user)
+    return NextResponse.json({ error: "المستخدم غير موجود" }, { status: 404 });
+  return NextResponse.json({
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    mustChangePassword: user.mustChangePassword,
   });
-  return NextResponse.json(user);
 }
 
 // حذف مستخدم (مسؤول فقط، ولا يحذف نفسه)
@@ -40,6 +43,6 @@ export async function DELETE(
       { error: "لا يمكنك حذف حسابك" },
       { status: 400 }
     );
-  await prisma.user.delete({ where: { id: (await params).id } });
+  await deleteUser((await params).id);
   return NextResponse.json({ ok: true });
 }

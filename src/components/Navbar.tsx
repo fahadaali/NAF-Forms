@@ -2,7 +2,7 @@ import Link from "next/link";
 import LogoutButton from "./LogoutButton";
 import ThemeToggle from "./ThemeToggle";
 import { currentSession } from "@/lib/session";
-import { prisma } from "@/lib/prisma";
+import { getUserById } from "@/lib/repo";
 
 export default async function Navbar({
   crumbs = [],
@@ -10,12 +10,7 @@ export default async function Navbar({
   crumbs?: { label: string; href?: string }[];
 }) {
   const session = await currentSession();
-  const me = session
-    ? await prisma.user.findUnique({
-        where: { id: session.uid },
-        select: { email: true, role: true },
-      })
-    : null;
+  const me = session ? await getUserById(session.uid) : null;
 
   return (
     <header className="glass sticky top-0 z-20">

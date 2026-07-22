@@ -42,6 +42,7 @@ jobs:
         run: |
           npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0001_init.sql
           npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0002_seed_admin.sql
+          npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0003_seed_templates.sql
 
       - name: بناء التطبيق لـ Workers
         run: npm run cf:build

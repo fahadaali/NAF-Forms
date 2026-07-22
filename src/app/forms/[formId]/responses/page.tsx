@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { getFormWithResponses } from "@/lib/repo";
 import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
@@ -16,18 +16,8 @@ export default async function ResponsesPage({
 }: {
   params: Promise<{ formId: string }>;
 }) {
-  const form = await prisma.form.findUnique({
-    where: { id: (await params).formId },
-    include: {
-      project: true,
-      questions: { orderBy: { order: "asc" } },
-      responses: {
-        orderBy: { submittedAt: "desc" },
-        include: { answers: true },
-      },
-    },
-  });
-  if (!form) notFound();
+  const form = await getFormWithResponses((await params).formId);
+  if (!form || !form.project) notFound();
 
   const questions = form.questions.filter((q) => isInputQuestion(q.type));
 

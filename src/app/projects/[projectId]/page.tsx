@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { getProjectById, listTemplates } from "@/lib/repo";
 import {
   FORM_TYPE_LABELS,
   FORM_STATUS_LABELS,
@@ -21,23 +21,8 @@ export default async function ProjectPage({
   params: Promise<{ projectId: string }>;
 }) {
   const [project, templates] = await Promise.all([
-    prisma.project.findUnique({
-      where: { id: (await params).projectId },
-      include: {
-        forms: {
-          where: { isTemplate: false },
-          orderBy: { updatedAt: "desc" },
-          include: {
-            _count: { select: { responses: true, questions: true } },
-          },
-        },
-      },
-    }),
-    prisma.form.findMany({
-      where: { isTemplate: true },
-      select: { id: true, title: true, type: true, description: true },
-      orderBy: { createdAt: "asc" },
-    }),
+    getProjectById((await params).projectId),
+    listTemplates(),
   ]);
 
   if (!project) notFound();

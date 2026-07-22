@@ -4,9 +4,9 @@ const nextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "**" }],
   },
-  // عدم تجميع Prisma في webpack حتى يحلّه OpenNext بنسخة workerd (محرّك WASM)
-  // بدل نسخة Node التي تعتمد على نظام الملفات.
-  serverExternalPackages: ["@prisma/client", "@prisma/adapter-d1"],
+  // better-sqlite3 وحدة أصلية (Node) تُستخدم للتطوير المحلي فقط؛ تُترك خارج
+  // التجميع حتى لا يحاول المُجمِّع حزمها (على Workers نستخدم ربط D1 الأصلي).
+  serverExternalPackages: ["better-sqlite3"],
 };
 
 module.exports = nextConfig;

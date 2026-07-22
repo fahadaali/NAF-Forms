@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { listProjects, listTemplates, countForms, countResponses } from "@/lib/repo";
 import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { formatDateTime } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
@@ -9,20 +9,10 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [projects, templates, formCount, responseCount] = await Promise.all([
-    prisma.project.findMany({
-      where: { id: { not: "system-templates" } },
-      orderBy: { updatedAt: "desc" },
-      include: {
-        _count: { select: { forms: { where: { isTemplate: false } } } },
-      },
-    }),
-    prisma.form.findMany({
-      where: { isTemplate: true },
-      include: { _count: { select: { questions: true } } },
-      orderBy: { createdAt: "asc" },
-    }),
-    prisma.form.count({ where: { isTemplate: false } }),
-    prisma.response.count(),
+    listProjects(),
+    listTemplates(),
+    countForms(false),
+    countResponses(),
   ]);
 
   return (

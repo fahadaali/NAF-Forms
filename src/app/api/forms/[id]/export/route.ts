@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getFormWithResponses } from "@/lib/repo";
 import * as XLSX from "xlsx";
 import { safeParse, answerToText, formatDateTime } from "@/lib/utils";
 
@@ -13,16 +13,7 @@ export async function GET(
   const { searchParams } = new URL(req.url);
   const format = searchParams.get("format") || "csv";
 
-  const form = await prisma.form.findUnique({
-    where: { id: (await params).id },
-    include: {
-      questions: { orderBy: { order: "asc" } },
-      responses: {
-        orderBy: { submittedAt: "desc" },
-        include: { answers: true },
-      },
-    },
-  });
+  const form = await getFormWithResponses((await params).id);
   if (!form)
     return NextResponse.json({ error: "غير موجود" }, { status: 404 });
 
