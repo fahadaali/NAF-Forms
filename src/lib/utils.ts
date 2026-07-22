@@ -49,6 +49,28 @@ export function isVisibleByLogic(
   }
 }
 
+// يحسب العناصر الظاهرة مع وراثة شرط القسم:
+// يظهر العنصر إذا تحقّق شرطه الخاص وشرط القسم (أقرب SECTION قبله).
+// هكذا يمكن إظهار/تخطّي قسم كامل بناءً على إجابة سابقة (انتقال شرطي)،
+// أو ترتيب الأقسام بلا شرط (انتقال بدون شرط).
+export function computeVisibleQuestions<
+  T extends { type: string; config: any }
+>(questions: T[], answers: Record<string, any>): T[] {
+  let sectionVisible = true;
+  const out: T[] = [];
+  for (const q of questions) {
+    const cfg =
+      typeof q.config === "string" ? safeParse<Record<string, any>>(q.config, {}) : q.config || {};
+    if (q.type === "SECTION") {
+      sectionVisible = isVisibleByLogic(cfg, answers);
+      if (sectionVisible) out.push(q);
+      continue;
+    }
+    if (sectionVisible && isVisibleByLogic(cfg, answers)) out.push(q);
+  }
+  return out;
+}
+
 // تحويل رابط يوتيوب إلى رابط تضمين
 export function youtubeEmbed(url?: string): string | null {
   if (!url) return null;

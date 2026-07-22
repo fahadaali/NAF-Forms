@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { fieldType } from "@/lib/field-types";
 import type { QuestionDTO } from "@/lib/types";
 import OptionsEditor from "./OptionsEditor";
@@ -65,6 +66,17 @@ export default function QuestionEditor({
           value={q.description}
           onChange={(e) => onChange({ description: e.target.value })}
         />
+        {/* انتقال شرطي: إظهار/تخطّي هذا القسم وكل أسئلته حسب إجابة سابقة */}
+        {priorQuestions.length > 0 && (
+          <div className="mt-3">
+            <LogicEditor
+              logic={cfg.logic}
+              priorQuestions={priorQuestions}
+              onChange={(logic) => setCfg({ logic })}
+              sectionMode
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -105,11 +117,16 @@ export default function QuestionEditor({
         <TextField
           label={
             q.type === "IMAGE"
-              ? "رابط الصورة"
-              : "رابط فيديو مباشر (mp4) — إن لم يكن يوتيوب"
+              ? "رابط الصورة (اختياري إن رفعت من الجهاز)"
+              : "رابط فيديو مباشر (mp4) — اختياري إن رفعت أو استخدمت يوتيوب"
           }
           value={cfg.url || ""}
           onChange={(v) => setCfg({ url: v })}
+        />
+        <MediaUploadButton
+          kind={q.type as "IMAGE" | "VIDEO"}
+          url={cfg.url || ""}
+          onUploaded={(url) => setCfg({ url })}
         />
         <TextField
           label="تعليق أسفل الوسيط (اختياري)"
@@ -401,14 +418,14 @@ function LogicEditor({
   logic,
   priorQuestions,
   onChange,
+  sectionMode = false,
 }: {
   logic: any;
   priorQuestions: { id: string; label: string; type: string }[];
   onChange: (logic: any) => void;
+  sectionMode?: boolean;
 }) {
   const enabled = !!(logic && logic.whenQuestionId);
-  const src = priorQuestions.find((p) => p.id === logic?.whenQuestionId);
-  const srcConfig = src as any;
   return (
     <div className="rounded-xl bg-indigo-50/60 p-3">
       <label className="flex items-center gap-2 text-sm font-semibold text-indigo-900">
@@ -427,7 +444,9 @@ function LogicEditor({
             )
           }
         />
-        🔀 إظهار هذا السؤال بشرط
+        {sectionMode
+          ? "🔀 إظهار هذا القسم (وكل أسئلته) بشرط"
+          : "🔀 إظهار هذا السؤال بشرط"}
       </label>
       {enabled && (
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -532,6 +551,77 @@ function Toolbar({
           🗑
         </button>
       </div>
+    </div>
+  );
+}
+
+// رفع صورة/فيديو من الجهاز عبر طبقة التخزين (R2 أو محلي)
+function MediaUploadButton({
+  kind,
+  url,
+  onUploaded,
+}: {
+  kind: "IMAGE" | "VIDEO";
+  url: string;
+  onUploaded: (url: string) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const accept = kind === "IMAGE" ? "image/*" : "video/*";
+  const maxMB = kind === "IMAGE" ? 10 : 100;
+
+  async function upload(file: File) {
+    setError("");
+    if (file.size > maxMB * 1024 * 1024) {
+      setError(`الحد الأقصى ${maxMB} ميجابايت`);
+      return;
+    }
+    setBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      onUploaded(data.url);
+    } catch {
+      setError("تعذّر رفع الملف");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-1">
+      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-xs font-medium hover:border-naf-400 hover:bg-naf-50">
+        <span>{kind === "IMAGE" ? "🖼️" : "🎬"}</span>
+        <span>
+          {busy
+            ? "جارٍ الرفع…"
+            : `رفع ${kind === "IMAGE" ? "صورة" : "فيديو"} من الجهاز`}
+        </span>
+        <input
+          type="file"
+          className="hidden"
+          accept={accept}
+          disabled={busy}
+          onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
+        />
+      </label>
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {url && (
+        <div className="mt-1.5">
+          {kind === "IMAGE" ? (
+            <img
+              src={url}
+              alt=""
+              className="max-h-28 rounded-lg border border-slate-200 object-contain"
+            />
+          ) : (
+            <p className="truncate text-xs text-green-700">✓ فيديو مرفق</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

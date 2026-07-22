@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fieldType, FORM_TYPE_LABELS } from "@/lib/field-types";
@@ -129,6 +129,33 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
     router.refresh();
   }
 
+  // تنبيه المستخدم قبل مغادرة الصفحة مع وجود تغييرات غير محفوظة
+  useEffect(() => {
+    const h = (e: BeforeUnloadEvent) => {
+      if (dirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", h);
+    return () => window.removeEventListener("beforeunload", h);
+  }, [dirty]);
+
+  // فتح المعاينة بعد حفظ التغييرات غير المحفوظة (حتى تظهر الأسئلة المضافة)
+  async function openPreview() {
+    const w = window.open("", "_blank");
+    if (dirty) await save();
+    const url = `/f/${initial.slug}`;
+    if (w) w.location.href = url;
+    else window.open(url, "_blank");
+  }
+
+  // فتح صفحة الردود بعد الحفظ إن لزم
+  async function openResponses() {
+    if (dirty) await save();
+    router.push(`/forms/${initial.id}/responses`);
+  }
+
   const publicUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/f/${initial.slug}`
@@ -159,12 +186,12 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
               ? `حُفظ ${savedAt}`
               : ""}
           </span>
-          <Link href={`/forms/${initial.id}/responses`} className="btn-ghost py-1.5 text-sm">
+          <button onClick={openResponses} className="btn-ghost py-1.5 text-sm">
             📊 الردود
-          </Link>
-          <Link href={`/f/${initial.slug}`} target="_blank" className="btn-ghost py-1.5 text-sm">
+          </button>
+          <button onClick={openPreview} className="btn-ghost py-1.5 text-sm">
             👁️ معاينة
-          </Link>
+          </button>
           <button className="btn-primary py-1.5 text-sm" disabled={saving} onClick={() => save()}>
             حفظ
           </button>
