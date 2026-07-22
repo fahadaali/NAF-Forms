@@ -19,7 +19,7 @@ export default function QuestionInput({
   question,
   value,
   onChange,
-  accent = "#1c59f5",
+  accent = "#44528a",
 }: {
   question: QuestionDTO;
   value: any;

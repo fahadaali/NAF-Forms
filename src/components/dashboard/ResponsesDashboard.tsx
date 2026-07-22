@@ -310,7 +310,7 @@ function StatBlock({ q }: { q: QuestionStat }) {
 }
 
 const PIE_COLORS = [
-  "#1c59f5",
+  "#5566a6",
   "#22c55e",
   "#f59e0b",
   "#ef4444",

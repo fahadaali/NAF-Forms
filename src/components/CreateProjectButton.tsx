@@ -7,7 +7,7 @@ export default function CreateProjectButton() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
-  const [color, setColor] = useState("#1c59f5");
+  const [color, setColor] = useState("#44528a");
   const [busy, setBusy] = useState(false);
 
   async function create() {

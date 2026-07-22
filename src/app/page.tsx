@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { FORM_TYPE_LABELS } from "@/lib/field-types";
+import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { formatDateTime } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import CreateProjectButton from "@/components/CreateProjectButton";
@@ -30,17 +30,36 @@ export default async function HomePage() {
       <Navbar />
       <main className="mx-auto max-w-6xl px-4 py-8">
         {/* بطاقة ترحيبية */}
-        <section className="mb-8 overflow-hidden rounded-3xl bg-gradient-to-l from-naf-700 to-naf-500 p-8 text-white shadow-lg">
-          <h1 className="text-3xl font-extrabold">نظام استبانات ناف</h1>
-          <p className="mt-2 max-w-2xl text-naf-100">
-            منصة موحّدة لبناء الاختبارات، والتقديم الوظيفي، والاستبيانات
-            والاستطلاعات — مع أنواع بيانات متعددة، وقوالب جاهزة، ولوحة ردود
-            تفصيلية، وتصدير بأكثر من صيغة.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-6 text-sm">
-            <Stat n={projects.length} label="مشروع" />
-            <Stat n={formCount} label="نموذج" />
-            <Stat n={responseCount} label="رد" />
+        <section
+          className="relative mb-8 overflow-hidden rounded-3xl border border-brand-taupe/20 p-8 md:p-10"
+          style={{ background: "linear-gradient(135deg, #2a3149, #232840 55%, #1c2338)" }}
+        >
+          <div className="grid-bg pointer-events-none absolute inset-0 opacity-[0.15]" />
+          <div
+            className="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full blur-3xl"
+            style={{ background: "radial-gradient(circle, rgba(180,167,143,0.35), transparent 70%)" }}
+          />
+          <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="max-w-2xl">
+              <h1 className="text-3xl font-extrabold text-brand-cream md:text-4xl">
+                نظام استبانات <span className="text-brand-taupe">ناف</span>
+              </h1>
+              <p className="mt-3 leading-relaxed text-slate-300">
+                منصة موحّدة لبناء الاختبارات، والتقديم الوظيفي، والاستبيانات
+                والاستطلاعات — مع أنواع بيانات متعددة، وقوالب جاهزة، ولوحة ردود
+                تفصيلية، وتصدير بأكثر من صيغة.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-8 text-sm">
+                <Stat n={projects.length} label="مشروع" />
+                <Stat n={formCount} label="نموذج" />
+                <Stat n={responseCount} label="رد" />
+              </div>
+            </div>
+            <img
+              src="/naf-logo.jpg"
+              alt="ناف"
+              className="hidden h-32 w-32 animate-floaty rounded-3xl object-cover shadow-glow ring-1 ring-brand-taupe/40 md:block"
+            />
           </div>
         </section>
 
@@ -100,7 +119,7 @@ export default async function HomePage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {templates.map((t) => (
               <div key={t.id} className="card p-5">
-                <span className="chip bg-naf-50 text-naf-700">
+                <span className={`chip ${FORM_TYPE_CHIP[t.type]}`}>
                   {FORM_TYPE_LABELS[t.type]}
                 </span>
                 <h3 className="mt-3 font-bold">{t.title}</h3>
@@ -122,8 +141,8 @@ export default async function HomePage() {
 function Stat({ n, label }: { n: number; label: string }) {
   return (
     <div>
-      <div className="text-2xl font-extrabold">{n}</div>
-      <div className="text-naf-100">{label}</div>
+      <div className="text-3xl font-extrabold text-brand-cream">{n}</div>
+      <div className="text-brand-taupe">{label}</div>
     </div>
   );
 }

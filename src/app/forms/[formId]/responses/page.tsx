@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { FORM_TYPE_LABELS } from "@/lib/field-types";
+import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import ResponsesDashboard, {
@@ -224,7 +224,7 @@ export default async function ResponsesPage({
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-extrabold">ردود: {form.title}</h1>
-            <span className="chip mt-1 bg-naf-50 text-naf-700">
+            <span className={`chip mt-1 ${FORM_TYPE_CHIP[form.type]}`}>
               {FORM_TYPE_LABELS[form.type]}
             </span>
           </div>

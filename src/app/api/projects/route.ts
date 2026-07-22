@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     data: {
       name: body.name?.trim() || "مشروع جديد",
       description: body.description || "",
-      color: body.color || "#1c59f5",
+      color: body.color || "#44528a",
     },
   });
   return NextResponse.json(project);

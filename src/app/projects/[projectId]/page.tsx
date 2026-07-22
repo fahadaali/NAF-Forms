@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { FORM_TYPE_LABELS, FORM_STATUS_LABELS } from "@/lib/field-types";
+import {
+  FORM_TYPE_LABELS,
+  FORM_STATUS_LABELS,
+  FORM_TYPE_CHIP,
+  FORM_STATUS_CHIP,
+} from "@/lib/field-types";
 import { formatDateTime } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import NewFormButton from "@/components/NewFormButton";
@@ -9,12 +14,6 @@ import FormRowActions from "@/components/FormRowActions";
 import ProjectSettings from "@/components/ProjectSettings";
 
 export const dynamic = "force-dynamic";
-
-const STATUS_STYLE: Record<string, string> = {
-  DRAFT: "bg-slate-100 text-slate-600",
-  PUBLISHED: "bg-green-100 text-green-700",
-  CLOSED: "bg-red-100 text-red-600",
-};
 
 export default async function ProjectPage({
   params,
@@ -93,10 +92,10 @@ export default async function ProjectPage({
                     >
                       {f.title}
                     </Link>
-                    <span className={`chip ${STATUS_STYLE[f.status]}`}>
+                    <span className={`chip ${FORM_STATUS_CHIP[f.status]}`}>
                       {FORM_STATUS_LABELS[f.status]}
                     </span>
-                    <span className="chip bg-naf-50 text-naf-700">
+                    <span className={`chip ${FORM_TYPE_CHIP[f.type]}`}>
                       {FORM_TYPE_LABELS[f.type]}
                     </span>
                   </div>

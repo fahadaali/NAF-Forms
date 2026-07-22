@@ -269,3 +269,16 @@ export const FORM_STATUS_LABELS: Record<string, string> = {
   PUBLISHED: "منشور",
   CLOSED: "مغلق",
 };
+
+// أصناف الألوان المميّزة للأنواع والحالات
+export const FORM_TYPE_CHIP: Record<string, string> = {
+  SURVEY: "chip-survey",
+  EXAM: "chip-exam",
+  JOB: "chip-job",
+};
+
+export const FORM_STATUS_CHIP: Record<string, string> = {
+  DRAFT: "chip-draft",
+  PUBLISHED: "chip-published",
+  CLOSED: "chip-closed",
+};
