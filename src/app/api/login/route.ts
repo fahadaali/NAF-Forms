@@ -33,9 +33,10 @@ export async function POST(req: Request) {
     });
     return res;
   } catch (e: any) {
-    // تشخيص مؤقّت: إظهار الخطأ الحقيقي
+    // تشخيص مؤقّت: إظهار الخطأ + وضع عميل قاعدة البيانات
+    const mode = (globalThis as any).__nafMode || "unknown";
     return NextResponse.json(
-      { ok: false, error: "DEBUG: " + (e?.message || String(e)) },
+      { ok: false, error: "DEBUG[" + mode + "]: " + (e?.message || String(e)) },
       { status: 500 }
     );
   }

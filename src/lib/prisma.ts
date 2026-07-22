@@ -10,6 +10,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 const g = globalThis as unknown as {
   __nafPrismaNode?: PrismaClient;
   __nafPrismaD1?: PrismaClient;
+  __nafMode?: string;
 };
 
 function nodeClient(): PrismaClient {
@@ -25,13 +26,15 @@ function resolveClient(): PrismaClient {
     const { env } = getCloudflareContext();
     const DB = (env as any)?.DB;
     if (DB) {
+      g.__nafMode = "d1(env:" + Object.keys(env || {}).join(",") + ")";
       if (!g.__nafPrismaD1) {
         g.__nafPrismaD1 = new PrismaClient({ adapter: new PrismaD1(DB) });
       }
       return g.__nafPrismaD1;
     }
-  } catch {
-    // خارج بيئة Workers: نسقط إلى العميل المحلي
+    g.__nafMode = "node(no-DB;env:" + Object.keys(env || {}).join(",") + ")";
+  } catch (e: any) {
+    g.__nafMode = "node(ctx-error:" + (e?.message || e) + ")";
   }
   return nodeClient();
 }
