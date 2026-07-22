@@ -1,0 +1,26 @@
+# إعداد Cloudflare Workers لتطبيق ناف (عبر @opennextjs/cloudflare)
+# استبدل القيم بين <> بمعرّفاتك بعد إنشاء الموارد (انظر DEPLOY.md).
+name = "naf-forms"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+main = ".open-next/worker.js"
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# قاعدة بيانات D1
+[[d1_databases]]
+binding = "DB"
+database_name = "naf-forms"
+database_id = "<D1_DATABASE_ID>"
+
+# تخزين الملفات R2
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "naf-forms-uploads"
+
+# متغيّرات عامة (غير سرّية). الأسرار تُضاف عبر: wrangler secret put <NAME>
+[vars]
+FIRST_ADMIN_EMAIL = "fahad2ao@gmail.com"
+# R2_PUBLIC_URL = "https://<your-r2-public-domain>"

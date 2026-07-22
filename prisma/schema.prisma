@@ -3,7 +3,9 @@
 // strings (SQLite has no native JSON type in Prisma) and parsed in the app layer.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  // مطلوب لتشغيل Prisma فوق Cloudflare D1
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
