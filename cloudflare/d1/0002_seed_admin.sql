@@ -1,6 +1,6 @@
 -- بذر أول حساب مسؤول: fahad2ao@gmail.com بكلمة المرور الافتراضية 1234
 -- (يُطلب منه تعيين كلمة مرور جديدة عند أول دخول)
-INSERT INTO "User" ("id", "email", "role", "passwordHash", "mustChangePassword", "createdAt")
+INSERT OR IGNORE INTO "User" ("id", "email", "role", "passwordHash", "mustChangePassword", "createdAt")
 VALUES (
   'admin_seed_1',
   'fahad2ao@gmail.com',
