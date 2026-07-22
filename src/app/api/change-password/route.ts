@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma";
+import { updateUser } from "@/lib/repo";
 import {
   verifySession,
   hashPassword,
@@ -22,9 +22,9 @@ export async function POST(req: Request) {
       { status: 400 }
     );
 
-  await prisma.user.update({
-    where: { id: session.uid },
-    data: { passwordHash: await hashPassword(pw), mustChangePassword: false },
+  await updateUser(session.uid, {
+    passwordHash: await hashPassword(pw),
+    mustChangePassword: false,
   });
 
   // إعادة إصدار الجلسة بحالة mustChange = false

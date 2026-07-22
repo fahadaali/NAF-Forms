@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { listUsers } from "@/lib/repo";
 import { requireAdmin } from "@/lib/session";
 import Navbar from "@/components/Navbar";
 import UsersManager from "@/components/UsersManager";
@@ -10,10 +10,12 @@ export default async function UsersPage() {
   const admin = await requireAdmin();
   if (!admin) redirect("/");
 
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: "asc" },
-    select: { id: true, email: true, role: true, mustChangePassword: true },
-  });
+  const users = (await listUsers()).map((u) => ({
+    id: u.id,
+    email: u.email,
+    role: u.role,
+    mustChangePassword: u.mustChangePassword,
+  }));
 
   return (
     <div className="min-h-screen">

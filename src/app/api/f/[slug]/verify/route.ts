@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getFormBySlug } from "@/lib/repo";
 import { parseSettings } from "@/lib/utils";
 
 // التحقق من كلمة مرور النموذج دون كشفها للعميل
@@ -8,10 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const body = await req.json();
-  const form = await prisma.form.findUnique({
-    where: { slug: (await params).slug },
-    select: { settings: true },
-  });
+  const form = await getFormBySlug((await params).slug);
   if (!form)
     return NextResponse.json({ error: "غير موجود" }, { status: 404 });
 

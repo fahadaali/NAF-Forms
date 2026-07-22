@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { getFormWithQuestions } from "@/lib/repo";
 import { parseSettings, safeParse } from "@/lib/utils";
 import type { FormDTO } from "@/lib/types";
 import FormBuilder from "@/components/builder/FormBuilder";
@@ -11,10 +11,7 @@ export default async function EditFormPage({
 }: {
   params: Promise<{ formId: string }>;
 }) {
-  const form = await prisma.form.findUnique({
-    where: { id: (await params).formId },
-    include: { questions: { orderBy: { order: "asc" } } },
-  });
+  const form = await getFormWithQuestions((await params).formId);
   if (!form) notFound();
 
   const dto: FormDTO = {

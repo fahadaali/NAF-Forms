@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { getPublicForm } from "@/lib/repo";
 import { parseSettings, safeParse } from "@/lib/utils";
 import type { FormDTO } from "@/lib/types";
 import FillForm from "@/components/fill/FillForm";
@@ -11,13 +11,7 @@ export default async function FillPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const form = await prisma.form.findUnique({
-    where: { slug: (await params).slug },
-    include: {
-      questions: { orderBy: { order: "asc" } },
-      _count: { select: { responses: true } },
-    },
-  });
+  const form = await getPublicForm((await params).slug);
   if (!form) notFound();
 
   // حساب حالة الإغلاق (يدوي، أو بانتهاء الوقت، أو باكتمال العدد)

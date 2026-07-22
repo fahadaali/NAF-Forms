@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { getFormWithQuestions, getResponseWithAnswers } from "@/lib/repo";
 import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
 import PrintButton from "@/components/PrintButton";
 
@@ -10,15 +10,10 @@ export default async function PrintResponsePage({
 }: {
   params: Promise<{ formId: string; responseId: string }>;
 }) {
+  const { formId, responseId } = await params;
   const [form, response] = await Promise.all([
-    prisma.form.findUnique({
-      where: { id: (await params).formId },
-      include: { questions: { orderBy: { order: "asc" } } },
-    }),
-    prisma.response.findUnique({
-      where: { id: (await params).responseId },
-      include: { answers: true },
-    }),
+    getFormWithQuestions(formId),
+    getResponseWithAnswers(responseId),
   ]);
   if (!form || !response) notFound();
 

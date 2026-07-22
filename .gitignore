@@ -14,3 +14,7 @@ next-env.d.ts
 .open-next
 .wrangler
 .dev.vars
+
+# قاعدة بيانات التطوير المحلية (better-sqlite3)
+dev.db
+dev.db-*

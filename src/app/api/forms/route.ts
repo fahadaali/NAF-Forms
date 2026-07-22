@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getFormWithQuestions, createForm } from "@/lib/repo";
 import { nanoid } from "nanoid";
 import { slugify } from "@/lib/utils";
 
@@ -15,14 +15,11 @@ export async function POST(req: Request) {
 
   // من قالب جاهز
   if (body.templateId) {
-    const tpl = await prisma.form.findUnique({
-      where: { id: body.templateId },
-      include: { questions: { orderBy: { order: "asc" } } },
-    });
+    const tpl = await getFormWithQuestions(body.templateId);
     if (!tpl)
       return NextResponse.json({ error: "القالب غير موجود" }, { status: 404 });
-    const form = await prisma.form.create({
-      data: {
+    const form = await createForm(
+      {
         slug,
         projectId,
         title: body.title?.trim() || tpl.title,
@@ -30,30 +27,26 @@ export async function POST(req: Request) {
         type: tpl.type,
         status: "DRAFT",
         settings: tpl.settings,
-        questions: {
-          create: tpl.questions.map((q) => ({
-            order: q.order,
-            type: q.type,
-            label: q.label,
-            description: q.description,
-            required: q.required,
-            config: q.config,
-          })),
-        },
       },
-    });
+      tpl.questions.map((q) => ({
+        order: q.order,
+        type: q.type,
+        label: q.label,
+        description: q.description,
+        required: q.required,
+        config: q.config,
+      }))
+    );
     return NextResponse.json(form);
   }
 
   // نموذج فارغ
-  const form = await prisma.form.create({
-    data: {
-      slug,
-      projectId,
-      title,
-      type: body.type || "SURVEY",
-      status: "DRAFT",
-    },
+  const form = await createForm({
+    slug,
+    projectId,
+    title,
+    type: body.type || "SURVEY",
+    status: "DRAFT",
   });
   return NextResponse.json(form);
 }

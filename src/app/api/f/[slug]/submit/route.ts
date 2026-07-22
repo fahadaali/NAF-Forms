@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import {
+  getFormBySlug,
+  countResponses,
+  getResponsesMeta,
+  createResponse,
+} from "@/lib/repo";
 import {
   safeParse,
   gradeAnswer,
@@ -27,10 +32,7 @@ export async function POST(
       { status: 429 }
     );
 
-  const form = await prisma.form.findUnique({
-    where: { slug: (await params).slug },
-    include: { questions: true },
-  });
+  const form = await getFormBySlug((await params).slug);
   if (!form)
     return NextResponse.json({ error: "النموذج غير موجود" }, { status: 404 });
   if (form.status === "CLOSED")
@@ -47,7 +49,7 @@ export async function POST(
     );
   const maxResponses = settings.limits?.maxResponses;
   if (maxResponses && maxResponses > 0) {
-    const count = await prisma.response.count({ where: { formId: form.id } });
+    const count = await countResponses(form.id);
     if (count >= maxResponses)
       return NextResponse.json(
         { error: "اكتمل العدد الأقصى للردود" },
@@ -72,10 +74,7 @@ export async function POST(
 
   // منع تكرار التقديم بنفس البريد
   if (settings.access?.oneResponsePerEmail && email) {
-    const prior = await prisma.response.findMany({
-      where: { formId: form.id },
-      select: { meta: true },
-    });
+    const prior = await getResponsesMeta(form.id);
     const already = prior.some(
       (r) => safeParse<any>(r.meta, {}).email === email
     );
@@ -136,27 +135,21 @@ export async function POST(
     total: form.type === "EXAM" ? total : undefined,
   };
 
-  const response = await prisma.response.create({
-    data: {
-      formId: form.id,
-      meta: JSON.stringify(meta),
-      answers: {
-        create: form.questions
-          .filter((q) => answers[q.id] !== undefined)
-          .map((q) => ({
-            questionId: q.id,
-            value: JSON.stringify(answers[q.id]),
-          })),
-      },
-    },
-  });
+  const response = await createResponse(
+    form.id,
+    JSON.stringify(meta),
+    form.questions
+      .filter((q) => answers[q.id] !== undefined)
+      .map((q) => ({
+        questionId: q.id,
+        value: JSON.stringify(answers[q.id]),
+      }))
+  );
 
   // إشعار بريد للمشرف عند وصول رد جديد (غير حاجب — لا يؤخّر الاستجابة)
   const notifyTo = settings.notify?.email;
   if (notifyTo) {
-    const respCount = await prisma.response.count({
-      where: { formId: form.id },
-    });
+    const respCount = await countResponses(form.id);
     void sendMail({
       to: notifyTo,
       subject: `رد جديد على «${form.title}»`,

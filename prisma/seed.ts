@@ -1,7 +1,12 @@
-import { PrismaClient } from "@prisma/client";
+import {
+  getUserByEmail,
+  createUser,
+  ensureProject,
+  getFormBySlug,
+  deleteForm,
+  createForm,
+} from "../src/lib/repo";
 import { hashPassword, DEFAULT_PASSWORD } from "../src/lib/auth";
-
-const prisma = new PrismaClient();
 
 const FIRST_ADMIN_EMAIL =
   process.env.FIRST_ADMIN_EMAIL || "fahad2ao@gmail.com";
@@ -24,7 +29,7 @@ interface Template {
   questions: Q[];
 }
 
-const TEMPLATES: Template[] = [
+export const TEMPLATES: Template[] = [
   {
     slug: "tpl-job-application",
     title: "نموذج تقديم وظيفي (رفع سيرة ذاتية)",
@@ -155,40 +160,30 @@ const TEMPLATES: Template[] = [
 
 async function main() {
   // أول حساب مسؤول: كلمة المرور الافتراضية 1234 مع إلزام تغييرها أول دخول
-  const existingAdmin = await prisma.user.findUnique({
-    where: { email: FIRST_ADMIN_EMAIL },
-  });
+  const existingAdmin = await getUserByEmail(FIRST_ADMIN_EMAIL);
   if (!existingAdmin) {
-    await prisma.user.create({
-      data: {
-        email: FIRST_ADMIN_EMAIL,
-        role: "admin",
-        passwordHash: await hashPassword(DEFAULT_PASSWORD),
-        mustChangePassword: true,
-      },
+    await createUser({
+      email: FIRST_ADMIN_EMAIL,
+      role: "admin",
+      passwordHash: await hashPassword(DEFAULT_PASSWORD),
+      mustChangePassword: true,
     });
     console.log(`✓ حساب المسؤول الأول: ${FIRST_ADMIN_EMAIL} (كلمة المرور 1234)`);
   }
 
   // مشروع مخفي يحتضن القوالب الجاهزة
-  await prisma.project.upsert({
-    where: { id: TEMPLATES_PROJECT_ID },
-    update: {},
-    create: {
-      id: TEMPLATES_PROJECT_ID,
-      name: "قوالب النظام",
-      description: "قوالب جاهزة للاستخدام السريع",
-      color: "#64748b",
-    },
+  await ensureProject({
+    id: TEMPLATES_PROJECT_ID,
+    name: "قوالب النظام",
+    description: "قوالب جاهزة للاستخدام السريع",
+    color: "#64748b",
   });
 
   for (const t of TEMPLATES) {
-    const existing = await prisma.form.findUnique({ where: { slug: t.slug } });
-    if (existing) {
-      await prisma.form.delete({ where: { id: existing.id } });
-    }
-    await prisma.form.create({
-      data: {
+    const existing = await getFormBySlug(t.slug);
+    if (existing) await deleteForm(existing.id);
+    await createForm(
+      {
         slug: t.slug,
         projectId: TEMPLATES_PROJECT_ID,
         title: t.title,
@@ -196,26 +191,22 @@ async function main() {
         type: t.type,
         status: "PUBLISHED",
         isTemplate: true,
-        questions: {
-          create: t.questions.map((q, i) => ({
-            order: i,
-            type: q.type,
-            label: q.label,
-            description: q.description || "",
-            required: !!q.required,
-            config: JSON.stringify(q.config || {}),
-          })),
-        },
       },
-    });
+      t.questions.map((q, i) => ({
+        order: i,
+        type: q.type,
+        label: q.label,
+        description: q.description || "",
+        required: !!q.required,
+        config: JSON.stringify(q.config || {}),
+      }))
+    );
     console.log(`✓ قالب: ${t.title}`);
   }
   console.log("تم تحضير القوالب الجاهزة.");
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

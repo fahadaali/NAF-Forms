@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import {
+  updateForm,
+  getQuestionIds,
+  deleteQuestions,
+  updateQuestion,
+  createQuestion,
+  getFormWithQuestions,
+  deleteForm,
+} from "@/lib/repo";
 
 // حفظ النموذج: البيانات الوصفية + الإعدادات + الأسئلة (upsert)
 export async function PATCH(
@@ -17,24 +25,18 @@ export async function PATCH(
   if (body.settings !== undefined)
     data.settings = JSON.stringify(body.settings);
 
-  await prisma.form.update({ where: { id: formId }, data });
+  await updateForm(formId, data);
 
   // مزامنة الأسئلة إن أُرسلت
   if (Array.isArray(body.questions)) {
     const incoming = body.questions as any[];
-    const existing = await prisma.question.findMany({
-      where: { formId },
-      select: { id: true },
-    });
+    const existing = await getQuestionIds(formId);
     const incomingIds = new Set(
       incoming.filter((q) => q.id && !q.id.startsWith("tmp-")).map((q) => q.id)
     );
     // حذف المُزالة
-    const toDelete = existing.filter((e) => !incomingIds.has(e.id));
-    if (toDelete.length)
-      await prisma.question.deleteMany({
-        where: { id: { in: toDelete.map((d) => d.id) } },
-      });
+    const toDelete = existing.filter((id) => !incomingIds.has(id));
+    if (toDelete.length) await deleteQuestions(toDelete);
     // تحديث/إنشاء
     for (let i = 0; i < incoming.length; i++) {
       const q = incoming[i];
@@ -47,17 +49,14 @@ export async function PATCH(
         config: JSON.stringify(q.config || {}),
       };
       if (q.id && !q.id.startsWith("tmp-")) {
-        await prisma.question.update({ where: { id: q.id }, data: payload });
+        await updateQuestion(q.id, payload);
       } else {
-        await prisma.question.create({ data: { ...payload, formId } });
+        await createQuestion(formId, payload);
       }
     }
   }
 
-  const fresh = await prisma.form.findUnique({
-    where: { id: formId },
-    include: { questions: { orderBy: { order: "asc" } } },
-  });
+  const fresh = await getFormWithQuestions(formId);
   return NextResponse.json(fresh);
 }
 
@@ -65,6 +64,6 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await prisma.form.delete({ where: { id: (await params).id } });
+  await deleteForm((await params).id);
   return NextResponse.json({ ok: true });
 }
