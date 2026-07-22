@@ -84,9 +84,9 @@ export interface FormDTO {
 
 export const DEFAULT_SETTINGS: FormSettings = {
   theme: {
-    primary: "#1c59f5",
-    background: "#f1f5ff",
-    text: "#0f172a",
+    primary: "#44528a",
+    background: "#f4f5f1",
+    text: "#262b3d",
     cardBg: "#ffffff",
   },
   cover: {},

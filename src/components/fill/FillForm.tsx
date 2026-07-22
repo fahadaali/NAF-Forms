@@ -83,7 +83,7 @@ export default function FillForm({
     color: theme.text,
     minHeight: "100vh",
   };
-  const accent = theme.primary || "#1c59f5";
+  const accent = theme.primary || "#44528a";
 
   function validate(q: (typeof questions)[number]): boolean {
     if (!q.required || !isInputQuestion(q.type)) return true;

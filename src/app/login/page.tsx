@@ -28,11 +28,17 @@ function LoginForm() {
   }
 
   return (
-    <div className="grid min-h-screen place-items-center bg-gradient-to-l from-naf-700 to-naf-500 px-4">
-      <div className="card w-full max-w-sm p-8 text-center">
-        <span className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-naf-600 text-2xl font-extrabold text-white">
-          ن
-        </span>
+    <div
+      className="relative grid min-h-screen place-items-center px-4"
+      style={{ background: "linear-gradient(135deg, #2a3149, #1c2338)" }}
+    >
+      <div className="grid-bg pointer-events-none absolute inset-0 opacity-20" />
+      <div className="glass relative w-full max-w-sm rounded-2xl p-8 text-center">
+        <img
+          src="/naf-logo.jpg"
+          alt="ناف"
+          className="mx-auto mb-5 h-20 w-20 rounded-2xl object-cover shadow-glow ring-1 ring-brand-taupe/40"
+        />
         <h1 className="text-xl font-extrabold">لوحة تحكم ناف</h1>
         <p className="mt-1 text-sm text-slate-500">أدخل كلمة مرور المشرف للدخول</p>
         <input
