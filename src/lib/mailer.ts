@@ -1,6 +1,6 @@
-import nodemailer from "nodemailer";
-
 // إرسال بريد عبر SMTP إن كان مُعدًّا في متغيرات البيئة، وإلا يُتجاهل بهدوء.
+// ملاحظة: nodemailer لا يعمل على Cloudflare Workers (لا مقابس SMTP)، لذا يُستورد
+// ديناميكيًا داخل الدالة ويُتجاهل بأمان هناك. للتفعيل على Workers استبدله بمزوّد HTTP.
 // المتغيرات: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM
 export function isMailConfigured(): boolean {
   return !!(process.env.SMTP_HOST && process.env.SMTP_PORT);
@@ -16,6 +16,7 @@ export async function sendMail(opts: {
     return false;
   }
   try {
+    const nodemailer = (await import("nodemailer")).default;
     const transport = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
