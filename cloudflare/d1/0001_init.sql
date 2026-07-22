@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "User" (
+CREATE TABLE IF NOT EXISTS "User" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "email" TEXT NOT NULL,
     "role" TEXT NOT NULL DEFAULT 'member',
@@ -9,7 +9,7 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
-CREATE TABLE "Project" (
+CREATE TABLE IF NOT EXISTS "Project" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL DEFAULT '',
@@ -19,7 +19,7 @@ CREATE TABLE "Project" (
 );
 
 -- CreateTable
-CREATE TABLE "Form" (
+CREATE TABLE IF NOT EXISTS "Form" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "slug" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE "Form" (
 );
 
 -- CreateTable
-CREATE TABLE "Question" (
+CREATE TABLE IF NOT EXISTS "Question" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "formId" TEXT NOT NULL,
     "order" INTEGER NOT NULL DEFAULT 0,
@@ -49,7 +49,7 @@ CREATE TABLE "Question" (
 );
 
 -- CreateTable
-CREATE TABLE "Response" (
+CREATE TABLE IF NOT EXISTS "Response" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "formId" TEXT NOT NULL,
     "submittedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -58,7 +58,7 @@ CREATE TABLE "Response" (
 );
 
 -- CreateTable
-CREATE TABLE "Answer" (
+CREATE TABLE IF NOT EXISTS "Answer" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "responseId" TEXT NOT NULL,
     "questionId" TEXT NOT NULL,
@@ -68,23 +68,23 @@ CREATE TABLE "Answer" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Form_slug_key" ON "Form"("slug");
+CREATE UNIQUE INDEX IF NOT EXISTS "Form_slug_key" ON "Form"("slug");
 
 -- CreateIndex
-CREATE INDEX "Form_projectId_idx" ON "Form"("projectId");
+CREATE INDEX IF NOT EXISTS "Form_projectId_idx" ON "Form"("projectId");
 
 -- CreateIndex
-CREATE INDEX "Question_formId_idx" ON "Question"("formId");
+CREATE INDEX IF NOT EXISTS "Question_formId_idx" ON "Question"("formId");
 
 -- CreateIndex
-CREATE INDEX "Response_formId_idx" ON "Response"("formId");
+CREATE INDEX IF NOT EXISTS "Response_formId_idx" ON "Response"("formId");
 
 -- CreateIndex
-CREATE INDEX "Answer_responseId_idx" ON "Answer"("responseId");
+CREATE INDEX IF NOT EXISTS "Answer_responseId_idx" ON "Answer"("responseId");
 
 -- CreateIndex
-CREATE INDEX "Answer_questionId_idx" ON "Answer"("questionId");
+CREATE INDEX IF NOT EXISTS "Answer_questionId_idx" ON "Answer"("questionId");
 
