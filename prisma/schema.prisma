@@ -3,12 +3,24 @@
 // strings (SQLite has no native JSON type in Prisma) and parsed in the app layer.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  // مطلوب لتشغيل Prisma فوق Cloudflare D1
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
+}
+
+// حسابات لوحة التحكم (تُدار من صفحة «المستخدمون»)
+model User {
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  role               String   @default("member") // admin | member
+  passwordHash       String
+  mustChangePassword Boolean  @default(true)
+  createdAt          DateTime @default(now())
 }
 
 model Project {

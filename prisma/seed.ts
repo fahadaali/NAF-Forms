@@ -1,6 +1,10 @@
 import { PrismaClient } from "@prisma/client";
+import { hashPassword, DEFAULT_PASSWORD } from "../src/lib/auth";
 
 const prisma = new PrismaClient();
+
+const FIRST_ADMIN_EMAIL =
+  process.env.FIRST_ADMIN_EMAIL || "fahad2ao@gmail.com";
 
 const TEMPLATES_PROJECT_ID = "system-templates";
 
@@ -150,6 +154,22 @@ const TEMPLATES: Template[] = [
 ];
 
 async function main() {
+  // أول حساب مسؤول: كلمة المرور الافتراضية 1234 مع إلزام تغييرها أول دخول
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: FIRST_ADMIN_EMAIL },
+  });
+  if (!existingAdmin) {
+    await prisma.user.create({
+      data: {
+        email: FIRST_ADMIN_EMAIL,
+        role: "admin",
+        passwordHash: await hashPassword(DEFAULT_PASSWORD),
+        mustChangePassword: true,
+      },
+    });
+    console.log(`✓ حساب المسؤول الأول: ${FIRST_ADMIN_EMAIL} (كلمة المرور 1234)`);
+  }
+
   // مشروع مخفي يحتضن القوالب الجاهزة
   await prisma.project.upsert({
     where: { id: TEMPLATES_PROJECT_ID },

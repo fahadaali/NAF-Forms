@@ -1,8 +1,22 @@
 import Link from "next/link";
 import LogoutButton from "./LogoutButton";
 import ThemeToggle from "./ThemeToggle";
+import { currentSession } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 
-export default function Navbar({ crumbs = [] }: { crumbs?: { label: string; href?: string }[] }) {
+export default async function Navbar({
+  crumbs = [],
+}: {
+  crumbs?: { label: string; href?: string }[];
+}) {
+  const session = await currentSession();
+  const me = session
+    ? await prisma.user.findUnique({
+        where: { id: session.uid },
+        select: { email: true, role: true },
+      })
+    : null;
+
   return (
     <header className="glass sticky top-0 z-20">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2.5">
@@ -28,7 +42,20 @@ export default function Navbar({ crumbs = [] }: { crumbs?: { label: string; href
             </span>
           ))}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
+          {me?.role === "admin" && (
+            <Link
+              href="/users"
+              className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
+            >
+              👥 المستخدمون
+            </Link>
+          )}
+          {me && (
+            <span className="hidden text-xs text-slate-400 sm:inline" dir="ltr">
+              {me.email}
+            </span>
+          )}
           <ThemeToggle />
           <LogoutButton />
         </div>
