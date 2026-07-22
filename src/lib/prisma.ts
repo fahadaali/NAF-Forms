@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaD1 } from "@prisma/adapter-d1";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // يختار العميل تلقائيًا:
@@ -25,8 +26,6 @@ function resolveClient(): PrismaClient {
     const DB = (env as any)?.DB;
     if (DB) {
       if (!g.__nafPrismaD1) {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { PrismaD1 } = require("@prisma/adapter-d1");
         g.__nafPrismaD1 = new PrismaClient({ adapter: new PrismaD1(DB) });
       }
       return g.__nafPrismaD1;
