@@ -1,10 +1,20 @@
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-// طبقة تخزين بمسارين حسب البيئة:
-// 1) أي مضيف مع مفاتيح R2 S3: يرفع إلى Cloudflare R2 عبر واجهة S3.
-// 2) تطوير محلي: القرص في public/uploads.
-// (على Cloudflare Workers يمكن استبدال هذا بربط R2 الأصلي — انظر DEPLOY.md.)
+// طبقة تخزين بثلاثة مسارات حسب البيئة:
+// 1) Cloudflare Workers: ربط R2 الأصلي (env.BUCKET).
+// 2) أي مضيف Node مع مفاتيح R2 S3: عبر واجهة S3.
+// 3) تطوير محلي: القرص في public/uploads.
+
+function r2Binding(): any | null {
+  try {
+    const { env } = getCloudflareContext();
+    return (env as any)?.BUCKET ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export function isR2Configured(): boolean {
   return !!(
@@ -22,7 +32,14 @@ export async function saveFile(
 ): Promise<string> {
   const publicBase = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
 
-  // 1) R2 عبر واجهة S3
+  // 1) ربط R2 على Workers
+  const bucket = r2Binding();
+  if (bucket) {
+    await bucket.put(key, bytes, { httpMetadata: { contentType } });
+    return publicBase ? `${publicBase}/${key}` : `/uploads/${key}`;
+  }
+
+  // 2) R2 عبر واجهة S3 (مضيف Node)
   if (isR2Configured()) {
     const { S3Client, PutObjectCommand } = await import("@aws-sdk/client-s3");
     const client = new S3Client({
