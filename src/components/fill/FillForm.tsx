@@ -4,7 +4,7 @@ import QuestionInput from "@/components/QuestionInput";
 import {
   youtubeEmbed,
   isInputQuestion,
-  isVisibleByLogic,
+  computeVisibleQuestions,
   validateAnswer,
 } from "@/lib/utils";
 import type { FormDTO } from "@/lib/types";
@@ -78,8 +78,8 @@ export default function FillForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // تطبيق المنطق الشرطي: عرض الأسئلة التي تتحقق شروطها فقط
-  const questions = baseOrder.filter((q) => isVisibleByLogic(q.config, answers));
+  // تطبيق المنطق الشرطي (على مستوى السؤال والقسم): عرض العناصر المتحقّقة شروطها
+  const questions = computeVisibleQuestions(baseOrder, answers);
   const safeStep = Math.min(step, Math.max(0, questions.length - 1));
   const current = questions[safeStep];
 

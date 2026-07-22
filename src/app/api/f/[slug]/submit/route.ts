@@ -9,9 +9,9 @@ import {
   safeParse,
   gradeAnswer,
   parseSettings,
-  isVisibleByLogic,
   isInputQuestion,
   validateAnswer,
+  computeVisibleQuestions,
 } from "@/lib/utils";
 import { sendMail } from "@/lib/mailer";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
@@ -88,11 +88,14 @@ export async function POST(
   }
 
   // التحقق من الأسئلة (إلزامية + صحة الصيغة) مع تجاهل المخفية بالمنطق الشرطي
-  // وتجاهل عناصر العرض (نص/صورة/فيديو)
+  // أو المخفية ضمن قسم غير ظاهر، وتجاهل عناصر العرض (نص/صورة/فيديو)
+  const visibleIds = new Set(
+    computeVisibleQuestions(form.questions, answers).map((q) => q.id)
+  );
   for (const q of form.questions) {
     if (!isInputQuestion(q.type)) continue;
+    if (!visibleIds.has(q.id)) continue;
     const cfg = safeParse<Record<string, any>>(q.config, {});
-    if (!isVisibleByLogic(cfg, answers)) continue;
     const err = validateAnswer(q.type, cfg, answers[q.id], q.required);
     if (err)
       return NextResponse.json(
@@ -107,6 +110,7 @@ export async function POST(
   const review: any[] = [];
   if (form.type === "EXAM") {
     for (const q of form.questions) {
+      if (!visibleIds.has(q.id)) continue;
       const cfg = safeParse<Record<string, any>>(q.config, {});
       if (cfg.correctAnswer !== undefined && cfg.correctAnswer !== "") {
         total += Number(cfg.points ?? 1);
