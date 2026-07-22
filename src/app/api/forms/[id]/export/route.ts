@@ -8,13 +8,13 @@ export const runtime = "nodejs";
 // تصدير الردود بصيغة CSV أو JSON أو XLSX مع تاريخ ووقت كل رد
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { searchParams } = new URL(req.url);
   const format = searchParams.get("format") || "csv";
 
   const form = await prisma.form.findUnique({
-    where: { id: params.id },
+    where: { id: (await params).id },
     include: {
       questions: { orderBy: { order: "asc" } },
       responses: {

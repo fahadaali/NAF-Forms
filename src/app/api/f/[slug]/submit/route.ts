@@ -12,7 +12,7 @@ import { rateLimit, clientIp } from "@/lib/rate-limit";
 // استلام رد على النموذج (عام) مع تسجيل تاريخ ووقت التقديم وحساب درجة الاختبار
 export async function POST(
   req: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   const body = await req.json();
   const answers: Record<string, any> = body.answers || {};
@@ -28,7 +28,7 @@ export async function POST(
     );
 
   const form = await prisma.form.findUnique({
-    where: { slug: params.slug },
+    where: { slug: (await params).slug },
     include: { questions: true },
   });
   if (!form)

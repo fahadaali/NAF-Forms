@@ -9,10 +9,10 @@ export const dynamic = "force-dynamic";
 export default async function FillPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
   const form = await prisma.form.findUnique({
-    where: { slug: params.slug },
+    where: { slug: (await params).slug },
     include: {
       questions: { orderBy: { order: "asc" } },
       _count: { select: { responses: true } },

@@ -8,10 +8,10 @@ const TEMPLATES_PROJECT_ID = "system-templates";
 // حفظ نسخة من النموذج كقالب جاهز قابل لإعادة الاستخدام
 export async function POST(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const src = await prisma.form.findUnique({
-    where: { id: params.id },
+    where: { id: (await params).id },
     include: { questions: { orderBy: { order: "asc" } } },
   });
   if (!src)

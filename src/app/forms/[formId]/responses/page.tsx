@@ -14,10 +14,10 @@ export const dynamic = "force-dynamic";
 export default async function ResponsesPage({
   params,
 }: {
-  params: { formId: string };
+  params: Promise<{ formId: string }>;
 }) {
   const form = await prisma.form.findUnique({
-    where: { id: params.formId },
+    where: { id: (await params).formId },
     include: {
       project: true,
       questions: { orderBy: { order: "asc" } },

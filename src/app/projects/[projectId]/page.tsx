@@ -18,11 +18,11 @@ export const dynamic = "force-dynamic";
 export default async function ProjectPage({
   params,
 }: {
-  params: { projectId: string };
+  params: Promise<{ projectId: string }>;
 }) {
   const [project, templates] = await Promise.all([
     prisma.project.findUnique({
-      where: { id: params.projectId },
+      where: { id: (await params).projectId },
       include: {
         forms: {
           where: { isTemplate: false },

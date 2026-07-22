@@ -4,10 +4,10 @@ import { prisma } from "@/lib/prisma";
 // حفظ النموذج: البيانات الوصفية + الإعدادات + الأسئلة (upsert)
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const body = await req.json();
-  const formId = params.id;
+  const formId = (await params).id;
 
   const data: any = {};
   if (body.title !== undefined) data.title = body.title;
@@ -63,8 +63,8 @@ export async function PATCH(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  await prisma.form.delete({ where: { id: params.id } });
+  await prisma.form.delete({ where: { id: (await params).id } });
   return NextResponse.json({ ok: true });
 }
