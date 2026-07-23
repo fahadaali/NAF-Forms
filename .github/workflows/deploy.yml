@@ -59,3 +59,17 @@ jobs:
           else
             echo "SESSION_SECRET مضبوط مسبقًا."
           fi
+
+      # تفعيل الرابط العام لحاوية R2 (r2.dev) وربطه كـ R2_PUBLIC_URL.
+      # اختياري: إن تعذّر، تُقدَّم الملفات عبر مسار /uploads داخل الـ Worker.
+      - name: ربط رابط R2 العام
+        run: |
+          yes | timeout 90 npx wrangler r2 bucket dev-url enable naf-forms-uploads || true
+          URL=$(timeout 60 npx wrangler r2 bucket dev-url get naf-forms-uploads 2>/dev/null \
+            | grep -oE 'https://pub-[a-z0-9]+\.r2\.dev' | head -1)
+          if [ -n "$URL" ]; then
+            echo "الرابط العام لـ R2: $URL"
+            printf '%s' "$URL" | npx wrangler secret put R2_PUBLIC_URL
+          else
+            echo "تعذّر الحصول على رابط r2.dev — ستُقدَّم الملفات عبر /uploads بالـ Worker."
+          fi
