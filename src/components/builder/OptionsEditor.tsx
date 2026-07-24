@@ -1,4 +1,5 @@
 "use client";
+import { Icon } from "@/components/ui/Icon";
 
 export default function OptionsEditor({
   options,
@@ -35,7 +36,7 @@ export default function OptionsEditor({
               className="rounded-lg px-2 py-1 text-red-500 hover:bg-red-50"
               disabled={options.length <= 1}
             >
-              ✕
+              <Icon name="x" className="h-4 w-4" />
             </button>
           </div>
         ))}

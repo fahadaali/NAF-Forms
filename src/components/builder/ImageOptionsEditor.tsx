@@ -1,4 +1,5 @@
 "use client";
+import { Icon } from "@/components/ui/Icon";
 
 interface ImgOption {
   label: string;
@@ -39,7 +40,7 @@ export default function ImageOptionsEditor({
               {o.url ? (
                 <img src={o.url} alt="" className="h-full w-full object-cover" />
               ) : (
-                <span className="text-2xl text-slate-400">🖼️</span>
+                <Icon name="image" className="h-7 w-7 text-slate-400" />
               )}
             </div>
             <input

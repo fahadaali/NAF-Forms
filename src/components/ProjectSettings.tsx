@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "@/components/ui/Icon";
 
 export default function ProjectSettings({
   project,
@@ -40,8 +41,11 @@ export default function ProjectSettings({
 
   return (
     <>
-      <button className="btn-ghost text-sm" onClick={() => setOpen(true)}>
-        ⚙️ إعدادات المشروع
+      <button
+        className="btn-ghost inline-flex items-center gap-1.5 text-sm"
+        onClick={() => setOpen(true)}
+      >
+        <Icon name="gear" className="h-4 w-4" /> إعدادات المشروع
       </button>
       {open && (
         <div
@@ -73,8 +77,11 @@ export default function ProjectSettings({
               onChange={(e) => setColor(e.target.value)}
             />
             <div className="flex items-center justify-between">
-              <button className="btn-danger" onClick={remove}>
-                🗑 حذف المشروع
+              <button
+                className="btn-danger inline-flex items-center gap-1.5"
+                onClick={remove}
+              >
+                <Icon name="trash" className="h-4 w-4" /> حذف المشروع
               </button>
               <div className="flex gap-2">
                 <button className="btn-ghost" onClick={() => setOpen(false)}>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listProjects, listTemplates, countForms, countResponses } from "@/lib/repo";
 import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
+import { Icon } from "@/components/ui/Icon";
 import { formatDateTime } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import CreateProjectButton from "@/components/CreateProjectButton";
@@ -61,7 +62,7 @@ export default async function HomePage() {
           </div>
           {projects.length === 0 ? (
             <div className="card grid place-items-center p-12 text-center text-slate-500">
-              <span className="mb-2 text-4xl">📁</span>
+              <Icon name="folder" className="mb-2 h-10 w-10 text-slate-300" />
               لا توجد مشاريع بعد — أنشئ مشروعك الأول لتنظيم نماذجك.
             </div>
           ) : (

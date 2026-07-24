@@ -8,6 +8,7 @@ import {
   FORM_STATUS_CHIP,
 } from "@/lib/field-types";
 import { formatDateTime } from "@/lib/utils";
+import { Icon } from "@/components/ui/Icon";
 import Navbar from "@/components/Navbar";
 import NewFormButton from "@/components/NewFormButton";
 import FormRowActions from "@/components/FormRowActions";
@@ -59,7 +60,7 @@ export default async function ProjectPage({
 
         {project.forms.length === 0 ? (
           <div className="card grid place-items-center p-12 text-center text-slate-500">
-            <span className="mb-2 text-4xl">📝</span>
+            <Icon name="edit" className="mb-2 h-10 w-10 text-slate-300" />
             لا توجد نماذج في هذا المشروع بعد.
           </div>
         ) : (
@@ -92,22 +93,22 @@ export default async function ProjectPage({
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/forms/${f.id}/responses`}
-                    className="btn-ghost py-1.5 text-xs"
+                    className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-xs"
                   >
-                    📊 الردود
+                    <Icon name="chart" className="h-4 w-4" /> الردود
                   </Link>
                   <Link
                     href={`/f/${f.slug}`}
                     target="_blank"
-                    className="btn-ghost py-1.5 text-xs"
+                    className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-xs"
                   >
-                    👁️ معاينة
+                    <Icon name="eye" className="h-4 w-4" /> معاينة
                   </Link>
                   <Link
                     href={`/forms/${f.id}/edit`}
-                    className="btn-ghost py-1.5 text-xs"
+                    className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-xs"
                   >
-                    ✏️ تحرير
+                    <Icon name="edit" className="h-4 w-4" /> تحرير
                   </Link>
                   <FormRowActions formId={f.id} slug={f.slug} />
                 </div>

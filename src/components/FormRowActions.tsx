@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "@/components/ui/Icon";
 
 export default function FormRowActions({
   formId,
@@ -30,7 +31,7 @@ export default function FormRowActions({
   async function saveTemplate() {
     setMenu(false);
     await fetch(`/api/forms/${formId}/save-template`, { method: "POST" });
-    setMsg("تم الحفظ كقالب ✓");
+    setMsg("تم الحفظ كقالب");
     setTimeout(() => setMsg(""), 2000);
     router.refresh();
   }
@@ -47,16 +48,17 @@ export default function FormRowActions({
       {msg && <span className="text-xs font-medium text-green-600">{msg}</span>}
       <button
         onClick={copyLink}
-        className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
+        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
         title="نسخ رابط التقديم"
       >
-        {copied ? "✓ تم النسخ" : "🔗 رابط"}
+        <Icon name={copied ? "check" : "link"} className="h-4 w-4" />
+        {copied ? "تم النسخ" : "رابط"}
       </button>
       <button
         onClick={() => setMenu((m) => !m)}
-        className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
+        className="rounded-lg px-2 py-1.5 text-slate-600 hover:bg-slate-100"
       >
-        ⋯
+        <Icon name="more" className="h-4 w-4" />
       </button>
       {menu && (
         <>
@@ -64,21 +66,21 @@ export default function FormRowActions({
           <div className="absolute left-0 top-9 z-20 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 text-sm shadow-lg">
             <button
               onClick={duplicate}
-              className="block w-full px-4 py-2 text-right hover:bg-slate-50"
+              className="flex w-full items-center gap-2 px-4 py-2 text-right hover:bg-slate-50"
             >
-              📄 إنشاء نسخة
+              <Icon name="copy" className="h-4 w-4" /> إنشاء نسخة
             </button>
             <button
               onClick={saveTemplate}
-              className="block w-full px-4 py-2 text-right hover:bg-slate-50"
+              className="flex w-full items-center gap-2 px-4 py-2 text-right hover:bg-slate-50"
             >
-              ⭐ حفظ كقالب
+              <Icon name="star" className="h-4 w-4" /> حفظ كقالب
             </button>
             <button
               onClick={remove}
-              className="block w-full px-4 py-2 text-right text-red-600 hover:bg-red-50"
+              className="flex w-full items-center gap-2 px-4 py-2 text-right text-red-600 hover:bg-red-50"
             >
-              🗑 حذف
+              <Icon name="trash" className="h-4 w-4" /> حذف
             </button>
           </div>
         </>

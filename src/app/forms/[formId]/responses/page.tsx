@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getFormWithResponses } from "@/lib/repo";
 import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
+import { Icon } from "@/components/ui/Icon";
 import Navbar from "@/components/Navbar";
 import ResponsesDashboard, {
   type QuestionStat,
@@ -218,8 +219,11 @@ export default async function ResponsesPage({
               {FORM_TYPE_LABELS[form.type]}
             </span>
           </div>
-          <Link href={`/forms/${form.id}/edit`} className="btn-ghost text-sm">
-            ✏️ تحرير النموذج
+          <Link
+            href={`/forms/${form.id}/edit`}
+            className="btn-ghost inline-flex items-center gap-1.5 text-sm"
+          >
+            <Icon name="edit" className="h-4 w-4" /> تحرير النموذج
           </Link>
         </div>
 

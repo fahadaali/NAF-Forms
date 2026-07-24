@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
+import { Icon } from "@/components/ui/Icon";
 
 export default function ShareTools({ url }: { url: string }) {
   const [qr, setQr] = useState("");
@@ -35,9 +36,9 @@ export default function ShareTools({ url }: { url: string }) {
           <a
             href={qr}
             download="naf-form-qr.png"
-            className="btn-ghost mt-4 inline-flex text-sm"
+            className="btn-ghost mt-4 inline-flex items-center gap-1.5 text-sm"
           >
-            ⬇️ تنزيل الرمز
+            <Icon name="download" className="h-4 w-4" /> تنزيل الرمز
           </a>
         )}
       </div>
@@ -49,10 +50,16 @@ export default function ShareTools({ url }: { url: string }) {
         </p>
         <textarea className="input h-24 font-mono text-xs" dir="ltr" readOnly value={embed} />
         <button
-          className="btn-ghost mt-2 text-sm"
+          className="btn-ghost mt-2 inline-flex items-center gap-1.5 text-sm"
           onClick={() => copy(embed, "embed")}
         >
-          {copied === "embed" ? "✓ تم النسخ" : "نسخ الكود"}
+          {copied === "embed" ? (
+            <>
+              <Icon name="check" className="h-4 w-4" /> تم النسخ
+            </>
+          ) : (
+            "نسخ الكود"
+          )}
         </button>
       </div>
     </div>

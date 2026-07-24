@@ -2,6 +2,7 @@
 import dynamic from "next/dynamic";
 import { useState, useRef, useEffect } from "react";
 import StarRating from "./StarRating";
+import { Icon } from "@/components/ui/Icon";
 import type { QuestionDTO } from "@/lib/types";
 
 const MapPicker = dynamic(() => import("./MapPicker"), {
@@ -372,7 +373,9 @@ export default function QuestionInput({
               {o.url ? (
                 <img src={o.url} alt={o.label} className="h-28 w-full object-cover" />
               ) : (
-                <div className="grid h-28 w-full place-items-center bg-slate-100 text-3xl">🖼️</div>
+                <div className="grid h-28 w-full place-items-center bg-slate-100 text-slate-400">
+                  <Icon name="image" className="h-8 w-8" />
+                </div>
               )}
               <div className="truncate p-2 text-sm">{o.label}</div>
             </button>
@@ -539,7 +542,9 @@ function SignaturePad({
         </button>
       </div>
       {value && (
-        <p className="mt-1 text-xs text-green-600">✓ تم التوقيع</p>
+        <p className="mt-1 inline-flex items-center gap-1 text-xs text-green-600">
+          <Icon name="check" className="h-3.5 w-3.5" /> تم التوقيع
+        </p>
       )}
     </div>
   );
@@ -583,7 +588,7 @@ function FileField({
   return (
     <div>
       <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center hover:border-naf-400 hover:bg-naf-50">
-        <span className="text-3xl">📎</span>
+        <Icon name="paperclip" className="h-7 w-7 text-slate-400" />
         <span className="text-sm font-medium text-slate-700">
           {busy ? "جارٍ الرفع…" : "اضغط لرفع ملف"}
         </span>
@@ -601,7 +606,9 @@ function FileField({
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       {value?.url && (
         <div className="mt-3 flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 text-sm">
-          <span className="truncate text-green-800">✓ {value.name}</span>
+          <span className="inline-flex items-center gap-1 truncate text-green-800">
+            <Icon name="check" className="h-3.5 w-3.5 shrink-0" /> {value.name}
+          </span>
           <a
             href={value.url}
             target="_blank"
