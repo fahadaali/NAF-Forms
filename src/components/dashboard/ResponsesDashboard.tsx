@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "@/components/ui/Icon";
 
 export interface QuestionStat {
   id: string;
@@ -80,16 +81,16 @@ export default function ResponsesDashboard({
     <div>
       {/* بطاقات إحصائية */}
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <StatCard icon="📨" label="إجمالي الردود" value={String(total)} />
+        <StatCard icon="chart" label="إجمالي الردود" value={String(total)} />
         <StatCard
-          icon="⏱️"
+          icon="clock"
           label="آخر رد"
           value={rows[0]?.submittedAt || "—"}
         />
         {formType === "EXAM" ? (
-          <StatCard icon="🎯" label="متوسط الدرجات" value={examAvg || "—"} />
+          <StatCard icon="target" label="متوسط الدرجات" value={examAvg || "—"} />
         ) : (
-          <StatCard icon="❓" label="عدد الأسئلة" value={String(stats.length)} />
+          <StatCard icon="list" label="عدد الأسئلة" value={String(stats.length)} />
         )}
       </div>
 
@@ -110,14 +111,14 @@ export default function ResponsesDashboard({
           </button>
         </div>
         <div className="flex gap-2">
-          <a className="btn-ghost py-1.5 text-sm" href={`/api/forms/${formId}/export?format=csv`}>
-            ⬇️ CSV
+          <a className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm" href={`/api/forms/${formId}/export?format=csv`}>
+            <Icon name="download" className="h-4 w-4" /> CSV
           </a>
-          <a className="btn-ghost py-1.5 text-sm" href={`/api/forms/${formId}/export?format=xlsx`}>
-            ⬇️ Excel
+          <a className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm" href={`/api/forms/${formId}/export?format=xlsx`}>
+            <Icon name="download" className="h-4 w-4" /> Excel
           </a>
-          <a className="btn-ghost py-1.5 text-sm" href={`/api/forms/${formId}/export?format=json`}>
-            ⬇️ JSON
+          <a className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm" href={`/api/forms/${formId}/export?format=json`}>
+            <Icon name="download" className="h-4 w-4" /> JSON
           </a>
         </div>
       </div>
@@ -140,12 +141,17 @@ export default function ResponsesDashboard({
 
       {total > 0 && tab === "individual" && (
         <div className="space-y-4">
-          <input
-            className="input"
-            placeholder="🔍 بحث في الردود…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+          <div className="relative">
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <Icon name="search" className="h-4 w-4" />
+            </span>
+            <input
+              className="input pr-9"
+              placeholder="بحث في الردود…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-slate-500">من</span>
             <input type="date" className="input py-1.5" value={from} onChange={(e) => setFrom(e.target.value)} />
@@ -175,24 +181,32 @@ export default function ResponsesDashboard({
                 <span className="font-bold">رد #{rows.length - rows.indexOf(r)}</span>
                 <div className="flex items-center gap-3">
                   {r.email && (
-                    <span className="chip bg-slate-100 text-slate-600" dir="ltr">
-                      ✉️ {r.email}
+                    <span className="chip inline-flex items-center gap-1 bg-slate-100 text-slate-600" dir="ltr">
+                      <Icon name="mail" className="h-3.5 w-3.5" /> {r.email}
                     </span>
                   )}
-                  <span className="text-xs text-slate-400">🕓 {r.submittedAt}</span>
+                  <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+                    <Icon name="clock" className="h-3.5 w-3.5" /> {r.submittedAt}
+                  </span>
                   <a
                     href={`/forms/${formId}/responses/${r.id}/print`}
                     target="_blank"
-                    className="rounded-lg px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100"
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100"
                   >
-                    🖨️ طباعة
+                    <Icon name="printer" className="h-3.5 w-3.5" /> طباعة
                   </a>
                   <button
                     onClick={() => deleteResponse(r.id)}
                     disabled={busy === r.id}
-                    className="rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-50"
                   >
-                    {busy === r.id ? "…" : "🗑 حذف"}
+                    {busy === r.id ? (
+                      "…"
+                    ) : (
+                      <>
+                        <Icon name="trash" className="h-3.5 w-3.5" /> حذف
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -214,9 +228,9 @@ export default function ResponsesDashboard({
                         <a
                           href={`https://www.openstreetmap.org/?mlat=${c.loc.lat}&mlon=${c.loc.lng}#map=15/${c.loc.lat}/${c.loc.lng}`}
                           target="_blank"
-                          className="text-naf-600 underline"
+                          className="inline-flex items-center gap-1 text-naf-600 underline"
                         >
-                          📍 {c.text}
+                          <Icon name="map-pin" className="h-3.5 w-3.5" /> {c.text}
                         </a>
                       ) : (
                         c.text || <span className="text-slate-300">—</span>
@@ -236,7 +250,9 @@ export default function ResponsesDashboard({
 function StatCard({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
     <div className="card flex items-center gap-4 p-5">
-      <span className="grid h-12 w-12 place-items-center rounded-xl bg-naf-50 text-2xl">{icon}</span>
+      <span className="grid h-12 w-12 place-items-center rounded-xl bg-naf-50 text-naf-600">
+        <Icon name={icon} className="h-6 w-6" />
+      </span>
       <div>
         <div className="text-xs text-slate-400">{label}</div>
         <div className="text-lg font-extrabold">{value}</div>
@@ -375,7 +391,9 @@ function TimelineChart({ data }: { data: { label: string; count: number }[] }) {
   const max = Math.max(...data.map((d) => d.count), 1);
   return (
     <div className="card p-5">
-      <h3 className="mb-4 font-bold">📈 الردود عبر الزمن</h3>
+      <h3 className="mb-4 flex items-center gap-2 font-bold">
+        <Icon name="trend-up" className="h-5 w-5 text-naf-600" /> الردود عبر الزمن
+      </h3>
       <div className="flex items-end gap-1.5 overflow-x-auto pb-1" style={{ height: 140 }}>
         {data.map((d) => (
           <div key={d.label} className="flex min-w-[28px] flex-1 flex-col items-center justify-end gap-1">

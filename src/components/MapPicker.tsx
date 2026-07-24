@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { Icon } from "@/components/ui/Icon";
 
 // إصلاح أيقونة العلامة الافتراضية في Leaflet مع الحزم
 const icon = L.icon({
@@ -108,7 +109,8 @@ export default function MapPicker({
         disabled={geoBusy}
         className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium hover:border-naf-400 hover:bg-naf-50 disabled:opacity-60"
       >
-        📍 {geoBusy ? "جارٍ تحديد موقعك…" : "استخدم موقعي الحالي"}
+        <Icon name="map-pin" className="h-4 w-4" />
+        {geoBusy ? "جارٍ تحديد موقعك…" : "استخدم موقعي الحالي"}
       </button>
 
       <div className="grid grid-cols-2 gap-2">

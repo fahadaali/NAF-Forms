@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import QuestionInput from "@/components/QuestionInput";
+import { Icon } from "@/components/ui/Icon";
 import {
   youtubeEmbed,
   isInputQuestion,
@@ -237,7 +238,9 @@ export default function FillForm({
           className="w-full max-w-sm rounded-3xl p-8 text-center shadow-xl"
           style={{ background: theme.cardBg }}
         >
-          <div className="mb-3 text-5xl">🔒</div>
+          <div className="mb-3 flex justify-center text-slate-400">
+            <Icon name="lock" className="h-12 w-12" />
+          </div>
           <h1 className="text-xl font-extrabold">{form.title}</h1>
           <p className="mt-2 text-sm text-slate-500">
             هذا النموذج محمي بكلمة مرور. أدخلها للمتابعة.
@@ -274,7 +277,9 @@ export default function FillForm({
           className="w-full max-w-lg rounded-3xl p-10 text-center shadow-xl"
           style={{ background: theme.cardBg }}
         >
-          <div className="mb-4 text-6xl">🎉</div>
+          <div className="mb-4 flex justify-center text-green-500">
+            <Icon name="check-circle" className="h-16 w-16" />
+          </div>
           <h1 className="text-2xl font-extrabold">{after.title}</h1>
           <p className="mt-3 text-slate-500">{after.message}</p>
           {after.showScore && result?.total ? (
@@ -297,7 +302,13 @@ export default function FillForm({
                   : "bg-red-100 text-red-700"
               }`}
             >
-              {result.passed ? "✅ ناجح" : "❌ لم تجتز"}
+              <span className="inline-flex items-center gap-1">
+                <Icon
+                  name={result.passed ? "check-circle" : "x-circle"}
+                  className="h-4 w-4"
+                />
+                {result.passed ? "ناجح" : "لم تجتز"}
+              </span>
             </div>
           )}
 
@@ -313,8 +324,12 @@ export default function FillForm({
                       : "border-red-200 bg-red-50"
                   }`}
                 >
-                  <div className="font-semibold">
-                    {r.correct ? "✅" : "❌"} {r.label}
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Icon
+                      name={r.correct ? "check-circle" : "x-circle"}
+                      className={`h-4 w-4 ${r.correct ? "text-green-600" : "text-red-600"}`}
+                    />
+                    {r.label}
                   </div>
                   {!r.correct && (
                     <div className="mt-1 text-xs text-slate-600">
@@ -333,8 +348,12 @@ export default function FillForm({
           )}
 
           {after.redirectUrl && (
-            <a href={after.redirectUrl} className="mt-6 inline-block font-medium underline" style={{ color: accent }}>
-              متابعة ↗
+            <a
+              href={after.redirectUrl}
+              className="mt-6 inline-flex items-center gap-1 font-medium underline"
+              style={{ color: accent }}
+            >
+              متابعة <Icon name="external-link" className="h-4 w-4" />
             </a>
           )}
         </div>
@@ -374,10 +393,11 @@ export default function FillForm({
                       key={i}
                       href={l.url}
                       target="_blank"
-                      className="chip border"
+                      className="chip inline-flex items-center gap-1.5 border"
                       style={{ borderColor: accent, color: accent }}
                     >
-                      🔗 {l.label || l.url}
+                      <Icon name="link" className="h-3.5 w-3.5" />
+                      {l.label || l.url}
                     </a>
                   ))}
                 </div>
@@ -390,7 +410,10 @@ export default function FillForm({
                       key={i}
                       className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-2.5 text-sm"
                     >
-                      <span className="truncate">📄 {f.name}</span>
+                      <span className="inline-flex items-center gap-1.5 truncate">
+                        <Icon name="paperclip" className="h-4 w-4 shrink-0" />
+                        {f.name}
+                      </span>
                       <span className="flex gap-3">
                         <a href={f.url} target="_blank" className="underline" style={{ color: accent }}>
                           عرض
@@ -441,10 +464,11 @@ export default function FillForm({
                   setPhase("question");
                   setStep(0);
                 }}
-                className="mt-8 w-full rounded-xl px-6 py-3.5 text-lg font-bold text-white shadow-lg transition hover:opacity-90"
+                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-lg font-bold text-white shadow-lg transition hover:opacity-90"
                 style={{ background: accent }}
               >
-                البدء ←
+                البدء
+                <Icon name="arrow-right" className="h-5 w-5 rotate-180" />
               </button>
               <p className="mt-3 text-center text-xs text-slate-400">
                 {questions.filter((q) => isInputQuestion(q.type)).length} سؤال ·
@@ -524,10 +548,11 @@ export default function FillForm({
             </span>
             {timeLimit && remaining !== null && (
               <span
-                className={`font-bold ${remaining <= 30 ? "text-red-500" : ""}`}
+                className={`inline-flex items-center gap-1 font-bold ${remaining <= 30 ? "text-red-500" : ""}`}
                 dir="ltr"
               >
-                ⏱ {String(Math.floor(remaining / 60)).padStart(2, "0")}:
+                <Icon name="clock" className="h-3.5 w-3.5" />
+                {String(Math.floor(remaining / 60)).padStart(2, "0")}:
                 {String(remaining % 60).padStart(2, "0")}
               </span>
             )}
@@ -558,8 +583,11 @@ export default function FillForm({
 
           <div className="mt-8 flex items-center justify-between">
             {behavior.allowBack !== false ? (
-              <button onClick={goBack} className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-500 hover:bg-black/5">
-                ← السابق
+              <button
+                onClick={goBack}
+                className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-500 hover:bg-black/5"
+              >
+                <Icon name="arrow-right" className="h-4 w-4" /> السابق
               </button>
             ) : (
               <span />
@@ -570,11 +598,17 @@ export default function FillForm({
               className="rounded-xl px-8 py-3 font-bold text-white shadow-lg transition hover:opacity-90"
               style={{ background: accent }}
             >
-              {submitting
-                ? "جارٍ الإرسال…"
-                : safeStep === steps.length - 1
-                ? "إرسال ✓"
-                : "التالي →"}
+              {submitting ? (
+                "جارٍ الإرسال…"
+              ) : safeStep === steps.length - 1 ? (
+                <span className="inline-flex items-center gap-1.5">
+                  إرسال <Icon name="check" className="h-4 w-4" />
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5">
+                  التالي <Icon name="arrow-right" className="h-4 w-4 rotate-180" />
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -623,8 +657,8 @@ function QuestionCard({
             className="mx-auto max-h-[420px] w-full rounded-2xl object-contain"
           />
         ) : (
-          <div className="grid h-48 place-items-center rounded-2xl bg-slate-100 text-4xl">
-            🏞️
+          <div className="grid h-48 place-items-center rounded-2xl bg-slate-100 text-slate-400">
+            <Icon name="image" className="h-10 w-10" />
           </div>
         )}
         {q.config?.caption && (
@@ -648,8 +682,8 @@ function QuestionCard({
         ) : fileUrl ? (
           <video src={fileUrl} controls className="w-full rounded-2xl" />
         ) : (
-          <div className="grid h-48 place-items-center rounded-2xl bg-slate-100 text-4xl">
-            🎬
+          <div className="grid h-48 place-items-center rounded-2xl bg-slate-100 text-slate-400">
+            <Icon name="film" className="h-10 w-10" />
           </div>
         )}
         {q.config?.caption && (

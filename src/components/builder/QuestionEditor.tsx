@@ -863,7 +863,9 @@ function MediaUploadButton({
         />
       )}
       {url && kind === "VIDEO" && (
-        <p className="mt-1.5 truncate text-xs text-green-700">✓ فيديو مرفق</p>
+        <p className="mt-1.5 inline-flex items-center gap-1 truncate text-xs text-green-700">
+          <Icon name="check" className="h-3.5 w-3.5" /> فيديو مرفق
+        </p>
       )}
     </div>
   );

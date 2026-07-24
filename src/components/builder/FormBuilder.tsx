@@ -277,7 +277,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
 
               {questions.length === 0 && (
                 <div className="card grid place-items-center p-10 text-center text-slate-400">
-                  أضف أول عنصر من قائمة العناصر ←
+                  أضف أول عنصر من قائمة العناصر
                 </div>
               )}
 
@@ -335,22 +335,22 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
               </p>
               <div className="flex gap-2">
                 <button
-                  className={status === "PUBLISHED" ? "btn-primary" : "btn-ghost"}
+                  className={`inline-flex items-center gap-1.5 ${status === "PUBLISHED" ? "btn-primary" : "btn-ghost"}`}
                   onClick={() => save("PUBLISHED")}
                 >
-                  ✅ نشر
+                  <Icon name="check-circle" className="h-4 w-4" /> نشر
                 </button>
                 <button
-                  className={status === "DRAFT" ? "btn-primary" : "btn-ghost"}
+                  className={`inline-flex items-center gap-1.5 ${status === "DRAFT" ? "btn-primary" : "btn-ghost"}`}
                   onClick={() => save("DRAFT")}
                 >
-                  📝 مسودة
+                  <Icon name="edit" className="h-4 w-4" /> مسودة
                 </button>
                 <button
-                  className={status === "CLOSED" ? "btn-danger" : "btn-ghost"}
+                  className={`inline-flex items-center gap-1.5 ${status === "CLOSED" ? "btn-danger" : "btn-ghost"}`}
                   onClick={() => save("CLOSED")}
                 >
-                  🔒 إغلاق
+                  <Icon name="lock" className="h-4 w-4" /> إغلاق
                 </button>
               </div>
             </div>
@@ -368,9 +368,10 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
               <Link
                 href={`/f/${initial.slug}`}
                 target="_blank"
-                className="mt-3 inline-block text-sm font-medium text-naf-600 hover:underline"
+                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-naf-600 hover:underline"
               >
-                فتح صفحة التقديم ↗
+                فتح صفحة التقديم
+                <Icon name="external-link" className="h-4 w-4" />
               </Link>
             </div>
             <ShareTools url={publicUrl} />

@@ -1,6 +1,17 @@
 "use client";
 import type { FormSettings } from "@/lib/types";
 import { youtubeEmbed } from "@/lib/utils";
+import { Icon } from "@/components/ui/Icon";
+
+// ترويسة قسم بأيقونة منحنية
+function SectionHead({ icon, children }: { icon: string; children: React.ReactNode }) {
+  return (
+    <h3 className="mb-4 flex items-center gap-2 font-bold">
+      <Icon name={icon} className="h-5 w-5 text-naf-600" />
+      {children}
+    </h3>
+  );
+}
 
 export default function DesignPanel({
   settings,
@@ -31,7 +42,7 @@ export default function DesignPanel({
     <div className="space-y-6">
       {/* الألوان */}
       <section className="card p-5">
-        <h3 className="mb-4 font-bold">🎨 الألوان</h3>
+        <SectionHead icon="palette">الألوان</SectionHead>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Color label="اللون الأساسي" value={theme.primary} onChange={(v) => patch({ theme: { ...theme, primary: v } })} />
           <Color label="الخلفية" value={theme.background} onChange={(v) => patch({ theme: { ...theme, background: v } })} />
@@ -42,7 +53,7 @@ export default function DesignPanel({
 
       {/* الغلاف والوسائط */}
       <section className="card p-5">
-        <h3 className="mb-4 font-bold">🖼️ الغلاف والوسائط</h3>
+        <SectionHead icon="image">الغلاف والوسائط</SectionHead>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label">صورة الغلاف</label>
@@ -90,7 +101,7 @@ export default function DesignPanel({
 
       {/* الروابط والملفات */}
       <section className="card p-5">
-        <h3 className="mb-4 font-bold">🔗 روابط وملفات إضافية</h3>
+        <SectionHead icon="link">روابط وملفات إضافية</SectionHead>
         <label className="label">روابط</label>
         <div className="space-y-2">
           {(content.links || []).map((l, i) => (
@@ -127,7 +138,7 @@ export default function DesignPanel({
                   })
                 }
               >
-                ✕
+                <Icon name="x" className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -150,7 +161,7 @@ export default function DesignPanel({
         <div className="space-y-2">
           {(content.files || []).map((f, i) => (
             <div key={i} className="flex items-center gap-2 rounded-lg border border-slate-200 p-2 text-sm">
-              <span className="flex-1 truncate">📄 {f.name}</span>
+              <span className="flex-1 inline-flex items-center gap-1.5 truncate"><Icon name="paperclip" className="h-4 w-4 shrink-0" /> {f.name}</span>
               <label className="flex items-center gap-1 text-xs">
                 <input
                   type="checkbox"
@@ -174,7 +185,7 @@ export default function DesignPanel({
                   })
                 }
               >
-                ✕
+                <Icon name="x" className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -207,7 +218,7 @@ export default function DesignPanel({
 
       {/* رسالة ما بعد الإرسال */}
       <section className="card p-5">
-        <h3 className="mb-4 font-bold">✅ رسالة ما بعد الإرسال</h3>
+        <SectionHead icon="check-circle">رسالة ما بعد الإرسال</SectionHead>
         <label className="label">العنوان</label>
         <input
           className="input mb-3"
@@ -232,7 +243,7 @@ export default function DesignPanel({
 
       {/* السلوك */}
       <section className="card p-5">
-        <h3 className="mb-4 font-bold">⚙️ سلوك صفحة التقديم</h3>
+        <SectionHead icon="gear">سلوك صفحة التقديم</SectionHead>
         <div className="space-y-2 text-sm">
           <Toggle
             label="عرض سؤال واحد في كل بطاقة"
@@ -264,7 +275,7 @@ export default function DesignPanel({
 
       {/* الوصول والخصوصية */}
       <section className="card p-5">
-        <h3 className="mb-2 font-bold">🔒 الوصول والخصوصية</h3>
+        <SectionHead icon="lock">الوصول والخصوصية</SectionHead>
         <p className="mb-3 text-sm text-slate-500">
           اترك الحقل فارغًا لجعل النموذج متاحًا للجميع، أو حدّد كلمة مرور لحمايته.
         </p>
@@ -339,7 +350,7 @@ export default function DesignPanel({
 
       {/* الإشعارات */}
       <section className="card p-5">
-        <h3 className="mb-2 font-bold">🔔 إشعار بريد عند وصول رد</h3>
+        <SectionHead icon="bell">إشعار بريد عند وصول رد</SectionHead>
         <p className="mb-3 text-sm text-slate-500">
           أدخل بريدًا لاستقبال إشعار عند كل رد جديد (يتطلب ضبط SMTP في الخادم).
         </p>
@@ -402,7 +413,7 @@ export default function DesignPanel({
       {/* إعدادات الاختبار */}
       {formType === "EXAM" && (
         <section className="card p-5">
-          <h3 className="mb-4 font-bold">📝 إعدادات الاختبار</h3>
+          <SectionHead icon="edit">إعدادات الاختبار</SectionHead>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="label">مدة الاختبار (دقائق)</label>

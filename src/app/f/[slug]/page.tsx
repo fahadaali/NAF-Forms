@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getPublicForm } from "@/lib/repo";
 import { parseSettings, safeParse } from "@/lib/utils";
 import type { FormDTO } from "@/lib/types";
+import { Icon } from "@/components/ui/Icon";
 import FillForm from "@/components/fill/FillForm";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +26,9 @@ export default async function FillPage({
     return (
       <div className="grid min-h-screen place-items-center bg-slate-50 px-4 text-center">
         <div>
-          <div className="mb-3 text-5xl">🔒</div>
+          <div className="mb-3 flex justify-center text-slate-300">
+            <Icon name="lock" className="h-14 w-14" />
+          </div>
           <h1 className="text-xl font-bold">
             {full ? "اكتمل العدد الأقصى للردود" : timeUp ? "انتهى وقت استقبال الردود" : "هذا النموذج مغلق حاليًا"}
           </h1>

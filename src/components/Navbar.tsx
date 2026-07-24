@@ -3,6 +3,7 @@ import LogoutButton from "./LogoutButton";
 import ThemeToggle from "./ThemeToggle";
 import { currentSession } from "@/lib/session";
 import { getUserById } from "@/lib/repo";
+import { Icon } from "@/components/ui/Icon";
 
 export default async function Navbar({
   crumbs = [],
@@ -41,9 +42,9 @@ export default async function Navbar({
           {me?.role === "admin" && (
             <Link
               href="/users"
-              className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
             >
-              👥 المستخدمون
+              <Icon name="users" className="h-4 w-4" /> المستخدمون
             </Link>
           )}
           {me && (

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getFormWithQuestions, getResponseWithAnswers } from "@/lib/repo";
 import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
+import { Icon } from "@/components/ui/Icon";
 import PrintButton from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
@@ -27,9 +28,16 @@ export default async function PrintResponsePage({
       <PrintButton />
       <div className="mb-6 border-b border-slate-200 pb-4">
         <h1 className="text-2xl font-extrabold">{form.title}</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          🕓 {formatDateTime(response.submittedAt)}
-          {meta.email ? ` · ✉️ ${meta.email}` : ""}
+        <p className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-slate-500">
+          <Icon name="clock" className="h-4 w-4" />
+          {formatDateTime(response.submittedAt)}
+          {meta.email ? (
+            <>
+              <span>·</span>
+              <Icon name="mail" className="h-4 w-4" />
+              {meta.email}
+            </>
+          ) : null}
           {form.type === "EXAM" && meta.total != null
             ? ` · الدرجة: ${meta.score ?? 0}/${meta.total}`
             : ""}
