@@ -25,7 +25,8 @@ export type FieldTypeId =
   | "CONSENT"
   | "SECTION"
   | "IMAGE"
-  | "VIDEO";
+  | "VIDEO"
+  | "PAGE_BREAK";
 
 export interface FieldTypeDef {
   id: FieldTypeId;
@@ -271,6 +272,15 @@ export const FIELD_TYPES: FieldTypeDef[] = [
     defaultConfig: { url: "", youtubeUrl: "", caption: "" },
     gradable: false,
   },
+  {
+    id: "PAGE_BREAK",
+    label: "فاصل بطاقة",
+    hint: "يبدأ بطاقة جديدة — لعرض عدة أسئلة معًا في بطاقة",
+    icon: "⤵️",
+    group: "layout",
+    defaultConfig: {},
+    gradable: false,
+  },
 ];
 
 export const FIELD_TYPE_MAP: Record<string, FieldTypeDef> = Object.fromEntries(
@@ -290,7 +300,12 @@ export function fieldType(id: string): FieldTypeDef | undefined {
 }
 
 // أنواع العناصر التي لا تُحسب كإجابة فعلية (عناوين/نصوص/وسائط عرض)
-export const NON_INPUT_TYPES: FieldTypeId[] = ["SECTION", "IMAGE", "VIDEO"];
+export const NON_INPUT_TYPES: FieldTypeId[] = [
+  "SECTION",
+  "IMAGE",
+  "VIDEO",
+  "PAGE_BREAK",
+];
 
 export const FORM_TYPE_LABELS: Record<string, string> = {
   SURVEY: "استبيان / استطلاع",
