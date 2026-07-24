@@ -1,9 +1,10 @@
 "use client";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { fieldType } from "@/lib/field-types";
 import type { QuestionDTO } from "@/lib/types";
 import OptionsEditor from "./OptionsEditor";
 import ImageOptionsEditor from "./ImageOptionsEditor";
+import { Icon, IconTip, fieldIcon } from "@/components/ui/Icon";
 
 export default function QuestionEditor({
   q,
@@ -55,31 +56,20 @@ export default function QuestionEditor({
         <span
           draggable
           onDragStart={onDragStartItem}
-          className="cursor-grab select-none text-slate-300 active:cursor-grabbing"
+          className="flex cursor-grab select-none items-center text-slate-300 active:cursor-grabbing"
         >
-          ⠿
+          <Icon name="grip" className="h-4 w-4" />
         </span>
         <div className="flex flex-1 items-center gap-2">
           <span className="h-px flex-1 border-t border-dashed border-naf-300" />
-          <span className="chip bg-naf-50 text-naf-700">
-            ⤵️ فاصل بطاقة — بداية بطاقة جديدة
+          <span className="chip inline-flex items-center gap-1.5 bg-naf-50 text-naf-700">
+            <Icon name="rows" className="h-3.5 w-3.5" />
+            فاصل بطاقة — بداية بطاقة جديدة
           </span>
           <span className="h-px flex-1 border-t border-dashed border-naf-300" />
         </div>
-        <button
-          onClick={onDuplicate}
-          className="rounded-lg px-2 py-1 text-slate-400 opacity-0 hover:bg-slate-100 group-hover:opacity-100"
-          title="نسخ"
-        >
-          📄
-        </button>
-        <button
-          onClick={onRemove}
-          className="rounded-lg px-2 py-1 text-red-400 opacity-0 hover:bg-red-50 group-hover:opacity-100"
-          title="حذف"
-        >
-          🗑
-        </button>
+        <ToolBtn label="نسخ" icon="copy" onClick={onDuplicate} />
+        <ToolBtn label="حذف" icon="trash" onClick={onRemove} className="text-red-400" />
       </div>
     );
   }
@@ -109,45 +99,49 @@ export default function QuestionEditor({
         }`}
       >
         {!isLayout && (
-          <IconBtn
-            title={q.required ? "إلزامي" : "اختياري"}
+          <ToolBtn
+            label={q.required ? "إلزامي (اضغط لجعله اختياري)" : "اجعله إلزاميًا"}
+            icon="star"
             onClick={() => onChange({ required: !q.required })}
             className={q.required ? "text-red-500" : "text-slate-400"}
-          >
-            {q.required ? "★" : "☆"}
-          </IconBtn>
+          />
         )}
-        <IconBtn title="لأعلى" onClick={() => onMove(-1)} disabled={index === 0}>
-          ↑
-        </IconBtn>
-        <IconBtn
-          title="لأسفل"
+        <ToolBtn
+          label="نقل لأعلى"
+          icon="chevron-up"
+          onClick={() => onMove(-1)}
+          disabled={index === 0}
+        />
+        <ToolBtn
+          label="نقل لأسفل"
+          icon="chevron-down"
           onClick={() => onMove(1)}
           disabled={index === total - 1}
-        >
-          ↓
-        </IconBtn>
-        <IconBtn title="نسخ" onClick={onDuplicate}>
-          📄
-        </IconBtn>
-        <IconBtn title="حذف" onClick={onRemove} className="text-red-500">
-          🗑
-        </IconBtn>
-        <span
-          draggable
-          onDragStart={onDragStartItem}
-          className="cursor-grab select-none px-1 text-slate-400 active:cursor-grabbing"
-          title="اسحب لإعادة الترتيب"
-        >
-          ⠿
-        </span>
+        />
+        <ToolBtn label="نسخ" icon="copy" onClick={onDuplicate} />
+        <ToolBtn
+          label="حذف"
+          icon="trash"
+          onClick={onRemove}
+          className="text-red-500"
+        />
+        <IconTip label="اسحب لإعادة الترتيب">
+          <span
+            draggable
+            onDragStart={onDragStartItem}
+            className="flex cursor-grab select-none items-center px-1 text-slate-400 active:cursor-grabbing"
+          >
+            <Icon name="grip" className="h-4 w-4" />
+          </span>
+        </IconTip>
       </div>
 
       <div className="p-5">
         {/* نوع العنصر */}
         <div className="mb-2 flex items-center gap-2">
-          <span className="chip bg-slate-100 text-slate-500">
-            {def?.icon} {def?.label}
+          <span className="chip inline-flex items-center gap-1.5 bg-slate-100 text-slate-500">
+            <Icon name={fieldIcon(q.type)} className="h-3.5 w-3.5" />
+            {def?.label}
           </span>
           {!isLayout && (
             <span className="text-xs text-slate-400">سؤال {index + 1}</span>
@@ -230,9 +224,10 @@ export default function QuestionEditor({
               onSelect();
               setLocalOpen((o) => !o);
             }}
-            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-naf-600 hover:underline"
+            className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-naf-600 hover:underline"
           >
-            ⚙️ {settingsOpen ? "إخفاء الخيارات" : "خيارات الحقل"}
+            <Icon name="gear" className="h-3.5 w-3.5" />
+            {settingsOpen ? "إخفاء الخيارات" : "خيارات الحقل"}
           </button>
         )}
 
@@ -500,31 +495,32 @@ function hasSettings(type: string, formType: string, priorCount: number): boolea
   ].includes(type);
 }
 
-function IconBtn({
-  children,
-  title,
+function ToolBtn({
+  icon,
+  label,
   onClick,
   disabled,
-  className = "",
+  className = "text-slate-500",
 }: {
-  children: ReactNode;
-  title: string;
+  icon: string;
+  label: string;
   onClick: () => void;
   disabled?: boolean;
   className?: string;
 }) {
   return (
-    <button
-      title={title}
-      disabled={disabled}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      className={`rounded-full px-1.5 py-0.5 text-sm hover:bg-slate-100 disabled:opacity-30 ${className}`}
-    >
-      {children}
-    </button>
+    <IconTip label={label}>
+      <button
+        disabled={disabled}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        className={`rounded-full p-1.5 hover:bg-slate-100 disabled:opacity-30 ${className}`}
+      >
+        <Icon name={icon} className="h-4 w-4" />
+      </button>
+    </IconTip>
   );
 }
 
@@ -676,7 +672,9 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
               {o.url ? (
                 <img src={o.url} alt="" className="h-16 w-full object-cover" />
               ) : (
-                <div className="grid h-16 place-items-center bg-slate-100 text-2xl">🖼️</div>
+                <div className="grid h-16 place-items-center bg-slate-100 text-slate-400">
+                  <Icon name="image" className="h-6 w-6" />
+                </div>
               )}
               <div className="truncate p-1 text-center text-xs text-slate-500">
                 {o.label}
@@ -688,20 +686,21 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
     }
     case "LOCATION":
       return (
-        <div className="grid h-24 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-400">
-          📍 خريطة لتحديد الموقع
+        <div className="flex h-24 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-400">
+          <Icon name="map-pin" className="h-5 w-5" /> خريطة لتحديد الموقع
         </div>
       );
     case "FILE":
       return (
-        <div className="grid h-20 place-items-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-sm text-slate-400">
-          📎 رفع ملف ({cfg.accept || "أي صيغة"})
+        <div className="flex h-20 items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-sm text-slate-400">
+          <Icon name="paperclip" className="h-5 w-5" /> رفع ملف (
+          {cfg.accept || "أي صيغة"})
         </div>
       );
     case "SIGNATURE":
       return (
-        <div className="grid h-20 place-items-center rounded-lg border-2 border-dashed border-slate-300 bg-white text-sm text-slate-400">
-          ✍️ منطقة التوقيع
+        <div className="flex h-20 items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-white text-sm text-slate-400">
+          <Icon name="pen" className="h-5 w-5" /> منطقة التوقيع
         </div>
       );
     case "CONSENT":
@@ -712,9 +711,17 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
         </div>
       );
     case "DATE":
-      return <div className={`${box} w-48`}>📅 يوم / شهر / سنة</div>;
+      return (
+        <div className={`${box} flex w-48 items-center gap-2`}>
+          <Icon name="calendar" className="h-4 w-4" /> يوم / شهر / سنة
+        </div>
+      );
     case "TIME":
-      return <div className={`${box} w-32`}>🕐 --:--</div>;
+      return (
+        <div className={`${box} flex w-32 items-center gap-2`}>
+          <Icon name="clock" className="h-4 w-4" /> --:--
+        </div>
+      );
     case "NUMBER":
       return <div className={box}>{cfg.placeholder || "أدخل رقمًا"}</div>;
     case "PHONE":
@@ -833,7 +840,7 @@ function MediaUploadButton({
   return (
     <div>
       <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-xs font-medium hover:border-naf-400 hover:bg-naf-50">
-        <span>{kind === "IMAGE" ? "🖼️" : "🎬"}</span>
+        <Icon name={kind === "IMAGE" ? "image" : "film"} className="h-4 w-4" />
         <span>
           {busy
             ? "جارٍ الرفع…"

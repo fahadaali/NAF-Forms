@@ -7,6 +7,7 @@ import type { FieldTypeId } from "@/lib/field-types";
 import type { FormDTO, FormSettings, QuestionDTO } from "@/lib/types";
 import QuestionEditor from "./QuestionEditor";
 import AddQuestionPalette from "./AddQuestionPalette";
+import { Icon } from "@/components/ui/Icon";
 import DesignPanel from "./DesignPanel";
 import ShareTools from "./ShareTools";
 
@@ -169,8 +170,12 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
       {/* الشريط العلوي */}
       <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
-          <Link href="/" className="font-extrabold text-naf-700">
-            ← ناف
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 font-extrabold text-naf-700"
+          >
+            <Icon name="arrow-right" className="h-4 w-4" />
+            ناف
           </Link>
           <input
             className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-lg font-bold hover:border-slate-200 focus:border-naf-400 focus:outline-none"
@@ -189,34 +194,45 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
               ? `حُفظ ${savedAt}`
               : ""}
           </span>
-          <button onClick={openResponses} className="btn-ghost py-1.5 text-sm">
-            📊 الردود
+          <button
+            onClick={openResponses}
+            className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm"
+          >
+            <Icon name="chart" className="h-4 w-4" /> الردود
           </button>
-          <button onClick={openPreview} className="btn-ghost py-1.5 text-sm">
-            👁️ معاينة
+          <button
+            onClick={openPreview}
+            className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm"
+          >
+            <Icon name="eye" className="h-4 w-4" /> معاينة
           </button>
-          <button className="btn-primary py-1.5 text-sm" disabled={saving} onClick={() => save()}>
-            حفظ
+          <button
+            className="btn-primary inline-flex items-center gap-1.5 py-1.5 text-sm"
+            disabled={saving}
+            onClick={() => save()}
+          >
+            <Icon name="save" className="h-4 w-4" /> حفظ
           </button>
         </div>
         {/* التبويبات */}
         <div className="mx-auto flex max-w-6xl gap-1 px-4">
           {(
             [
-              ["build", "🧩 الأسئلة"],
-              ["design", "🎨 التخصيص"],
-              ["share", "🚀 النشر والمشاركة"],
+              ["build", "الأسئلة", "layers"],
+              ["design", "التخصيص", "palette"],
+              ["share", "النشر والمشاركة", "rocket"],
             ] as const
-          ).map(([k, label]) => (
+          ).map(([k, label, icon]) => (
             <button
               key={k}
               onClick={() => setTab(k)}
-              className={`border-b-2 px-4 py-2 text-sm font-medium ${
+              className={`inline-flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium ${
                 tab === k
                   ? "border-naf-600 text-naf-700"
                   : "border-transparent text-slate-500 hover:text-slate-700"
               }`}
             >
+              <Icon name={icon} className="h-4 w-4" />
               {label}
             </button>
           ))}
