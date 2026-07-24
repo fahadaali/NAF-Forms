@@ -21,6 +21,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
   const [status, setStatus] = useState(initial.status);
   const [settings, setSettings] = useState<FormSettings>(initial.settings);
   const [questions, setQuestions] = useState<QuestionDTO[]>(initial.questions);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -30,10 +31,11 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
   const addQuestion = useCallback(
     (t: FieldTypeId) => {
       const def = fieldType(t)!;
+      const id = `tmp-${++tmpCounter}`;
       setQuestions((prev) => [
         ...prev,
         {
-          id: `tmp-${++tmpCounter}`,
+          id,
           order: prev.length,
           type: t,
           label: "",
@@ -42,6 +44,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
           config: JSON.parse(JSON.stringify(def.defaultConfig)),
         },
       ]);
+      setSelectedId(id);
       mark();
     },
     []
@@ -258,29 +261,39 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
 
               {questions.length === 0 && (
                 <div className="card grid place-items-center p-10 text-center text-slate-400">
-                  أضف أول سؤال من القائمة الجانبية ←
+                  أضف أول عنصر من قائمة العناصر ←
                 </div>
               )}
 
-              {questions.map((q, i) => (
-                <QuestionEditor
-                  key={q.id}
-                  q={q}
-                  index={i}
-                  total={questions.length}
-                  formType={type}
-                  onChange={(patch) => updateQuestion(q.id, patch)}
-                  onRemove={() => removeQuestion(q.id)}
-                  onMove={(dir) => moveQuestion(q.id, dir)}
-                  onDuplicate={() => duplicateQuestion(q.id)}
-                  onDragStartItem={() => (dragIndex.current = i)}
-                  onDropItem={() => reorder(i)}
-                  priorQuestions={questions
-                    .slice(0, i)
-                    .filter((p) => p.type !== "SECTION")
-                    .map((p) => ({ id: p.id, label: p.label, type: p.type }))}
-                />
-              ))}
+              <div className="space-y-5" onClick={() => setSelectedId(null)}>
+                {questions.map((q, i) => (
+                  <QuestionEditor
+                    key={q.id}
+                    q={q}
+                    index={i}
+                    total={questions.length}
+                    formType={type}
+                    selected={selectedId === q.id}
+                    onSelect={() => setSelectedId(q.id)}
+                    onChange={(patch) => updateQuestion(q.id, patch)}
+                    onRemove={() => removeQuestion(q.id)}
+                    onMove={(dir) => moveQuestion(q.id, dir)}
+                    onDuplicate={() => duplicateQuestion(q.id)}
+                    onDragStartItem={() => (dragIndex.current = i)}
+                    onDropItem={() => reorder(i)}
+                    priorQuestions={questions
+                      .slice(0, i)
+                      .filter(
+                        (p) =>
+                          p.type !== "SECTION" &&
+                          p.type !== "IMAGE" &&
+                          p.type !== "VIDEO" &&
+                          p.type !== "PAGE_BREAK"
+                      )
+                      .map((p) => ({ id: p.id, label: p.label, type: p.type }))}
+                  />
+                ))}
+              </div>
             </div>
             <AddQuestionPalette onAdd={addQuestion} />
           </div>

@@ -80,8 +80,31 @@ export default function FillForm({
 
   // تطبيق المنطق الشرطي (على مستوى السؤال والقسم): عرض العناصر المتحقّقة شروطها
   const questions = computeVisibleQuestions(baseOrder, answers);
-  const safeStep = Math.min(step, Math.max(0, questions.length - 1));
-  const current = questions[safeStep];
+
+  // تقسيم العناصر إلى بطاقات (steps): يمكن أن تحتوي البطاقة أكثر من عنصر/سؤال.
+  // إن وُجدت فواصل صفحات (PAGE_BREAK) نجمّع ما بينها في بطاقة واحدة،
+  // وإلا فبطاقة لكل عنصر (النمط الافتراضي).
+  const steps = useMemo(() => {
+    const hasBreaks = questions.some((q) => q.type === "PAGE_BREAK");
+    if (hasBreaks) {
+      const pages: (typeof questions)[] = [];
+      let cur: typeof questions = [];
+      for (const q of questions) {
+        if (q.type === "PAGE_BREAK") {
+          pages.push(cur);
+          cur = [];
+        } else cur.push(q);
+      }
+      pages.push(cur);
+      return pages.filter((p) => p.length > 0);
+    }
+    return questions
+      .filter((q) => q.type !== "PAGE_BREAK")
+      .map((q) => [q] as typeof questions);
+  }, [questions]);
+
+  const safeStep = Math.min(step, Math.max(0, steps.length - 1));
+  const currentStep = steps[safeStep] || [];
 
   const pageStyle: React.CSSProperties = {
     background: theme.background,
@@ -90,13 +113,15 @@ export default function FillForm({
   };
   const accent = theme.primary || "#44528a";
 
-  function validate(q: (typeof questions)[number]): boolean {
-    // عناصر العرض (نص/صورة/فيديو) لا تُتحقق
-    if (!isInputQuestion(q.type)) return true;
-    const err = validateAnswer(q.type, q.config || {}, answers[q.id], q.required);
-    if (err) {
-      setError(err);
-      return false;
+  // تحقق من بطاقة كاملة (قد تضم عدة أسئلة)
+  function validateStep(stepQs: typeof questions): boolean {
+    for (const q of stepQs) {
+      if (!isInputQuestion(q.type)) continue;
+      const err = validateAnswer(q.type, q.config || {}, answers[q.id], q.required);
+      if (err) {
+        setError(stepQs.length > 1 ? `«${q.label}»: ${err}` : err);
+        return false;
+      }
     }
     return true;
   }
@@ -111,9 +136,9 @@ export default function FillForm({
 
   function goNext() {
     clearAdvance();
-    if (current && !validate(current)) return;
+    if (currentStep.length && !validateStep(currentStep)) return;
     setError("");
-    if (safeStep < questions.length - 1) {
+    if (safeStep < steps.length - 1) {
       setAnim("animate-card-in");
       setStep(safeStep + 1);
     } else {
@@ -135,16 +160,16 @@ export default function FillForm({
   goNextRef.current = goNext;
 
   // الانتقال التلقائي عند اختيار إجابة واحدة (اختيار من متعدد) أو الموافقة
+  // — فقط عندما تحتوي البطاقة سؤالًا واحدًا.
   function maybeAutoAdvance(q: (typeof questions)[number], val: any) {
     if (!cardMode || behavior.autoAdvance === false) return;
-    if (safeStep >= questions.length - 1) return; // لا ننتقل تلقائيًا في آخر بطاقة
+    if (currentStep.length !== 1) return;
+    if (safeStep >= steps.length - 1) return; // لا ننتقل تلقائيًا في آخر بطاقة
     const eligible =
       (q.type === "MULTIPLE_CHOICE" &&
         typeof val === "string" &&
         (q.config?.options || []).includes(val)) ||
-      (q.type === "IMAGE_CHOICE" &&
-        typeof val === "string" &&
-        val !== "") ||
+      (q.type === "IMAGE_CHOICE" && typeof val === "string" && val !== "") ||
       (q.type === "CONSENT" && val === true);
     if (!eligible) return;
     clearAdvance();
@@ -152,10 +177,10 @@ export default function FillForm({
   }
 
   async function submit() {
-    // تحقق نهائي من الإلزامي
-    for (const q of questions) {
-      if (!validate(q)) {
-        setStep(questions.indexOf(q));
+    // تحقق نهائي من كل البطاقات: ننتقل لأول بطاقة بها خطأ
+    for (let i = 0; i < steps.length; i++) {
+      if (!validateStep(steps[i])) {
+        setStep(i);
         setPhase("question");
         return;
       }
@@ -200,8 +225,8 @@ export default function FillForm({
   }, [remaining]);
 
   const progress = useMemo(
-    () => (questions.length ? Math.round(((safeStep + 1) / questions.length) * 100) : 0),
-    [safeStep, questions.length]
+    () => (steps.length ? Math.round(((safeStep + 1) / steps.length) * 100) : 0),
+    [safeStep, steps.length]
   );
 
   // ===== بوابة كلمة المرور =====
@@ -438,11 +463,13 @@ export default function FillForm({
       <div style={pageStyle} className="px-4 py-10">
         <div className="mx-auto max-w-2xl space-y-4">
           <h1 className="text-2xl font-extrabold">{form.title}</h1>
-          {questions.map((q, i) => (
-            <div key={q.id} className="rounded-2xl p-6 shadow-sm" style={{ background: theme.cardBg }}>
-              <QuestionCard q={q} value={answers[q.id]} onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))} accent={accent} index={i} />
-            </div>
-          ))}
+          {questions
+            .filter((q) => q.type !== "PAGE_BREAK")
+            .map((q, i) => (
+              <div key={q.id} className="rounded-2xl p-6 shadow-sm" style={{ background: theme.cardBg }}>
+                <QuestionCard q={q} value={answers[q.id]} onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))} accent={accent} index={i} />
+              </div>
+            ))}
           {error && <p className="text-center font-medium text-red-600">{error}</p>}
           <button
             onClick={submit}
@@ -457,13 +484,19 @@ export default function FillForm({
     );
   }
 
-  // ===== وضع البطاقات (سؤال لكل بطاقة) =====
+  // ===== وضع البطاقات (بطاقة واحدة قد تضم عدة أسئلة/عناصر) =====
+  const multi = currentStep.length > 1;
   return (
     <div
       style={pageStyle}
       className="flex flex-col px-4 py-6"
       onKeyDown={(e) => {
-        if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
+        // في البطاقات متعددة الأسئلة لا ننتقل بمفتاح Enter تلقائيًا
+        if (
+          !multi &&
+          e.key === "Enter" &&
+          (e.target as HTMLElement).tagName !== "TEXTAREA"
+        ) {
           e.preventDefault();
           goNext();
         }
@@ -487,7 +520,7 @@ export default function FillForm({
           </div>
           <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
             <span>
-              {safeStep + 1} من {questions.length}
+              {safeStep + 1} من {steps.length}
             </span>
             {timeLimit && remaining !== null && (
               <span
@@ -504,17 +537,23 @@ export default function FillForm({
 
       <div className="flex flex-1 items-center justify-center py-6">
         <div key={safeStep} className={`w-full max-w-2xl rounded-3xl p-8 shadow-xl ${anim}`} style={{ background: theme.cardBg }}>
-          <QuestionCard
-            q={current}
-            value={answers[current.id]}
-            onChange={(v) => {
-              setAnswers((a) => ({ ...a, [current.id]: v }));
-              setError("");
-              maybeAutoAdvance(current, v);
-            }}
-            accent={accent}
-            index={safeStep}
-          />
+          <div className={multi ? "space-y-8 divide-y divide-slate-100" : ""}>
+            {currentStep.map((q, i) => (
+              <div key={q.id} className={multi && i > 0 ? "pt-6" : ""}>
+                <QuestionCard
+                  q={q}
+                  value={answers[q.id]}
+                  onChange={(v) => {
+                    setAnswers((a) => ({ ...a, [q.id]: v }));
+                    setError("");
+                    maybeAutoAdvance(q, v);
+                  }}
+                  accent={accent}
+                  index={i}
+                />
+              </div>
+            ))}
+          </div>
           {error && <p className="mt-4 font-medium text-red-600">{error}</p>}
 
           <div className="mt-8 flex items-center justify-between">
@@ -533,7 +572,7 @@ export default function FillForm({
             >
               {submitting
                 ? "جارٍ الإرسال…"
-                : safeStep === questions.length - 1
+                : safeStep === steps.length - 1
                 ? "إرسال ✓"
                 : "التالي →"}
             </button>
