@@ -14,8 +14,6 @@ const MapPicker = dynamic(() => import("./MapPicker"), {
   ),
 });
 
-const OTHER = "__other__";
-
 export default function QuestionInput({
   question,
   value,
