@@ -18,6 +18,7 @@ import {
   computeVisibleQuestions,
 } from "@/lib/utils";
 import { sendMail } from "@/lib/mailer";
+import { deliverAndLog } from "@/lib/deliver";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 // استلام رد على النموذج (عام) مع تسجيل تاريخ ووقت التقديم وحساب درجة الاختبار
@@ -255,23 +256,46 @@ export async function POST(
     }).catch(() => {});
   }
 
-  // Webhook: إرسال بيانات الرد إلى نظام خارجي
-  if (settings.notify?.webhookUrl) {
-    void fetch(settings.notify.webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        formId: form.id,
-        formTitle: form.title,
-        responseId: response.id,
-        submittedAt: response.submittedAt,
-        email: email || null,
-        score: meta.score,
-        total: meta.total,
-        answers,
-      }),
-    }).catch(() => {});
+  // التسليم إلى الوجهات الخارجية مع إعادة المحاولة وتسجيل النتيجة.
+  // نبني حمولة مقروءة (بأسماء الأسئلة) إلى جانب الإجابات الخام.
+  const labelled: Record<string, any> = {};
+  for (const q of form.questions) {
+    if (!isInputQuestion(q.type)) continue;
+    if (answers[q.id] === undefined) continue;
+    labelled[q.label || q.id] = answers[q.id];
   }
+  const payload = {
+    formId: form.id,
+    formSlug: form.slug,
+    formTitle: form.title,
+    responseId: response.id,
+    submittedAt: response.submittedAt,
+    email: email || null,
+    score: meta.score,
+    total: meta.total,
+    answers,
+    fields: labelled,
+  };
+
+  const targets: { kind: "webhook" | "sheets"; url: string }[] = [];
+  if (settings.notify?.webhookUrl)
+    targets.push({ kind: "webhook", url: settings.notify.webhookUrl });
+  if (settings.integrations?.sheetsUrl)
+    targets.push({ kind: "sheets", url: settings.integrations.sheetsUrl });
+
+  // ننفّذها بالتوازي وننتظرها حتى تُسجَّل النتيجة قبل انتهاء الطلب على Workers
+  if (targets.length)
+    await Promise.all(
+      targets.map((t) =>
+        deliverAndLog({
+          formId: form.id,
+          responseId: response.id,
+          kind: t.kind,
+          url: t.url,
+          payload,
+        }).catch(() => null)
+      )
+    );
 
   return NextResponse.json({
     ok: true,

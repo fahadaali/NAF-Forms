@@ -47,6 +47,12 @@ export interface FormSettings {
     confirmSubject?: string;
     confirmMessage?: string;
   };
+  // تكاملات خارجية (حسّاسة — لا تُرسل لصفحة التعبئة العامة)
+  integrations?: {
+    sheetsUrl?: string; // رابط Google Apps Script لإضافة صف لكل رد
+    apiToken?: string; // رمز قراءة الردود عبر واجهة برمجية
+    apiEnabled?: boolean;
+  };
   exam?: {
     timeLimitMin?: number | null; // مدة الاختبار بالدقائق
     shuffle?: boolean; // خلط ترتيب الأسئلة
@@ -110,5 +116,6 @@ export const DEFAULT_SETTINGS: FormSettings = {
   access: {},
   limits: { maxResponses: null, closeAt: null },
   notify: {},
+  integrations: {},
   exam: { timeLimitMin: null, shuffle: false, showAnswers: false, passScore: null },
 };
