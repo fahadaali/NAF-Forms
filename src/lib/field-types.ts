@@ -23,6 +23,7 @@ export type FieldTypeId =
   | "IMAGE_CHOICE"
   | "SIGNATURE"
   | "CONSENT"
+  | "HIDDEN"
   | "SECTION"
   | "IMAGE"
   | "VIDEO"
@@ -246,6 +247,15 @@ export const FIELD_TYPES: FieldTypeDef[] = [
     gradable: false,
   },
   {
+    id: "HIDDEN",
+    label: "حقل مخفي",
+    hint: "يُسجَّل دون إظهاره — لالتقاط المصدر أو رقم مرجعي من الرابط",
+    icon: "🕵️",
+    group: "special",
+    defaultConfig: { paramName: "source", defaultValue: "" },
+    gradable: false,
+  },
+  {
     id: "SECTION",
     label: "عنوان / نص",
     hint: "عنوان أو نص توضيحي بين الأسئلة",
@@ -306,6 +316,9 @@ export const NON_INPUT_TYPES: FieldTypeId[] = [
   "VIDEO",
   "PAGE_BREAK",
 ];
+
+// حقول تُسجَّل قيمتها لكنها لا تُعرض للمستفيد (تُملأ من الرابط أو بقيمة افتراضية)
+export const HIDDEN_FIELD_TYPES: FieldTypeId[] = ["HIDDEN"];
 
 export const FORM_TYPE_LABELS: Record<string, string> = {
   SURVEY: "استبيان / استطلاع",

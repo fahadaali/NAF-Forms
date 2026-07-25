@@ -4,6 +4,9 @@ import {
   countResponses,
   getResponsesMeta,
   createResponse,
+  getOptionCounts,
+  completeVisit,
+  deleteDraft,
 } from "@/lib/repo";
 import {
   safeParse,
@@ -110,6 +113,33 @@ export async function POST(
       );
   }
 
+  // التحقق من حصص الخيارات (مثل عدد المقاعد لكل موعد)
+  const quotaByQ: Record<string, Record<string, number>> = {};
+  for (const q of form.questions) {
+    if (!visibleIds.has(q.id)) continue;
+    const cfg = safeParse<Record<string, any>>(q.config, {});
+    if (cfg.quotas && Object.keys(cfg.quotas).length) quotaByQ[q.id] = cfg.quotas;
+  }
+  const quotaQIds = Object.keys(quotaByQ);
+  if (quotaQIds.length) {
+    const counts = await getOptionCounts(form.id, quotaQIds);
+    for (const qid of quotaQIds) {
+      const picked = answers[qid];
+      const chosen = (Array.isArray(picked) ? picked : [picked])
+        .map((v) => String(v ?? ""))
+        .filter(Boolean);
+      for (const option of chosen) {
+        const max = Number(quotaByQ[qid][option]);
+        if (!Number.isFinite(max) || max <= 0) continue;
+        if ((counts[qid]?.[option] || 0) >= max)
+          return NextResponse.json(
+            { error: `اكتمل العدد المتاح للخيار «${option}»` },
+            { status: 409 }
+          );
+      }
+    }
+  }
+
   // حساب الدرجة للاختبارات + بناء مراجعة الإجابات
   let score = 0;
   let total = 0;
@@ -153,6 +183,11 @@ export async function POST(
         value: JSON.stringify(answers[q.id]),
       }))
   );
+
+  // ختم زيارة التعبئة (لحساب معدّل الإكمال والزمن) وحذف المسودّة إن وُجدت
+  if (body.visitId)
+    await completeVisit(String(body.visitId), response.id).catch(() => {});
+  if (body.draftToken) await deleteDraft(String(body.draftToken)).catch(() => {});
 
   // إشعار بريد للمشرف عند وصول رد جديد (غير حاجب — لا يؤخّر الاستجابة)
   const notifyTo = settings.notify?.email;

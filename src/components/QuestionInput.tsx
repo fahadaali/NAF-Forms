@@ -19,14 +19,27 @@ export default function QuestionInput({
   value,
   onChange,
   accent = "#44528a",
+  remaining,
 }: {
   question: QuestionDTO;
   value: any;
   onChange: (v: any) => void;
   accent?: string;
+  // المتبقي من حصة كل خيار (إن كانت الحصص مفعّلة لهذا السؤال)
+  remaining?: Record<string, number>;
 }) {
   const cfg = question.config || {};
   const style = { accentColor: accent } as React.CSSProperties;
+
+  // هل الخيار مكتمل العدد؟ (لا يُعطَّل الخيار المُختار مسبقًا)
+  const isFull = (option: string) =>
+    !!remaining && remaining[option] !== undefined && remaining[option] <= 0;
+  const quotaNote = (option: string) =>
+    remaining && remaining[option] !== undefined
+      ? remaining[option] <= 0
+        ? " (اكتمل العدد)"
+        : ` (متبقٍ ${remaining[option]})`
+      : "";
 
   switch (question.type) {
     case "PARAGRAPH":
@@ -101,8 +114,9 @@ export default function QuestionInput({
           >
             <option value="">— اختر —</option>
             {options.map((o) => (
-              <option key={o} value={o}>
+              <option key={o} value={o} disabled={isFull(o) && value !== o}>
                 {o}
+                {quotaNote(o)}
               </option>
             ))}
           </select>
@@ -111,21 +125,32 @@ export default function QuestionInput({
       const isOther = value && !options.includes(value) ? value : "";
       return (
         <div className="space-y-2.5">
-          {options.map((o) => (
-            <label
-              key={o}
-              className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 hover:bg-slate-50 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50"
-            >
-              <input
-                type="radio"
-                style={style}
-                className="h-4 w-4"
-                checked={value === o}
-                onChange={() => onChange(o)}
-              />
-              <span className="text-sm">{o}</span>
-            </label>
-          ))}
+          {options.map((o) => {
+            const full = isFull(o) && value !== o;
+            return (
+              <label
+                key={o}
+                className={`flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50 ${
+                  full
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer hover:bg-slate-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  style={style}
+                  className="h-4 w-4"
+                  disabled={full}
+                  checked={value === o}
+                  onChange={() => onChange(o)}
+                />
+                <span className="text-sm">
+                  {o}
+                  <span className="text-xs text-slate-400">{quotaNote(o)}</span>
+                </span>
+              </label>
+            );
+          })}
           {cfg.allowOther && (
             <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50">
               <input
@@ -155,21 +180,32 @@ export default function QuestionInput({
         onChange(arr.includes(o) ? arr.filter((x) => x !== o) : [...arr, o]);
       return (
         <div className="space-y-2.5">
-          {options.map((o) => (
-            <label
-              key={o}
-              className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 hover:bg-slate-50 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50"
-            >
-              <input
-                type="checkbox"
-                style={style}
-                className="h-4 w-4 rounded"
-                checked={arr.includes(o)}
-                onChange={() => toggle(o)}
-              />
-              <span className="text-sm">{o}</span>
-            </label>
-          ))}
+          {options.map((o) => {
+            const full = isFull(o) && !arr.includes(o);
+            return (
+              <label
+                key={o}
+                className={`flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50 ${
+                  full
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer hover:bg-slate-50"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  style={style}
+                  className="h-4 w-4 rounded"
+                  disabled={full}
+                  checked={arr.includes(o)}
+                  onChange={() => toggle(o)}
+                />
+                <span className="text-sm">
+                  {o}
+                  <span className="text-xs text-slate-400">{quotaNote(o)}</span>
+                </span>
+              </label>
+            );
+          })}
         </div>
       );
     }

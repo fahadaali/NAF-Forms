@@ -276,6 +276,13 @@ export default function DesignPanel({
             onChange={(v) => patch({ behavior: { ...behavior, autoAdvance: v } })}
           />
           <Toggle
+            label="السماح بحفظ الإجابات ومتابعتها لاحقًا برابط"
+            checked={!!behavior.allowSaveResume}
+            onChange={(v) =>
+              patch({ behavior: { ...behavior, allowSaveResume: v } })
+            }
+          />
+          <Toggle
             label="طلب بريد المستفيد قبل البدء"
             checked={!!behavior.collectEmail}
             onChange={(v) => patch({ behavior: { ...behavior, collectEmail: v } })}

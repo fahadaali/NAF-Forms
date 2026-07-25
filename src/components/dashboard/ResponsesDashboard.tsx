@@ -27,6 +27,14 @@ export interface ResponseRow {
   cells: { label: string; type: string; text: string; url?: string; loc?: { lat: number; lng: number } }[];
 }
 
+export interface FunnelStats {
+  started: number;
+  completed: number;
+  rate: number | null;
+  avgSeconds: number | null;
+  dropOff: { label: string; count: number }[];
+}
+
 export default function ResponsesDashboard({
   formId,
   formType,
@@ -35,6 +43,7 @@ export default function ResponsesDashboard({
   stats,
   rows,
   timeline,
+  funnel,
 }: {
   formId: string;
   formType: string;
@@ -43,6 +52,7 @@ export default function ResponsesDashboard({
   stats: QuestionStat[];
   rows: ResponseRow[];
   timeline: { label: string; count: number }[];
+  funnel: FunnelStats;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<"summary" | "individual">("summary");
@@ -142,6 +152,7 @@ export default function ResponsesDashboard({
 
       {total > 0 && tab === "summary" && (
         <div className="space-y-4">
+          <FunnelPanel funnel={funnel} />
           {timeline.length > 1 && <TimelineChart data={timeline} />}
           {stats.map((q) => (
             <StatBlock key={q.id} q={q} />
@@ -393,6 +404,88 @@ function Donut({ data }: { data: { label: string; count: number }[] }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// تحليلات الإكمال: معدّل الإكمال، زمن التعبئة، ونقاط التسرّب
+function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
+  if (!funnel.started)
+    return (
+      <div className="card p-5 text-sm text-slate-400">
+        <h3 className="mb-1 flex items-center gap-2 font-bold text-slate-700">
+          <Icon name="target" className="h-5 w-5 text-naf-600" /> تحليلات الإكمال
+        </h3>
+        لم تُسجَّل محاولات تعبئة بعد. تُحتسب من لحظة ضغط «البدء» في النماذج
+        المنشورة.
+      </div>
+    );
+
+  const dur = (s: number | null) => {
+    if (s == null) return "—";
+    const m = Math.floor(s / 60);
+    return m > 0 ? `${m} د ${s % 60} ث` : `${s} ث`;
+  };
+  const maxDrop = Math.max(1, ...funnel.dropOff.map((d) => d.count));
+
+  return (
+    <div className="card p-5">
+      <h3 className="mb-4 flex items-center gap-2 font-bold">
+        <Icon name="target" className="h-5 w-5 text-naf-600" /> تحليلات الإكمال
+      </h3>
+      <div className="grid gap-4 sm:grid-cols-4">
+        <Metric label="بدأوا التعبئة" value={String(funnel.started)} />
+        <Metric label="أكملوا" value={String(funnel.completed)} />
+        <Metric
+          label="معدّل الإكمال"
+          value={funnel.rate == null ? "—" : `${funnel.rate}%`}
+        />
+        <Metric label="متوسط زمن التعبئة" value={dur(funnel.avgSeconds)} />
+      </div>
+
+      {funnel.rate != null && (
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+          <div
+            className="h-full rounded-full bg-naf-600"
+            style={{ width: `${funnel.rate}%` }}
+          />
+        </div>
+      )}
+
+      {funnel.dropOff.length > 0 && (
+        <div className="mt-5">
+          <p className="mb-2 text-sm font-semibold text-slate-700">
+            نقاط التسرّب — آخر سؤال وُصل إليه دون إكمال
+          </p>
+          <div className="space-y-1.5">
+            {funnel.dropOff.map((d, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm">
+                <span className="w-40 shrink-0 truncate text-slate-600">
+                  {d.label}
+                </span>
+                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-amber-400"
+                    style={{ width: `${(d.count / maxDrop) * 100}%` }}
+                  />
+                </div>
+                <span className="w-8 text-left text-xs text-slate-500">
+                  {d.count}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-slate-50 p-3">
+      <div className="text-xs text-slate-400">{label}</div>
+      <div className="mt-0.5 text-lg font-extrabold">{value}</div>
     </div>
   );
 }
