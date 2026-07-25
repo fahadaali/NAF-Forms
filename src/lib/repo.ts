@@ -590,6 +590,53 @@ export async function deleteResponse(id: string) {
   await db.run(`DELETE FROM "Response" WHERE "id" = ?`, [id]);
 }
 
+// ============================ سجل التسليم الخارجي ============================
+export async function logDelivery(d: {
+  formId: string;
+  responseId: string;
+  kind: string;
+  url: string;
+  ok: boolean;
+  status: number;
+  attempts: number;
+  error: string;
+}) {
+  await getDb().run(
+    `INSERT INTO "WebhookLog" ("id","formId","responseId","kind","url","ok","status","attempts","error","createdAt")
+     VALUES (?,?,?,?,?,?,?,?,?,?)`,
+    [
+      nanoid(),
+      d.formId,
+      d.responseId,
+      d.kind,
+      d.url,
+      d.ok ? 1 : 0,
+      d.status,
+      d.attempts,
+      d.error.slice(0, 500),
+      now(),
+    ]
+  );
+}
+
+export async function listDeliveries(formId: string, limit = 50) {
+  const rows = await getDb().all(
+    `SELECT * FROM "WebhookLog" WHERE "formId" = ? ORDER BY "createdAt" DESC LIMIT ?`,
+    [formId, limit]
+  );
+  return rows.map((r: any) => ({
+    id: r.id,
+    responseId: r.responseId,
+    kind: r.kind,
+    url: r.url,
+    ok: toBool(r.ok),
+    status: Number(r.status ?? 0),
+    attempts: Number(r.attempts ?? 0),
+    error: r.error || "",
+    createdAt: toDate(r.createdAt),
+  }));
+}
+
 // ============================ مراجعة الردود (تتبّع المتقدمين) ============================
 export interface ReviewRow {
   responseId: string;

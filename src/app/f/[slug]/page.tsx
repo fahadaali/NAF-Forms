@@ -43,9 +43,10 @@ export default async function FillPage({
     // (النشر يتم من صفحة البناء)
   }
 
-  // إزالة كلمة المرور قبل الإرسال للعميل، مع تمرير مؤشر وجودها فقط
+  // إزالة الأسرار قبل الإرسال للعميل: كلمة المرور (يُمرَّر مؤشر وجودها فقط)،
+  // وبيانات التكاملات (رابط Sheets ورمز الواجهة البرمجية)، وبيانات الإشعارات.
   const locked = !!s.access?.password;
-  const fullSettings = { ...s, access: {} };
+  const fullSettings = { ...s, access: {}, integrations: {}, notify: {} };
 
   const dto: FormDTO = {
     id: form.id,

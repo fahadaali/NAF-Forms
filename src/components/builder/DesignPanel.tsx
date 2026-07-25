@@ -1,7 +1,9 @@
 "use client";
+import { useState } from "react";
 import type { FormSettings } from "@/lib/types";
 import { youtubeEmbed } from "@/lib/utils";
 import { Icon } from "@/components/ui/Icon";
+import { formatDateTime } from "@/lib/utils";
 
 // ترويسة قسم بأيقونة منحنية
 function SectionHead({ icon, children }: { icon: string; children: React.ReactNode }) {
@@ -17,10 +19,12 @@ export default function DesignPanel({
   settings,
   onChange,
   formType,
+  formId,
 }: {
   settings: FormSettings;
   onChange: (s: FormSettings) => void;
   formType: string;
+  formId: string;
 }) {
   const patch = (part: Partial<FormSettings>) => onChange({ ...settings, ...part });
   const theme = settings.theme || {};
@@ -29,6 +33,7 @@ export default function DesignPanel({
   const after = settings.afterSubmit || {};
   const behavior = settings.behavior || {};
   const exam = settings.exam || {};
+  const integrations = settings.integrations || {};
 
   async function uploadCover(file: File, key: "imageUrl" | "logoUrl") {
     const fd = new FormData();
@@ -427,6 +432,16 @@ export default function DesignPanel({
         )}
       </section>
 
+      {/* التكاملات الخارجية */}
+      <section className="card p-5">
+        <SectionHead icon="layers">التكاملات الخارجية</SectionHead>
+        <IntegrationsPanel
+          formId={formId}
+          integrations={integrations}
+          onChange={(next) => patch({ integrations: next })}
+        />
+      </section>
+
       {/* إعدادات الاختبار */}
       {formType === "EXAM" && (
         <section className="card p-5">
@@ -558,6 +573,173 @@ export default function DesignPanel({
           </div>
         </section>
       )}
+    </div>
+  );
+}
+
+// التكاملات: مزامنة Google Sheets + واجهة برمجية للقراءة + سجل التسليم
+function IntegrationsPanel({
+  formId,
+  integrations,
+  onChange,
+}: {
+  formId: string;
+  integrations: NonNullable<FormSettings["integrations"]>;
+  onChange: (v: NonNullable<FormSettings["integrations"]>) => void;
+}) {
+  const [logs, setLogs] = useState<any[] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  async function loadLogs() {
+    setBusy(true);
+    const res = await fetch(`/api/forms/${formId}/deliveries`);
+    setBusy(false);
+    if (res.ok) setLogs((await res.json()).deliveries || []);
+  }
+
+  async function resend() {
+    setBusy(true);
+    setMsg("");
+    const res = await fetch(`/api/forms/${formId}/deliveries`, { method: "POST" });
+    const d = await res.json().catch(() => ({}));
+    setBusy(false);
+    if (!res.ok) {
+      setMsg(d.error || "تعذّر الإرسال");
+      return;
+    }
+    const okAll = (d.results || []).every((r: any) => r.ok);
+    setMsg(
+      okAll
+        ? "تم الإرسال بنجاح"
+        : `فشل بعض الوجهات: ${(d.results || [])
+            .filter((r: any) => !r.ok)
+            .map((r: any) => `${r.kind} (${r.error || r.status})`)
+            .join("، ")}`
+    );
+    loadLogs();
+  }
+
+  const apiUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/api/v1/forms/${formId}/responses`
+      : "";
+
+  return (
+    <div className="space-y-5">
+      {/* Google Sheets */}
+      <div>
+        <label className="label">مزامنة Google Sheets — رابط Apps Script</label>
+        <input
+          className="input"
+          dir="ltr"
+          placeholder="https://script.google.com/macros/s/.../exec"
+          value={integrations.sheetsUrl || ""}
+          onChange={(e) => onChange({ ...integrations, sheetsUrl: e.target.value })}
+        />
+        <details className="mt-2">
+          <summary className="cursor-pointer text-xs font-medium text-naf-600">
+            كيف أجهّز الرابط؟
+          </summary>
+          <ol className="mt-2 list-decimal space-y-1 pr-5 text-xs leading-relaxed text-slate-500">
+            <li>افتح جدول Google Sheets ثم: الإضافات ← Apps Script.</li>
+            <li>
+              الصق دالة تستقبل <span dir="ltr">POST</span> وتضيف صفًا، مثل:
+              <code className="mt-1 block rounded bg-slate-100 p-2 text-[11px]" dir="ltr">
+                {`function doPost(e){const d=JSON.parse(e.postData.contents);const s=SpreadsheetApp.getActiveSheet();const f=d.fields||{};if(s.getLastRow()===0)s.appendRow(['submittedAt','email',...Object.keys(f)]);s.appendRow([d.submittedAt,d.email,...Object.values(f).map(v=>typeof v==='object'?JSON.stringify(v):v)]);return ContentService.createTextOutput('ok');}`}
+              </code>
+            </li>
+            <li>
+              انشر: Deploy ← New deployment ← Web app ← الوصول لـ «Anyone»، وانسخ
+              رابط <span dir="ltr">/exec</span> هنا.
+            </li>
+          </ol>
+        </details>
+      </div>
+
+      {/* واجهة برمجية للقراءة */}
+      <div className="border-t border-slate-100 pt-4">
+        <Toggle
+          label="تفعيل واجهة برمجية لقراءة الردود (JSON)"
+          checked={!!integrations.apiEnabled}
+          onChange={(v) =>
+            onChange({
+              ...integrations,
+              apiEnabled: v,
+              // نولّد رمزًا عند التفعيل إن لم يوجد
+              apiToken:
+                v && !integrations.apiToken
+                  ? crypto.randomUUID().replace(/-/g, "")
+                  : integrations.apiToken,
+            })
+          }
+        />
+        {integrations.apiEnabled && (
+          <div className="mt-3 space-y-2">
+            <label className="label">رمز الوصول (سرّي)</label>
+            <div className="flex gap-2">
+              <input className="input py-1.5 text-xs" dir="ltr" readOnly value={integrations.apiToken || ""} />
+              <button
+                className="btn-ghost shrink-0 py-1.5 text-xs"
+                onClick={() =>
+                  onChange({
+                    ...integrations,
+                    apiToken: crypto.randomUUID().replace(/-/g, ""),
+                  })
+                }
+              >
+                تدوير
+              </button>
+            </div>
+            <p className="text-xs text-slate-500">الاستخدام:</p>
+            <code className="block overflow-x-auto rounded bg-slate-100 p-2 text-[11px]" dir="ltr">
+              curl -H &quot;Authorization: Bearer {integrations.apiToken || "TOKEN"}&quot; {apiUrl}
+            </code>
+            <p className="text-xs text-slate-400">
+              تدعم <span dir="ltr">?limit=</span> و<span dir="ltr">?since=</span>{" "}
+              (تاريخ ISO). الرمز سرّي ولا يُرسل لصفحة التعبئة.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* سجل التسليم */}
+      <div className="border-t border-slate-100 pt-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <button className="btn-ghost py-1.5 text-sm" disabled={busy} onClick={loadLogs}>
+            سجل التسليم
+          </button>
+          <button className="btn-ghost py-1.5 text-sm" disabled={busy} onClick={resend}>
+            إعادة إرسال آخر رد (اختبار)
+          </button>
+          {busy && <span className="text-xs text-slate-400">جارٍ…</span>}
+          {msg && <span className="text-xs text-slate-600">{msg}</span>}
+        </div>
+        {logs && (
+          <div className="mt-3 space-y-1.5">
+            {logs.length === 0 && (
+              <p className="text-xs text-slate-400">لا توجد عمليات تسليم بعد.</p>
+            )}
+            {logs.map((l) => (
+              <div
+                key={l.id}
+                className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 p-2 text-xs"
+              >
+                <span className={`chip ${l.ok ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                  {l.ok ? "نجح" : "فشل"}
+                </span>
+                <span className="text-slate-500">{l.kind}</span>
+                <span className="text-slate-400">HTTP {l.status || "—"}</span>
+                <span className="text-slate-400">محاولات: {l.attempts}</span>
+                {l.error && <span className="text-red-600">{l.error}</span>}
+                <span className="ms-auto text-slate-400">
+                  {formatDateTime(l.createdAt)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

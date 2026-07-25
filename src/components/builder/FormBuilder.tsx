@@ -347,6 +347,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
         {tab === "design" && (
           <DesignPanel
             formType={type}
+            formId={initial.id}
             settings={settings}
             onChange={(s) => {
               setSettings(s);
