@@ -239,6 +239,16 @@ export default function DesignPanel({
           />
           إظهار الدرجة بعد التسليم (للاختبارات)
         </label>
+        <label className="label mt-4">رابط إعادة التوجيه بعد الإرسال (اختياري)</label>
+        <input
+          className="input"
+          dir="ltr"
+          placeholder="https://..."
+          value={after.redirectUrl || ""}
+          onChange={(e) =>
+            patch({ afterSubmit: { ...after, redirectUrl: e.target.value } })
+          }
+        />
       </section>
 
       {/* السلوك */}

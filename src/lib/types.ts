@@ -14,10 +14,9 @@ export interface FormSettings {
     logoUrl?: string;
   };
   content?: {
-    // محتوى إضافي يظهر في مقدمة النموذج: روابط/ملفات/نصوص
+    // محتوى إضافي يظهر في مقدمة النموذج: روابط وملفات
     links?: { label: string; url: string }[];
     files?: { name: string; url: string; downloadable: boolean }[];
-    richText?: string;
   };
   afterSubmit?: {
     title?: string; // عنوان رسالة ما بعد الإرسال
