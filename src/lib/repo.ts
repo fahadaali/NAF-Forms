@@ -28,6 +28,7 @@ function mapUser(r: any) {
     role: r.role,
     passwordHash: r.passwordHash,
     mustChangePassword: toBool(r.mustChangePassword),
+    sessionVersion: Number(r.sessionVersion ?? 0),
     createdAt: toDate(r.createdAt),
   };
 }
@@ -37,6 +38,7 @@ function mapProject(r: any) {
     name: r.name,
     description: r.description,
     color: r.color,
+    ownerId: r.ownerId ?? "",
     createdAt: toDate(r.createdAt),
     updatedAt: toDate(r.updatedAt),
   };
@@ -52,6 +54,7 @@ function mapForm(r: any) {
     status: r.status,
     settings: r.settings,
     isTemplate: toBool(r.isTemplate),
+    ownerId: r.ownerId ?? "",
     createdAt: toDate(r.createdAt),
     updatedAt: toDate(r.updatedAt),
   };
@@ -125,7 +128,13 @@ export async function createUser(data: {
 }
 export async function updateUser(
   id: string,
-  data: { role?: string; passwordHash?: string; mustChangePassword?: boolean }
+  data: {
+    role?: string;
+    passwordHash?: string;
+    mustChangePassword?: boolean;
+    // زيادة إصدار الجلسة تُبطل كل الجلسات القديمة (بعد تغيير/إعادة كلمة المرور)
+    bumpSessionVersion?: boolean;
+  }
 ) {
   const sets: string[] = [];
   const vals: any[] = [];
@@ -141,6 +150,9 @@ export async function updateUser(
     sets.push(`"mustChangePassword" = ?`);
     vals.push(data.mustChangePassword ? 1 : 0);
   }
+  if (data.bumpSessionVersion) {
+    sets.push(`"sessionVersion" = "sessionVersion" + 1`);
+  }
   if (sets.length) {
     vals.push(id);
     await getDb().run(`UPDATE "User" SET ${sets.join(", ")} WHERE "id" = ?`, vals);
@@ -152,12 +164,18 @@ export async function deleteUser(id: string) {
 }
 
 // ============================ المشاريع ============================
-export async function listProjects() {
+// قائمة المشاريع: المسؤول يرى الكل، والعضو يرى مشاريعه فقط (ownerId = null للمسؤول)
+export async function listProjects(ownerId?: string | null) {
   const db = getDb();
-  const rows = await db.all(
-    `SELECT * FROM "Project" WHERE "id" != ? ORDER BY "updatedAt" DESC`,
-    ["system-templates"]
-  );
+  const rows = ownerId
+    ? await db.all(
+        `SELECT * FROM "Project" WHERE "id" != ? AND "ownerId" = ? ORDER BY "updatedAt" DESC`,
+        ["system-templates", ownerId]
+      )
+    : await db.all(
+        `SELECT * FROM "Project" WHERE "id" != ? ORDER BY "updatedAt" DESC`,
+        ["system-templates"]
+      );
   const counts = await db.all(
     `SELECT "projectId", COUNT(*) as c FROM "Form" WHERE "isTemplate" = 0 GROUP BY "projectId"`
   );
@@ -211,13 +229,22 @@ export async function createProject(data: {
   name: string;
   description?: string;
   color?: string;
+  ownerId?: string;
 }) {
   const db = getDb();
   const id = nanoid();
   const ts = now();
   await db.run(
-    `INSERT INTO "Project" ("id","name","description","color","createdAt","updatedAt") VALUES (?,?,?,?,?,?)`,
-    [id, data.name, data.description ?? "", data.color ?? "#1c59f5", ts, ts]
+    `INSERT INTO "Project" ("id","name","description","color","ownerId","createdAt","updatedAt") VALUES (?,?,?,?,?,?,?)`,
+    [
+      id,
+      data.name,
+      data.description ?? "",
+      data.color ?? "#1c59f5",
+      data.ownerId ?? "",
+      ts,
+      ts,
+    ]
   );
   return mapProject(await db.first(`SELECT * FROM "Project" WHERE "id" = ?`, [id]));
 }
@@ -305,6 +332,7 @@ export async function createForm(
     status?: string;
     settings?: string;
     isTemplate?: boolean;
+    ownerId?: string;
   },
   questions: QuestionInput[] = []
 ) {
@@ -312,7 +340,7 @@ export async function createForm(
   const id = nanoid();
   const ts = now();
   await db.run(
-    `INSERT INTO "Form" ("id","slug","projectId","title","description","type","status","settings","isTemplate","createdAt","updatedAt") VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+    `INSERT INTO "Form" ("id","slug","projectId","title","description","type","status","settings","isTemplate","ownerId","createdAt","updatedAt") VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
       id,
       data.slug,
@@ -323,6 +351,7 @@ export async function createForm(
       data.status ?? "DRAFT",
       data.settings ?? "{}",
       data.isTemplate ? 1 : 0,
+      data.ownerId ?? "",
       ts,
       ts,
     ]
@@ -353,6 +382,19 @@ export async function getFormBySlug(slug: string) {
   return { ...mapForm(f), questions: qs.map(mapQuestion) };
 }
 
+// هل الرابط (slug) متاح؟ (يتجاهل النموذج نفسه عند التعديل)
+export async function isSlugAvailable(
+  slug: string,
+  exceptFormId?: string
+): Promise<boolean> {
+  const r = await getDb().first(
+    `SELECT "id" FROM "Form" WHERE "slug" = ?`,
+    [slug]
+  );
+  if (!r) return true;
+  return !!exceptFormId && r.id === exceptFormId;
+}
+
 // نموذج عام لصفحة التعبئة: أسئلة + عدد الردود
 export async function getPublicForm(slug: string) {
   const form = await getFormBySlug(slug);
@@ -372,12 +414,20 @@ export async function updateForm(
     type?: string;
     status?: string;
     settings?: string;
+    slug?: string;
   }
 ) {
   const db = getDb();
   const sets: string[] = [];
   const vals: any[] = [];
-  for (const k of ["title", "description", "type", "status", "settings"] as const) {
+  for (const k of [
+    "title",
+    "description",
+    "type",
+    "status",
+    "settings",
+    "slug",
+  ] as const) {
     if (data[k] !== undefined) {
       sets.push(`"${k}" = ?`);
       vals.push(data[k]);
@@ -422,11 +472,16 @@ export async function listTemplates() {
   }));
 }
 
-export async function countForms(isTemplate: boolean) {
-  const r = await getDb().first(
-    `SELECT COUNT(*) as c FROM "Form" WHERE "isTemplate" = ?`,
-    [isTemplate ? 1 : 0]
-  );
+export async function countForms(isTemplate: boolean, ownerId?: string | null) {
+  const db = getDb();
+  const r = ownerId
+    ? await db.first(
+        `SELECT COUNT(*) as c FROM "Form" WHERE "isTemplate" = ? AND "ownerId" = ?`,
+        [isTemplate ? 1 : 0, ownerId]
+      )
+    : await db.first(`SELECT COUNT(*) as c FROM "Form" WHERE "isTemplate" = ?`, [
+        isTemplate ? 1 : 0,
+      ]);
   return Number(r?.c || 0);
 }
 
@@ -483,6 +538,19 @@ export async function countResponses(formId?: string) {
     ? await db.first(`SELECT COUNT(*) as c FROM "Response" WHERE "formId" = ?`, [
         formId,
       ])
+    : await db.first(`SELECT COUNT(*) as c FROM "Response"`);
+  return Number(r?.c || 0);
+}
+
+// إجمالي الردود لنماذج مالك معيّن (null = الكل، للمسؤول)
+export async function countResponsesByOwner(ownerId?: string | null) {
+  const db = getDb();
+  const r = ownerId
+    ? await db.first(
+        `SELECT COUNT(*) as c FROM "Response"
+         WHERE "formId" IN (SELECT "id" FROM "Form" WHERE "ownerId" = ?)`,
+        [ownerId]
+      )
     : await db.first(`SELECT COUNT(*) as c FROM "Response"`);
   return Number(r?.c || 0);
 }

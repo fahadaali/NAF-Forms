@@ -23,6 +23,12 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
   const [settings, setSettings] = useState<FormSettings>(initial.settings);
   const [questions, setQuestions] = useState<QuestionDTO[]>(initial.questions);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [slug, setSlug] = useState(initial.slug);
+  const [slugDraft, setSlugDraft] = useState(initial.slug);
+  const [savingSlug, setSavingSlug] = useState(false);
+  const [slugMsg, setSlugMsg] = useState<{ ok: boolean; text: string } | null>(
+    null
+  );
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -133,6 +139,29 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
     router.refresh();
   }
 
+  // تحديث رابط النموذج (مع التحقق من الصيغة والتفرّد على الخادم)
+  async function saveSlug() {
+    setSavingSlug(true);
+    setSlugMsg(null);
+    const res = await fetch(`/api/forms/${initial.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug: slugDraft.trim() }),
+    });
+    setSavingSlug(false);
+    if (res.ok) {
+      const fresh = await res.json().catch(() => null);
+      const next = fresh?.slug || slugDraft.trim();
+      setSlug(next);
+      setSlugDraft(next);
+      setSlugMsg({ ok: true, text: "تم تحديث الرابط" });
+      router.refresh();
+    } else {
+      const d = await res.json().catch(() => ({}));
+      setSlugMsg({ ok: false, text: d.error || "تعذّر تحديث الرابط" });
+    }
+  }
+
   // تنبيه المستخدم قبل مغادرة الصفحة مع وجود تغييرات غير محفوظة
   useEffect(() => {
     const h = (e: BeforeUnloadEvent) => {
@@ -149,7 +178,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
   async function openPreview() {
     const w = window.open("", "_blank");
     if (dirty) await save();
-    const url = `/f/${initial.slug}`;
+    const url = `/f/${slug}`;
     if (w) w.location.href = url;
     else window.open(url, "_blank");
   }
@@ -162,8 +191,8 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
 
   const publicUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/f/${initial.slug}`
-      : `/f/${initial.slug}`;
+      ? `${window.location.origin}/f/${slug}`
+      : `/f/${slug}`;
 
   return (
     <div>
@@ -365,8 +394,47 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                   نسخ
                 </button>
               </div>
+
+              {/* تخصيص الرابط */}
+              <label className="label mt-4">تخصيص الرابط</label>
+              <div className="flex items-center gap-2">
+                <span className="shrink-0 text-xs text-slate-400" dir="ltr">
+                  /f/
+                </span>
+                <input
+                  className="input py-1.5"
+                  dir="ltr"
+                  placeholder="my-form-name"
+                  value={slugDraft}
+                  onChange={(e) => {
+                    setSlugDraft(e.target.value);
+                    setSlugMsg(null);
+                  }}
+                />
+                <button
+                  className="btn-ghost shrink-0 py-1.5 text-sm"
+                  disabled={savingSlug || !slugDraft.trim() || slugDraft === slug}
+                  onClick={saveSlug}
+                >
+                  {savingSlug ? "جارٍ…" : "تحديث"}
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-slate-400">
+                حروف إنجليزية وأرقام وشرطات فقط. تغيير الرابط يُبطل الروابط
+                المنشورة سابقًا.
+              </p>
+              {slugMsg && (
+                <p
+                  className={`mt-1 text-sm ${
+                    slugMsg.ok ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {slugMsg.text}
+                </p>
+              )}
+
               <Link
-                href={`/f/${initial.slug}`}
+                href={`/f/${slug}`}
                 target="_blank"
                 className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-naf-600 hover:underline"
               >

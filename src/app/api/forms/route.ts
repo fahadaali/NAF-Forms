@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getFormWithQuestions, createForm } from "@/lib/repo";
+import { authorizeProject } from "@/lib/session";
 import { nanoid } from "nanoid";
 import { slugify } from "@/lib/utils";
 
@@ -9,6 +10,12 @@ export async function POST(req: Request) {
   const projectId: string = body.projectId;
   if (!projectId)
     return NextResponse.json({ error: "projectId مطلوب" }, { status: 400 });
+
+  // لا يُنشأ نموذج إلا داخل مشروع يملكه المستخدم (أو للمسؤول)
+  const auth = await authorizeProject(projectId);
+  if (!auth)
+    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+  const ownerId = auth.session.uid;
 
   const title = body.title?.trim() || "نموذج بدون عنوان";
   const slug = `${slugify(title)}-${nanoid(6)}`;
@@ -27,6 +34,7 @@ export async function POST(req: Request) {
         type: tpl.type,
         status: "DRAFT",
         settings: tpl.settings,
+        ownerId,
       },
       tpl.questions.map((q) => ({
         order: q.order,
@@ -47,6 +55,7 @@ export async function POST(req: Request) {
     title,
     type: body.type || "SURVEY",
     status: "DRAFT",
+    ownerId,
   });
   return NextResponse.json(form);
 }

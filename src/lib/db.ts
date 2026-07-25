@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS "User" (
   "role" TEXT NOT NULL DEFAULT 'member',
   "passwordHash" TEXT NOT NULL,
   "mustChangePassword" BOOLEAN NOT NULL DEFAULT true,
+  "sessionVersion" INTEGER NOT NULL DEFAULT 0,
   "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS "Project" (
@@ -29,6 +30,7 @@ CREATE TABLE IF NOT EXISTS "Project" (
   "name" TEXT NOT NULL,
   "description" TEXT NOT NULL DEFAULT '',
   "color" TEXT NOT NULL DEFAULT '#1c59f5',
+  "ownerId" TEXT NOT NULL DEFAULT '',
   "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" DATETIME NOT NULL
 );
@@ -42,6 +44,7 @@ CREATE TABLE IF NOT EXISTS "Form" (
   "status" TEXT NOT NULL DEFAULT 'DRAFT',
   "settings" TEXT NOT NULL DEFAULT '{}',
   "isTemplate" BOOLEAN NOT NULL DEFAULT false,
+  "ownerId" TEXT NOT NULL DEFAULT '',
   "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" DATETIME NOT NULL
 );
@@ -109,6 +112,16 @@ function localDb(): Db {
     const db = new Database(file);
     db.pragma("journal_mode = WAL");
     db.exec(SCHEMA_SQL);
+    // ترقية قواعد التطوير القديمة: إضافة الأعمدة الناقصة (آمن للتكرار)
+    for (const [table, column, def] of [
+      ["User", "sessionVersion", "INTEGER NOT NULL DEFAULT 0"],
+      ["Project", "ownerId", "TEXT NOT NULL DEFAULT ''"],
+      ["Form", "ownerId", "TEXT NOT NULL DEFAULT ''"],
+    ] as const) {
+      const cols = db.prepare(`PRAGMA table_info("${table}")`).all() as any[];
+      if (!cols.some((c) => c.name === column))
+        db.exec(`ALTER TABLE "${table}" ADD COLUMN "${column}" ${def}`);
+    }
     g.__nafSqlite = db;
   }
   const db = g.__nafSqlite;

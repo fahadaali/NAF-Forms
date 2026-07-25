@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getFormWithQuestions } from "@/lib/repo";
+import { authorizeForm } from "@/lib/session";
 import { parseSettings, safeParse } from "@/lib/utils";
 import type { FormDTO } from "@/lib/types";
 import FormBuilder from "@/components/builder/FormBuilder";
@@ -11,8 +11,9 @@ export default async function EditFormPage({
 }: {
   params: Promise<{ formId: string }>;
 }) {
-  const form = await getFormWithQuestions((await params).formId);
-  if (!form) notFound();
+  const auth = await authorizeForm((await params).formId);
+  if (!auth) notFound();
+  const form = auth.form;
 
   const dto: FormDTO = {
     id: form.id,

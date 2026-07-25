@@ -69,6 +69,15 @@ export default function ResponsesDashboard({
     return true;
   });
 
+  // رابط التصدير يحمل نفس الفلاتر المطبّقة، فيُصدَّر ما يراه المستخدم فقط
+  function exportUrl(format: "csv" | "xlsx" | "json") {
+    const p = new URLSearchParams({ format });
+    if (query.trim()) p.set("q", query.trim());
+    if (from) p.set("from", from);
+    if (to) p.set("to", to);
+    return `/api/forms/${formId}/export?${p.toString()}`;
+  }
+
   async function deleteResponse(id: string) {
     if (!confirm("حذف هذا الرد نهائيًا؟")) return;
     setBusy(id);
@@ -111,15 +120,16 @@ export default function ResponsesDashboard({
           </button>
         </div>
         <div className="flex gap-2">
-          <a className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm" href={`/api/forms/${formId}/export?format=csv`}>
-            <Icon name="download" className="h-4 w-4" /> CSV
-          </a>
-          <a className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm" href={`/api/forms/${formId}/export?format=xlsx`}>
-            <Icon name="download" className="h-4 w-4" /> Excel
-          </a>
-          <a className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm" href={`/api/forms/${formId}/export?format=json`}>
-            <Icon name="download" className="h-4 w-4" /> JSON
-          </a>
+          {(["csv", "xlsx", "json"] as const).map((fmt) => (
+            <a
+              key={fmt}
+              className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm"
+              href={exportUrl(fmt)}
+            >
+              <Icon name="download" className="h-4 w-4" />
+              {fmt === "csv" ? "CSV" : fmt === "xlsx" ? "Excel" : "JSON"}
+            </a>
+          ))}
         </div>
       </div>
 

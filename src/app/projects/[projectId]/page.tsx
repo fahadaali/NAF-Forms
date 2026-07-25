@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProjectById, listTemplates } from "@/lib/repo";
+import { currentSession, canAccessOwned } from "@/lib/session";
 import {
   FORM_TYPE_LABELS,
   FORM_STATUS_LABELS,
@@ -21,12 +22,14 @@ export default async function ProjectPage({
 }: {
   params: Promise<{ projectId: string }>;
 }) {
-  const [project, templates] = await Promise.all([
+  const [session, project, templates] = await Promise.all([
+    currentSession(),
     getProjectById((await params).projectId),
     listTemplates(),
   ]);
 
-  if (!project) notFound();
+  // مشروع غير موجود أو لا يملكه المستخدم → صفحة غير موجودة
+  if (!project || !canAccessOwned(session, project.ownerId)) notFound();
 
   return (
     <div className="min-h-screen">

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getFormWithQuestions, ensureProject, createForm } from "@/lib/repo";
+import { ensureProject, createForm } from "@/lib/repo";
+import { authorizeForm } from "@/lib/session";
 import { nanoid } from "nanoid";
 import { slugify } from "@/lib/utils";
 
@@ -10,9 +11,10 @@ export async function POST(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const src = await getFormWithQuestions((await params).id);
-  if (!src)
-    return NextResponse.json({ error: "النموذج غير موجود" }, { status: 404 });
+  const auth = await authorizeForm((await params).id);
+  if (!auth)
+    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+  const src = auth.form;
 
   // التأكد من وجود مشروع القوالب
   await ensureProject({

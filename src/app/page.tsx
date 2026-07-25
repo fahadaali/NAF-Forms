@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { listProjects, listTemplates, countForms, countResponses } from "@/lib/repo";
+import {
+  listProjects,
+  listTemplates,
+  countForms,
+  countResponsesByOwner,
+} from "@/lib/repo";
+import { currentSession, ownerFilter } from "@/lib/session";
 import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { Icon } from "@/components/ui/Icon";
 import { formatDateTime } from "@/lib/utils";
@@ -9,11 +15,14 @@ import CreateProjectButton from "@/components/CreateProjectButton";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  // المسؤول يرى كل المشاريع، والعضو يرى مشاريعه فقط
+  const session = await currentSession();
+  const owner = ownerFilter(session);
   const [projects, templates, formCount, responseCount] = await Promise.all([
-    listProjects(),
+    listProjects(owner),
     listTemplates(),
-    countForms(false),
-    countResponses(),
+    countForms(false, owner),
+    countResponsesByOwner(owner),
   ]);
 
   return (

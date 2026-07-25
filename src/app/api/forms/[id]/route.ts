@@ -7,7 +7,10 @@ import {
   createQuestion,
   getFormWithQuestions,
   deleteForm,
+  isSlugAvailable,
 } from "@/lib/repo";
+import { authorizeForm } from "@/lib/session";
+import { slugify } from "@/lib/utils";
 
 // حفظ النموذج: البيانات الوصفية + الإعدادات + الأسئلة (upsert)
 export async function PATCH(
@@ -17,7 +20,26 @@ export async function PATCH(
   const body = await req.json();
   const formId = (await params).id;
 
+  if (!(await authorizeForm(formId)))
+    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+
   const data: any = {};
+
+  // تعديل رابط النموذج (يجب أن يكون ASCII وغير مستخدم)
+  if (body.slug !== undefined) {
+    const clean = slugify(String(body.slug));
+    if (clean !== String(body.slug).trim().toLowerCase())
+      return NextResponse.json(
+        { error: "الرابط يجب أن يحتوي حروفًا إنجليزية وأرقامًا وشرطات فقط" },
+        { status: 400 }
+      );
+    if (!(await isSlugAvailable(clean, formId)))
+      return NextResponse.json(
+        { error: "هذا الرابط مستخدم في نموذج آخر" },
+        { status: 409 }
+      );
+    data.slug = clean;
+  }
   if (body.title !== undefined) data.title = body.title;
   if (body.description !== undefined) data.description = body.description;
   if (body.type !== undefined) data.type = body.type;
@@ -64,6 +86,9 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await deleteForm((await params).id);
+  const formId = (await params).id;
+  if (!(await authorizeForm(formId)))
+    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+  await deleteForm(formId);
   return NextResponse.json({ ok: true });
 }

@@ -69,6 +69,7 @@ export interface Session {
   uid: string;
   role: string;
   mustChange: boolean;
+  sv: number; // إصدار الجلسة — زيادته في قاعدة البيانات تُبطل الجلسات القديمة
   exp: number; // ثوانٍ منذ الحقبة
 }
 

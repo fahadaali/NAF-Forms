@@ -18,6 +18,8 @@ export async function PATCH(
   if (body.action === "reset") {
     data.passwordHash = await hashPassword(DEFAULT_PASSWORD);
     data.mustChangePassword = true;
+    // إعادة التعيين تُبطل جلسات المستخدم القديمة
+    data.bumpSessionVersion = true;
   }
   const user = await updateUser((await params).id, data);
   if (!user)
