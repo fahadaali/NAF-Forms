@@ -196,7 +196,7 @@ export default function ResponsesDashboard({
 
       {total === 0 && (
         <div className="card grid place-items-center p-12 text-center text-slate-500">
-          <span className="mb-2 text-4xl">📭</span>
+          <Icon name="mail" className="mb-2 h-10 w-10 text-slate-300" />
           لا توجد ردود بعد.
         </div>
       )}
@@ -205,6 +205,7 @@ export default function ResponsesDashboard({
         <div className="space-y-4">
           <FunnelPanel funnel={funnel} />
           {timeline.length > 1 && <TimelineChart data={timeline} />}
+          <CrossTab stats={stats} rows={rows} />
           {stats.map((q) => (
             <StatBlock key={q.id} q={q} />
           ))}
@@ -219,6 +220,7 @@ export default function ResponsesDashboard({
             </span>
             <input
               className="input pr-9"
+              aria-label="بحث في الردود"
               placeholder="بحث في الردود…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -517,6 +519,188 @@ function Donut({ data }: { data: { label: string; count: number }[] }) {
             <span className="text-slate-400">{s.pct}%</span>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// جدول تقاطعي: توزيع الإجابات بين سؤالي اختيار (لتحليل العلاقة بينهما)
+function CrossTab({
+  stats,
+  rows,
+}: {
+  stats: QuestionStat[];
+  rows: ResponseRow[];
+}) {
+  const choice = stats.filter((s) => s.kind === "distribution");
+  const [aId, setAId] = useState(choice[0]?.id || "");
+  const [bId, setBId] = useState(choice[1]?.id || "");
+  if (choice.length < 2) return null;
+
+  const qa = choice.find((c) => c.id === aId);
+  const qb = choice.find((c) => c.id === bId);
+  if (!qa || !qb || aId === bId)
+    return (
+      <div className="card p-5">
+        <CrossHead
+          choice={choice}
+          aId={aId}
+          bId={bId}
+          setAId={setAId}
+          setBId={setBId}
+        />
+        <p className="mt-3 text-sm text-slate-400">اختر سؤالين مختلفين.</p>
+      </div>
+    );
+
+  // القيم المحتملة لكل سؤال من نتائج التحليل نفسها
+  const aVals = (qa.buckets || []).map((b) => b.label);
+  const bVals = (qb.buckets || []).map((b) => b.label);
+
+  // نقرأ نص الخلية ونفصل الاختيارات المتعددة
+  const valuesOf = (r: ResponseRow, label: string) => {
+    const cell = r.cells.find((c) => c.label === label);
+    if (!cell?.text) return [];
+    return cell.text.split("، ").map((s) => s.trim()).filter(Boolean);
+  };
+
+  const matrix: Record<string, Record<string, number>> = {};
+  for (const av of aVals) matrix[av] = Object.fromEntries(bVals.map((b) => [b, 0]));
+  for (const r of rows) {
+    for (const av of valuesOf(r, qa.label)) {
+      if (!matrix[av]) continue;
+      for (const bv of valuesOf(r, qb.label)) {
+        if (matrix[av][bv] === undefined) continue;
+        matrix[av][bv]++;
+      }
+    }
+  }
+  const colTotal = (bv: string) =>
+    aVals.reduce((s, av) => s + (matrix[av]?.[bv] || 0), 0);
+  const rowTotal = (av: string) =>
+    bVals.reduce((s, bv) => s + (matrix[av]?.[bv] || 0), 0);
+  const grand = aVals.reduce((s, av) => s + rowTotal(av), 0);
+
+  return (
+    <div className="card p-5">
+      <CrossHead
+        choice={choice}
+        aId={aId}
+        bId={bId}
+        setAId={setAId}
+        setBId={setBId}
+      />
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full min-w-[420px] border-collapse text-sm">
+          <caption className="sr-only">
+            جدول تقاطعي بين «{qa.label}» و«{qb.label}»
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col" className="p-2 text-right text-xs text-slate-400">
+                {qa.label} / {qb.label}
+              </th>
+              {bVals.map((bv) => (
+                <th key={bv} scope="col" className="p-2 text-xs font-medium text-slate-600">
+                  {bv}
+                </th>
+              ))}
+              <th scope="col" className="p-2 text-xs text-slate-400">
+                المجموع
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {aVals.map((av, i) => (
+              <tr key={av} className={i % 2 ? "bg-slate-50/60" : ""}>
+                <th scope="row" className="p-2 text-right text-sm font-medium text-slate-700">
+                  {av}
+                </th>
+                {bVals.map((bv) => {
+                  const n = matrix[av]?.[bv] || 0;
+                  return (
+                    <td key={bv} className="p-2 text-center">
+                      <span
+                        className={
+                          n > 0 ? "font-semibold text-naf-700" : "text-slate-300"
+                        }
+                      >
+                        {n}
+                      </span>
+                    </td>
+                  );
+                })}
+                <td className="p-2 text-center text-slate-500">{rowTotal(av)}</td>
+              </tr>
+            ))}
+            <tr className="border-t border-slate-200">
+              <th scope="row" className="p-2 text-right text-xs text-slate-400">
+                المجموع
+              </th>
+              {bVals.map((bv) => (
+                <td key={bv} className="p-2 text-center text-slate-500">
+                  {colTotal(bv)}
+                </td>
+              ))}
+              <td className="p-2 text-center font-bold">{grand}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function CrossHead({
+  choice,
+  aId,
+  bId,
+  setAId,
+  setBId,
+}: {
+  choice: QuestionStat[];
+  aId: string;
+  bId: string;
+  setAId: (v: string) => void;
+  setBId: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <h3 className="flex items-center gap-2 font-bold">
+        <Icon name="grid" className="h-5 w-5 text-naf-600" /> جدول تقاطعي
+      </h3>
+      <div className="ms-auto flex flex-wrap items-center gap-2">
+        <label className="sr-only" htmlFor="crosstab-a">
+          السؤال الأول
+        </label>
+        <select
+          id="crosstab-a"
+          className="input py-1 text-xs"
+          value={aId}
+          onChange={(e) => setAId(e.target.value)}
+        >
+          {choice.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+        <span className="text-xs text-slate-400">×</span>
+        <label className="sr-only" htmlFor="crosstab-b">
+          السؤال الثاني
+        </label>
+        <select
+          id="crosstab-b"
+          className="input py-1 text-xs"
+          value={bId}
+          onChange={(e) => setBId(e.target.value)}
+        >
+          {choice.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.label}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );

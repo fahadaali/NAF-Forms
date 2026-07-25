@@ -7,7 +7,7 @@ import type { FieldTypeId } from "@/lib/field-types";
 import type { FormDTO, FormSettings, QuestionDTO } from "@/lib/types";
 import QuestionEditor from "./QuestionEditor";
 import AddQuestionPalette from "./AddQuestionPalette";
-import { Icon } from "@/components/ui/Icon";
+import { Icon, IconTip } from "@/components/ui/Icon";
 import DesignPanel from "./DesignPanel";
 import ShareTools from "./ShareTools";
 
@@ -33,7 +33,12 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
 
-  const mark = () => setDirty(true);
+  // كل تعديل يسجّل لقطة الحالة السابقة (تُستخدم للتراجع) ويعلّم النموذج كمُعدَّل.
+  // القيم المقروءة هنا هي ما قبل التحديث لأن تحديثات React غير فورية.
+  const mark = () => {
+    if (!restoring.current) pushHistory(snapshot());
+    setDirty(true);
+  };
 
   const addQuestion = useCallback(
     (t: FieldTypeId) => {
@@ -108,6 +113,9 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
     mark();
   };
 
+  // مرجع دائم لأحدث save حتى يستدعيه مؤقّت الحفظ التلقائي بقيمة محدّثة
+  const saveRef = useRef<(s?: string) => Promise<void>>(async () => {});
+
   async function save(nextStatus?: string) {
     setSaving(true);
     const res = await fetch(`/api/forms/${initial.id}`, {
@@ -138,6 +146,98 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
     setSavedAt(new Date().toLocaleTimeString("ar-SA"));
     router.refresh();
   }
+  saveRef.current = save;
+
+  // حفظ تلقائي بعد توقّف التعديل (٣ ثوانٍ) — لا يعمل أثناء حفظ جارٍ
+  const [autoSave, setAutoSave] = useState(true);
+  useEffect(() => {
+    if (!autoSave || !dirty || saving) return;
+    const id = setTimeout(() => {
+      void saveRef.current();
+    }, 3000);
+    return () => clearTimeout(id);
+  }, [autoSave, dirty, saving, questions, settings, title, description, type]);
+
+  // ===== تراجع / إعادة =====
+  // نحفظ لقطات من الحالة القابلة للتحرير عند كل تغيير
+  type Snapshot = {
+    title: string;
+    description: string;
+    type: string;
+    settings: FormSettings;
+    questions: QuestionDTO[];
+  };
+  const snapshot = (): Snapshot => ({
+    title,
+    description,
+    type,
+    settings,
+    questions,
+  });
+  const history = useRef<Snapshot[]>([]);
+  const future = useRef<Snapshot[]>([]);
+  const restoring = useRef(false);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  function pushHistory(prev: Snapshot) {
+    history.current.push(prev);
+    if (history.current.length > 50) history.current.shift();
+    future.current = [];
+    setCanUndo(true);
+    setCanRedo(false);
+  }
+
+  function apply(s: Snapshot) {
+    restoring.current = true;
+    setTitle(s.title);
+    setDescription(s.description);
+    setType(s.type);
+    setSettings(s.settings);
+    setQuestions(s.questions);
+    setDirty(true);
+    // نُلغي علم الاستعادة بعد دورة العرض حتى لا تُسجَّل كتغيير جديد
+    setTimeout(() => (restoring.current = false), 0);
+  }
+
+  function undo() {
+    const prev = history.current.pop();
+    if (!prev) return;
+    future.current.push(snapshot());
+    apply(prev);
+    setCanUndo(history.current.length > 0);
+    setCanRedo(true);
+  }
+
+  function redo() {
+    const next = future.current.pop();
+    if (!next) return;
+    history.current.push(snapshot());
+    apply(next);
+    setCanRedo(future.current.length > 0);
+    setCanUndo(true);
+  }
+
+  // اختصارات: Ctrl/Cmd+Z للتراجع، Ctrl/Cmd+Shift+Z أو Ctrl+Y للإعادة، Ctrl+S للحفظ
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const k = e.key.toLowerCase();
+      if (k === "s") {
+        e.preventDefault();
+        void saveRef.current();
+      } else if (k === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if ((k === "z" && e.shiftKey) || k === "y") {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // تحديث رابط النموذج (مع التحقق من الصيغة والتفرّد على الخادم)
   async function saveSlug() {
@@ -214,15 +314,51 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
               mark();
             }}
           />
-          <span className="text-xs text-slate-400">
+          {/* تراجع / إعادة */}
+          <IconTip label="تراجع (Ctrl+Z)">
+            <button
+              onClick={undo}
+              disabled={!canUndo}
+              aria-label="تراجع"
+              className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+            >
+              <Icon name="undo" className="h-4 w-4" />
+            </button>
+          </IconTip>
+          <IconTip label="إعادة (Ctrl+Shift+Z)">
+            <button
+              onClick={redo}
+              disabled={!canRedo}
+              aria-label="إعادة"
+              className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+            >
+              <Icon name="redo" className="h-4 w-4" />
+            </button>
+          </IconTip>
+
+          <span className="text-xs text-slate-400" aria-live="polite">
             {saving
               ? "جارٍ الحفظ…"
               : dirty
-              ? "تغييرات غير محفوظة"
+              ? autoSave
+                ? "سيُحفظ تلقائيًا…"
+                : "تغييرات غير محفوظة"
               : savedAt
               ? `حُفظ ${savedAt}`
               : ""}
           </span>
+          <IconTip label={autoSave ? "إيقاف الحفظ التلقائي" : "تفعيل الحفظ التلقائي"}>
+            <button
+              onClick={() => setAutoSave((v) => !v)}
+              aria-pressed={autoSave}
+              aria-label="الحفظ التلقائي"
+              className={`rounded-lg p-1.5 hover:bg-slate-100 ${
+                autoSave ? "text-naf-600" : "text-slate-400"
+              }`}
+            >
+              <Icon name="refresh" className="h-4 w-4" />
+            </button>
+          </IconTip>
           <button
             onClick={openResponses}
             className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm"
