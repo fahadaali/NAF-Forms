@@ -225,3 +225,41 @@ body::before {
 .dark .text-naf-600 {
   color: var(--primary-2) !important;
 }
+
+/* ===== إمكانية الوصول (a11y) ===== */
+/* نص للقارئات الشاشية فقط */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* حلقة تركيز واضحة لكل العناصر التفاعلية عند التنقّل بلوحة المفاتيح */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--primary-2, #6b7bc7);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* احترام تقليل الحركة */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

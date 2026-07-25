@@ -685,7 +685,14 @@ export default function FillForm({
       />
       {behavior.showProgress !== false && (
         <div className="mx-auto w-full max-w-2xl">
-          <div className="h-1.5 overflow-hidden rounded-full bg-black/10">
+          <div
+            className="h-1.5 overflow-hidden rounded-full bg-black/10"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+            aria-label={`التقدّم: ${safeStep + 1} من ${steps.length}`}
+          >
             <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: accent }} />
           </div>
           <div className="mt-2 flex items-center justify-between text-xs text-slate-400">

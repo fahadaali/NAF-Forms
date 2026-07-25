@@ -628,6 +628,8 @@ function ToolBtn({
     <IconTip label={label}>
       <button
         disabled={disabled}
+        aria-label={label}
+        title={label}
         onClick={(e) => {
           e.stopPropagation();
           onClick();
