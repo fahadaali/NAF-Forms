@@ -6,6 +6,7 @@ import { verifySession, SESSION_COOKIE } from "@/lib/auth";
 const PUBLIC_PREFIXES = [
   "/f/",
   "/api/f/",
+  "/uploads/", // ملفات مرفوعة تُعرض في النماذج العامة (قد لا يحوي اسمها امتدادًا)
   "/login",
   "/api/login",
   "/change-password",

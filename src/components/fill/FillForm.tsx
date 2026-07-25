@@ -65,14 +65,21 @@ export default function FillForm({
     else setPwError("كلمة المرور غير صحيحة");
   }
 
-  // ترتيب الأسئلة (مع خلطها للاختبارات عند التفعيل) — يُحسب مرة واحدة
+  // ترتيب الأسئلة (مع خلطها للاختبارات عند التفعيل) — يُحسب مرة واحدة.
+  // نخلط أسئلة الإدخال فقط ونُبقي العناصر التنسيقية (أقسام/فواصل/صور/فيديو)
+  // في مواضعها حتى لا تنكسر بنية الأقسام والصفحات.
   const baseOrder = useMemo(() => {
     if (form.type === "EXAM" && exam.shuffle) {
       const arr = [...form.questions];
-      for (let i = arr.length - 1; i > 0; i--) {
+      const idxs = arr
+        .map((q, i) => (isInputQuestion(q.type) ? i : -1))
+        .filter((i) => i >= 0);
+      const picked = idxs.map((i) => arr[i]);
+      for (let i = picked.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+        [picked[i], picked[j]] = [picked[j], picked[i]];
       }
+      idxs.forEach((pos, k) => (arr[pos] = picked[k]));
       return arr;
     }
     return form.questions;
