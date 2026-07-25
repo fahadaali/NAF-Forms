@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { updateUser } from "@/lib/repo";
-import {
-  verifySession,
-  hashPassword,
-  signSession,
-  SESSION_COOKIE,
-} from "@/lib/auth";
+import { currentSession } from "@/lib/session";
+import { hashPassword, signSession, SESSION_COOKIE } from "@/lib/auth";
 
 // تعيين كلمة مرور جديدة (يُستخدم عند أول دخول أو لتغييرها لاحقًا)
 export async function POST(req: Request) {
-  const session = await verifySession((await cookies()).get(SESSION_COOKIE)?.value);
+  // currentSession يتحقق أيضًا من إصدار الجلسة (فالجلسات المُبطلة لا تُقبل)
+  const session = await currentSession();
   if (!session)
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
 
@@ -22,16 +18,21 @@ export async function POST(req: Request) {
       { status: 400 }
     );
 
-  await updateUser(session.uid, {
+  // تغيير كلمة المرور يُبطل كل الجلسات القديمة (زيادة إصدار الجلسة)
+  const updated = await updateUser(session.uid, {
     passwordHash: await hashPassword(pw),
     mustChangePassword: false,
+    bumpSessionVersion: true,
   });
+  if (!updated)
+    return NextResponse.json({ error: "المستخدم غير موجود" }, { status: 404 });
 
-  // إعادة إصدار الجلسة بحالة mustChange = false
+  // إعادة إصدار جلسة هذا الجهاز بالإصدار الجديد
   const token = await signSession({
     uid: session.uid,
-    role: session.role,
+    role: updated.role,
     mustChange: false,
+    sv: updated.sessionVersion,
   });
   const res = NextResponse.json({ ok: true });
   res.cookies.set(SESSION_COOKIE, token, {

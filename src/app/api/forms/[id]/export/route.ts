@@ -1,24 +1,33 @@
 import { NextResponse } from "next/server";
 import { getFormWithResponses } from "@/lib/repo";
+import { authorizeForm } from "@/lib/session";
 import * as XLSX from "xlsx";
 import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
-// تصدير الردود بصيغة CSV أو JSON أو XLSX مع تاريخ ووقت كل رد
+// تصدير الردود بصيغة CSV أو JSON أو XLSX مع تاريخ ووقت كل رد.
+// يقبل نفس فلاتر اللوحة (q / from / to) حتى يطابق التصدير ما يراه المستخدم.
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { searchParams } = new URL(req.url);
   const format = searchParams.get("format") || "csv";
+  const query = (searchParams.get("q") || "").trim().toLowerCase();
+  const from = searchParams.get("from") || "";
+  const to = searchParams.get("to") || "";
 
-  const form = await getFormWithResponses((await params).id);
+  const formId = (await params).id;
+  if (!(await authorizeForm(formId)))
+    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+
+  const form = await getFormWithResponses(formId);
   if (!form)
     return NextResponse.json({ error: "غير موجود" }, { status: 404 });
 
   const questions = form.questions.filter((q) => isInputQuestion(q.type));
-  const rows = form.responses.map((r) => {
+  const allRows = form.responses.map((r) => {
     const byQ: Record<string, any> = {};
     for (const a of r.answers) byQ[a.questionId] = safeParse(a.value, "");
     const meta = safeParse<any>(r.meta, {});
@@ -36,8 +45,23 @@ export async function GET(
         safeParse<Record<string, any>>(q.config, {})
       );
     }
-    return record;
+    // نحتفظ بالطابع الزمني الأصلي للتصفية دون إظهاره في المخرجات
+    return { record, ts: r.submittedAt.getTime() };
   });
+
+  // تطبيق الفلاتر بنفس منطق لوحة الردود
+  const rows = allRows
+    .filter(({ record, ts }) => {
+      if (query) {
+        const hay = Object.values(record).join(" ").toLowerCase();
+        if (!hay.includes(query)) return false;
+      }
+      if (from && ts < new Date(from).getTime()) return false;
+      // نهاية اليوم المحدد
+      if (to && ts > new Date(to).getTime() + 86_399_000) return false;
+      return true;
+    })
+    .map(({ record }) => record);
 
   // اسم ملف آمن للترويسة (ASCII) مع نسخة UTF-8 وفق RFC 5987
   const disposition = (ext: string) =>
@@ -55,9 +79,8 @@ export async function GET(
   }
 
   // CSV مع BOM لدعم العربية في Excel
-  const hasEmail = form.responses.some(
-    (r) => safeParse<any>(r.meta, {}).email
-  );
+  // (عمود البريد يظهر فقط إن وُجد في الردود المُصدَّرة بعد التصفية)
+  const hasEmail = rows.some((r) => r["البريد الإلكتروني"]);
   const headers = [
     "رقم الرد",
     "تاريخ ووقت التقديم",

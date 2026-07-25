@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { getFormWithQuestions, getResponseWithAnswers } from "@/lib/repo";
+import { getResponseWithAnswers } from "@/lib/repo";
+import { authorizeForm } from "@/lib/session";
 import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
 import { Icon } from "@/components/ui/Icon";
 import PrintButton from "@/components/PrintButton";
@@ -12,11 +13,13 @@ export default async function PrintResponsePage({
   params: Promise<{ formId: string; responseId: string }>;
 }) {
   const { formId, responseId } = await params;
-  const [form, response] = await Promise.all([
-    getFormWithQuestions(formId),
+  const [auth, response] = await Promise.all([
+    authorizeForm(formId),
     getResponseWithAnswers(responseId),
   ]);
-  if (!form || !response) notFound();
+  // لا بد من صلاحية على النموذج، وأن يكون الرد تابعًا له فعلًا
+  if (!auth || !response || response.formId !== formId) notFound();
+  const form = auth.form;
 
   const byQ: Record<string, any> = {};
   for (const a of response.answers) byQ[a.questionId] = safeParse(a.value, "");

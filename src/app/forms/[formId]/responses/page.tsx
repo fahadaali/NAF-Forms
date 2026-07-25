@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFormWithResponses } from "@/lib/repo";
+import { authorizeForm } from "@/lib/session";
 import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
 import { Icon } from "@/components/ui/Icon";
@@ -17,7 +18,9 @@ export default async function ResponsesPage({
 }: {
   params: Promise<{ formId: string }>;
 }) {
-  const form = await getFormWithResponses((await params).formId);
+  const formId = (await params).formId;
+  if (!(await authorizeForm(formId))) notFound();
+  const form = await getFormWithResponses(formId);
   if (!form || !form.project) notFound();
 
   const questions = form.questions.filter((q) => isInputQuestion(q.type));

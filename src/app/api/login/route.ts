@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     uid: user.id,
     role: user.role,
     mustChange: user.mustChangePassword,
+    sv: user.sessionVersion,
   });
   const res = NextResponse.json({
     ok: true,

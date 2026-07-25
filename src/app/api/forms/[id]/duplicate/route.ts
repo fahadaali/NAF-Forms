@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getFormWithQuestions, createForm } from "@/lib/repo";
+import { createForm } from "@/lib/repo";
+import { authorizeForm } from "@/lib/session";
 import { nanoid } from "nanoid";
 import { slugify } from "@/lib/utils";
 
@@ -8,9 +9,10 @@ export async function POST(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const src = await getFormWithQuestions((await params).id);
-  if (!src)
-    return NextResponse.json({ error: "النموذج غير موجود" }, { status: 404 });
+  const auth = await authorizeForm((await params).id);
+  if (!auth)
+    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+  const src = auth.form;
 
   const copy = await createForm(
     {
@@ -21,6 +23,7 @@ export async function POST(
       type: src.type,
       status: "DRAFT",
       settings: src.settings,
+      ownerId: auth.session.uid,
     },
     src.questions.map((q) => ({
       order: q.order,
