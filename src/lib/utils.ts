@@ -95,7 +95,11 @@ export function formatDateTime(d: Date | string): string {
 }
 
 // تمثيل الإجابة كنص لأغراض العرض/التصدير
-export function answerToText(type: string, value: any): string {
+export function answerToText(
+  type: string,
+  value: any,
+  config?: Record<string, any>
+): string {
   if (value === null || value === undefined || value === "") return "";
   switch (type) {
     case "CHECKBOXES":
@@ -115,7 +119,8 @@ export function answerToText(type: string, value: any): string {
           .join(" | ");
       return String(value);
     case "RATING":
-      return `${value} / 5`;
+      // عدد النجوم قابل للتخصيص، فلا نفترض 5 دائمًا
+      return `${value} / ${Number(config?.max ?? 5)}`;
     case "RANKING":
       return Array.isArray(value)
         ? value.map((v, i) => `${i + 1}. ${v}`).join("، ")

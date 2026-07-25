@@ -39,6 +39,12 @@ export async function POST(
     return NextResponse.json({ error: "النموذج غير موجود" }, { status: 404 });
   if (form.status === "CLOSED")
     return NextResponse.json({ error: "النموذج مغلق" }, { status: 403 });
+  // لا تُستقبل الردود إلا بعد النشر (المسودة للمعاينة فقط)
+  if (form.status !== "PUBLISHED")
+    return NextResponse.json(
+      { error: "النموذج لم يُنشر بعد — لا يمكن استقبال الردود" },
+      { status: 403 }
+    );
 
   const settings = parseSettings(form.settings);
 

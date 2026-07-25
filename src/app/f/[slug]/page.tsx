@@ -75,7 +75,7 @@ export default async function FillPage({
     <>
       {form.status === "DRAFT" && (
         <div className="bg-amber-400 py-1.5 text-center text-sm font-medium text-amber-950">
-          وضع المعاينة — هذا النموذج لم يُنشر بعد
+          وضع المعاينة — هذا النموذج لم يُنشر بعد، ولن تُسجَّل الردود
         </div>
       )}
       <FillForm form={dto} locked={locked} />
