@@ -138,6 +138,12 @@ export function answerToText(
       return value ? "[توقيع]" : "";
     case "CONSENT":
       return value === true || value === "true" ? "موافق" : "غير موافق";
+    case "FILE":
+      // ملف واحد أو عدة ملفات
+      if (Array.isArray(value))
+        return value.map((f: any) => f?.name || "ملف").join("، ");
+      if (value && typeof value === "object") return value.name || "ملف";
+      return String(value);
     default:
       return Array.isArray(value) ? value.join("، ") : String(value);
   }

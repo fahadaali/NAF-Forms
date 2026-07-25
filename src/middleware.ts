@@ -7,6 +7,7 @@ const PUBLIC_PREFIXES = [
   "/f/",
   "/api/f/",
   "/uploads/", // ملفات مرفوعة تُعرض في النماذج العامة (قد لا يحوي اسمها امتدادًا)
+  "/certificate/", // شهادة الاختبار (الوصول بمعرّف الرد العشوائي)
   "/login",
   "/api/login",
   "/change-password",

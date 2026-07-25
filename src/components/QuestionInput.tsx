@@ -597,21 +597,47 @@ function FileField({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function upload(file: File) {
+  const multiple = !!cfg.multiple;
+  const maxFiles = Number(cfg.maxFiles ?? 5);
+  // القيمة: كائن واحد في الوضع المفرد، ومصفوفة في وضع تعدّد الملفات
+  const files: { name: string; url: string; size?: number }[] = multiple
+    ? Array.isArray(value)
+      ? value
+      : value?.url
+      ? [value]
+      : []
+    : value?.url
+    ? [value]
+    : [];
+
+  async function uploadMany(list: File[]) {
     setError("");
     const maxMB = Number(cfg.maxSizeMB ?? 10);
-    if (file.size > maxMB * 1024 * 1024) {
-      setError(`الحد الأقصى ${maxMB} ميجابايت`);
+    if (multiple && files.length + list.length > maxFiles) {
+      setError(`يمكن رفع ${maxFiles} ملفات كحدّ أقصى`);
       return;
     }
     setBusy(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      onChange({ name: file.name, url: data.url, size: file.size });
+      const uploaded: { name: string; url: string; size: number }[] = [];
+      for (const file of list) {
+        if (file.size > maxMB * 1024 * 1024) {
+          setError(`«${file.name}» يتجاوز ${maxMB} ميجابايت`);
+          continue;
+        }
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          setError(d.error || "تعذّر رفع الملف");
+          continue;
+        }
+        const data = await res.json();
+        uploaded.push({ name: file.name, url: data.url, size: file.size });
+      }
+      if (!uploaded.length) return;
+      onChange(multiple ? [...files, ...uploaded] : uploaded[0]);
     } catch {
       setError("تعذّر رفع الملف");
     } finally {
@@ -619,37 +645,68 @@ function FileField({
     }
   }
 
+  function removeAt(i: number) {
+    if (!multiple) {
+      onChange("");
+      return;
+    }
+    const next = files.filter((_, k) => k !== i);
+    onChange(next.length ? next : "");
+  }
+
   return (
     <div>
       <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center hover:border-naf-400 hover:bg-naf-50">
         <Icon name="paperclip" className="h-7 w-7 text-slate-400" />
         <span className="text-sm font-medium text-slate-700">
-          {busy ? "جارٍ الرفع…" : "اضغط لرفع ملف"}
+          {busy
+            ? "جارٍ الرفع…"
+            : multiple
+            ? "اضغط لرفع ملف أو أكثر"
+            : "اضغط لرفع ملف"}
         </span>
         <span className="text-xs text-slate-400">
           {cfg.accept} — حتى {cfg.maxSizeMB ?? 10}MB
+          {multiple ? ` · حتى ${maxFiles} ملفات` : ""}
         </span>
         <input
           type="file"
           className="hidden"
           accept={cfg.accept}
+          multiple={multiple}
           disabled={busy}
-          onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
+          onChange={(e) => {
+            const list = Array.from(e.target.files || []);
+            if (list.length) uploadMany(list);
+            e.target.value = "";
+          }}
         />
       </label>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-      {value?.url && (
-        <div className="mt-3 flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 text-sm">
-          <span className="inline-flex items-center gap-1 truncate text-green-800">
-            <Icon name="check" className="h-3.5 w-3.5 shrink-0" /> {value.name}
-          </span>
-          <a
-            href={value.url}
-            target="_blank"
-            className="text-naf-600 hover:underline"
-          >
-            عرض
-          </a>
+      {files.length > 0 && (
+        <div className="mt-3 space-y-2">
+          {files.map((f, i) => (
+            <div
+              key={`${f.url}-${i}`}
+              className="flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 text-sm"
+            >
+              <span className="inline-flex items-center gap-1 truncate text-green-800">
+                <Icon name="check" className="h-3.5 w-3.5 shrink-0" /> {f.name}
+              </span>
+              <span className="flex shrink-0 items-center gap-3">
+                <a href={f.url} target="_blank" className="text-naf-600 hover:underline">
+                  عرض
+                </a>
+                <button
+                  type="button"
+                  onClick={() => removeAt(i)}
+                  className="text-red-500 hover:underline"
+                >
+                  إزالة
+                </button>
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </div>

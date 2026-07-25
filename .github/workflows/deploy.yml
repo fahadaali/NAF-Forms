@@ -48,6 +48,7 @@ jobs:
             || echo "أعمدة الملكية/الجلسات مضافة مسبقًا — تم التجاوز"
           npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0005_ownership_backfill.sql
           npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0006_visits_drafts.sql
+          npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0007_response_review.sql
 
       - name: بناء التطبيق لـ Workers
         run: npm run cf:build

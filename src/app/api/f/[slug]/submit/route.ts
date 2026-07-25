@@ -7,6 +7,7 @@ import {
   getOptionCounts,
   completeVisit,
   deleteDraft,
+  countAttemptsByEmail,
 } from "@/lib/repo";
 import {
   safeParse,
@@ -96,14 +97,50 @@ export async function POST(
       );
   }
 
+  // سياسة إعادة المحاولة للاختبارات: أقصى عدد محاولات للبريد نفسه
+  const maxAttempts = Number(settings.exam?.maxAttempts ?? 0);
+  if (form.type === "EXAM" && maxAttempts > 0 && email) {
+    const used = await countAttemptsByEmail(form.id, email);
+    if (used >= maxAttempts)
+      return NextResponse.json(
+        {
+          error: `استنفدت عدد المحاولات المسموح (${maxAttempts})`,
+        },
+        { status: 409 }
+      );
+  }
+
   // التحقق من الأسئلة (إلزامية + صحة الصيغة) مع تجاهل المخفية بالمنطق الشرطي
   // أو المخفية ضمن قسم غير ظاهر، وتجاهل عناصر العرض (نص/صورة/فيديو)
   const visibleIds = new Set(
     computeVisibleQuestions(form.questions, answers).map((q) => q.id)
   );
+
+  // بنك الأسئلة: عند تفعيل الاختيار العشوائي لا يرى المستفيد كل الأسئلة، فنقصر
+  // التحقق والتصحيح على ما عُرض عليه فعلًا (askedIds)، مع التأكد من أن عددها
+  // مطابق للمطلوب حتى لا يُتجاوز التحقق بإرسال قائمة مبتورة.
+  const wantCount = Number(settings.exam?.questionCount ?? 0);
+  const totalInputs = form.questions.filter((q) => isInputQuestion(q.type)).length;
+  let askedIds: Set<string> | null = null;
+  if (form.type === "EXAM" && wantCount > 0 && wantCount < totalInputs) {
+    const sent: string[] = Array.isArray(body.askedIds)
+      ? body.askedIds.map((v: unknown) => String(v))
+      : [];
+    const valid = sent.filter((id) =>
+      form.questions.some((q) => q.id === id && isInputQuestion(q.type))
+    );
+    if (valid.length < Math.min(wantCount, totalInputs))
+      return NextResponse.json(
+        { error: "قائمة الأسئلة غير مكتملة" },
+        { status: 400 }
+      );
+    askedIds = new Set(valid);
+  }
+
   for (const q of form.questions) {
     if (!isInputQuestion(q.type)) continue;
     if (!visibleIds.has(q.id)) continue;
+    if (askedIds && !askedIds.has(q.id)) continue;
     const cfg = safeParse<Record<string, any>>(q.config, {});
     const err = validateAnswer(q.type, cfg, answers[q.id], q.required);
     if (err)
@@ -147,6 +184,7 @@ export async function POST(
   if (form.type === "EXAM") {
     for (const q of form.questions) {
       if (!visibleIds.has(q.id)) continue;
+      if (askedIds && !askedIds.has(q.id)) continue;
       const cfg = safeParse<Record<string, any>>(q.config, {});
       if (cfg.correctAnswer !== undefined && cfg.correctAnswer !== "") {
         total += Number(cfg.points ?? 1);

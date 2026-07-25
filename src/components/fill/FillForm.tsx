@@ -36,6 +36,7 @@ export default function FillForm({
     total?: number;
     passed?: boolean;
     review?: any[];
+    responseId?: string;
   } | null>(null);
 
   // إعدادات الاختبار: خلط الأسئلة والمؤقّت
@@ -118,8 +119,9 @@ export default function FillForm({
   // نخلط أسئلة الإدخال فقط ونُبقي العناصر التنسيقية (أقسام/فواصل/صور/فيديو)
   // في مواضعها حتى لا تنكسر بنية الأقسام والصفحات.
   const baseOrder = useMemo(() => {
+    let arr = [...form.questions];
+
     if (form.type === "EXAM" && exam.shuffle) {
-      const arr = [...form.questions];
       const idxs = arr
         .map((q, i) => (isInputQuestion(q.type) ? i : -1))
         .filter((i) => i >= 0);
@@ -129,9 +131,24 @@ export default function FillForm({
         [picked[i], picked[j]] = [picked[j], picked[i]];
       }
       idxs.forEach((pos, k) => (arr[pos] = picked[k]));
-      return arr;
     }
-    return form.questions;
+
+    // بنك أسئلة: اختيار عدد محدّد عشوائيًا من أسئلة الاختبار
+    const want = Number(exam.questionCount ?? 0);
+    if (form.type === "EXAM" && want > 0) {
+      const inputs = arr.filter((q) => isInputQuestion(q.type));
+      if (want < inputs.length) {
+        const pool = [...inputs];
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        const keep = new Set(pool.slice(0, want).map((q) => q.id));
+        // نُبقي العناصر التنسيقية وأسئلة العيّنة المختارة فقط
+        arr = arr.filter((q) => !isInputQuestion(q.type) || keep.has(q.id));
+      }
+    }
+    return arr;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -255,6 +272,10 @@ export default function FillForm({
         hp,
         visitId: visitId.current,
         draftToken,
+        // الأسئلة المعروضة فعلًا (يلزم الخادم عند تفعيل بنك الأسئلة العشوائي)
+        askedIds: baseOrder
+          .filter((q) => isInputQuestion(q.type))
+          .map((q) => q.id),
       }),
     });
     setSubmitting(false);
@@ -269,6 +290,7 @@ export default function FillForm({
       total: data.total,
       passed: data.passed,
       review: data.review,
+      responseId: data.responseId,
     });
     setPhase("done");
   }
@@ -448,6 +470,21 @@ export default function FillForm({
               ))}
             </div>
           )}
+
+          {/* شهادة الاختبار للناجحين */}
+          {form.type === "EXAM" &&
+            s.exam?.certificate &&
+            result?.passed !== false &&
+            result?.responseId && (
+              <a
+                href={`/certificate/${result.responseId}`}
+                target="_blank"
+                className="mt-6 inline-flex items-center gap-2 rounded-xl px-6 py-3 font-bold text-white shadow-lg"
+                style={{ background: accent }}
+              >
+                <Icon name="badge-check" className="h-5 w-5" /> استلام الشهادة
+              </a>
+            )}
 
           {after.redirectUrl && (
             <a

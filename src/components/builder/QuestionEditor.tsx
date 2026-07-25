@@ -338,17 +338,36 @@ export default function QuestionEditor({
             )}
 
             {q.type === "FILE" && (
-              <div className="grid grid-cols-2 gap-3">
-                <TextField
-                  label="الصيغ المسموحة"
-                  value={cfg.accept || ""}
-                  onChange={(v) => setCfg({ accept: v })}
-                />
-                <NumField
-                  label="الحد الأقصى (MB)"
-                  value={cfg.maxSizeMB ?? 10}
-                  onChange={(v) => setCfg({ maxSizeMB: v })}
-                />
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <TextField
+                    label="الصيغ المسموحة"
+                    value={cfg.accept || ""}
+                    onChange={(v) => setCfg({ accept: v })}
+                  />
+                  <NumField
+                    label="الحد الأقصى للملف (MB)"
+                    value={cfg.maxSizeMB ?? 10}
+                    onChange={(v) => setCfg({ maxSizeMB: v })}
+                  />
+                </div>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={!!cfg.multiple}
+                    onChange={(e) => setCfg({ multiple: e.target.checked })}
+                  />
+                  السماح برفع عدة ملفات (سيرة + شهادات + هوية…)
+                </label>
+                {cfg.multiple && (
+                  <div className="w-40">
+                    <NumField
+                      label="أقصى عدد ملفات"
+                      value={cfg.maxFiles ?? 5}
+                      onChange={(v) => setCfg({ maxFiles: v })}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
