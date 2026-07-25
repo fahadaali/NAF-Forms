@@ -71,6 +71,24 @@ CREATE TABLE IF NOT EXISTS "Answer" (
   "questionId" TEXT NOT NULL,
   "value" TEXT NOT NULL DEFAULT ''
 );
+CREATE TABLE IF NOT EXISTS "Visit" (
+  "id" TEXT NOT NULL PRIMARY KEY,
+  "formId" TEXT NOT NULL,
+  "startedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "completedAt" DATETIME,
+  "lastQuestionId" TEXT NOT NULL DEFAULT '',
+  "responseId" TEXT NOT NULL DEFAULT ''
+);
+CREATE TABLE IF NOT EXISTS "Draft" (
+  "id" TEXT NOT NULL PRIMARY KEY,
+  "formId" TEXT NOT NULL,
+  "answers" TEXT NOT NULL DEFAULT '{}',
+  "email" TEXT NOT NULL DEFAULT '',
+  "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" DATETIME NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "Visit_formId_idx" ON "Visit"("formId");
+CREATE INDEX IF NOT EXISTS "Draft_formId_idx" ON "Draft"("formId");
 CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX IF NOT EXISTS "Form_slug_key" ON "Form"("slug");
 CREATE INDEX IF NOT EXISTS "Form_projectId_idx" ON "Form"("projectId");

@@ -590,6 +590,152 @@ export async function deleteResponse(id: string) {
   await db.run(`DELETE FROM "Response" WHERE "id" = ?`, [id]);
 }
 
+// ============================ الزيارات (تحليلات الإكمال) ============================
+export async function startVisit(formId: string) {
+  const id = nanoid();
+  await getDb().run(
+    `INSERT INTO "Visit" ("id","formId","startedAt","lastQuestionId","responseId") VALUES (?,?,?,'','')`,
+    [id, formId, now()]
+  );
+  return id;
+}
+
+export async function touchVisit(visitId: string, lastQuestionId: string) {
+  await getDb().run(
+    `UPDATE "Visit" SET "lastQuestionId" = ? WHERE "id" = ?`,
+    [lastQuestionId, visitId]
+  );
+}
+
+export async function completeVisit(visitId: string, responseId: string) {
+  await getDb().run(
+    `UPDATE "Visit" SET "completedAt" = ?, "responseId" = ? WHERE "id" = ?`,
+    [now(), responseId, visitId]
+  );
+}
+
+export interface VisitStats {
+  started: number;
+  completed: number;
+  avgSeconds: number | null;
+  // عدد من توقّف عند كل سؤال دون إكمال
+  dropOff: { questionId: string; count: number }[];
+}
+
+export async function getVisitStats(formId: string): Promise<VisitStats> {
+  const db = getDb();
+  const totals = await db.first(
+    `SELECT COUNT(*) as started,
+            SUM(CASE WHEN "completedAt" IS NOT NULL THEN 1 ELSE 0 END) as completed
+     FROM "Visit" WHERE "formId" = ?`,
+    [formId]
+  );
+  const rows = await db.all(
+    `SELECT "startedAt", "completedAt" FROM "Visit"
+     WHERE "formId" = ? AND "completedAt" IS NOT NULL`,
+    [formId]
+  );
+  let avgSeconds: number | null = null;
+  if (rows.length) {
+    let sum = 0;
+    for (const r of rows)
+      sum += (toDate(r.completedAt).getTime() - toDate(r.startedAt).getTime()) / 1000;
+    avgSeconds = Math.max(0, Math.round(sum / rows.length));
+  }
+  const drop = await db.all(
+    `SELECT "lastQuestionId" as questionId, COUNT(*) as c FROM "Visit"
+     WHERE "formId" = ? AND "completedAt" IS NULL AND "lastQuestionId" != ''
+     GROUP BY "lastQuestionId" ORDER BY c DESC`,
+    [formId]
+  );
+  return {
+    started: Number(totals?.started || 0),
+    completed: Number(totals?.completed || 0),
+    avgSeconds,
+    dropOff: drop.map((r: any) => ({
+      questionId: r.questionId,
+      count: Number(r.c),
+    })),
+  };
+}
+
+// ============================ المسودّات (حفظ ومتابعة لاحقًا) ============================
+export async function saveDraft(
+  formId: string,
+  answers: string,
+  email: string,
+  token?: string
+): Promise<string> {
+  const db = getDb();
+  const ts = now();
+  if (token) {
+    const existing = await db.first(
+      `SELECT "id" FROM "Draft" WHERE "id" = ? AND "formId" = ?`,
+      [token, formId]
+    );
+    if (existing) {
+      await db.run(
+        `UPDATE "Draft" SET "answers" = ?, "email" = ?, "updatedAt" = ? WHERE "id" = ?`,
+        [answers, email, ts, token]
+      );
+      return token;
+    }
+  }
+  const id = token || nanoid(24);
+  await db.run(
+    `INSERT INTO "Draft" ("id","formId","answers","email","createdAt","updatedAt") VALUES (?,?,?,?,?,?)`,
+    [id, formId, answers, email, ts, ts]
+  );
+  return id;
+}
+
+export async function getDraft(formId: string, token: string) {
+  const r = await getDb().first(
+    `SELECT * FROM "Draft" WHERE "id" = ? AND "formId" = ?`,
+    [token, formId]
+  );
+  if (!r) return null;
+  return { id: r.id as string, answers: r.answers as string, email: r.email as string };
+}
+
+export async function deleteDraft(token: string) {
+  await getDb().run(`DELETE FROM "Draft" WHERE "id" = ?`, [token]);
+}
+
+// ============================ حصص الخيارات ============================
+// عدد مرات اختيار كل قيمة لكل سؤال (لتطبيق الحصص وإظهار المتاح)
+export async function getOptionCounts(
+  formId: string,
+  questionIds: string[]
+): Promise<Record<string, Record<string, number>>> {
+  if (!questionIds.length) return {};
+  const db = getDb();
+  const ph = questionIds.map(() => "?").join(",");
+  // نقيّد بالنموذج أيضًا حتى لا تُحتسب إجابات من نموذج آخر بأي حال
+  const rows = await db.all(
+    `SELECT a."questionId", a."value" FROM "Answer" a
+     JOIN "Question" q ON q."id" = a."questionId"
+     WHERE a."questionId" IN (${ph}) AND q."formId" = ?`,
+    [...questionIds, formId]
+  );
+  const out: Record<string, Record<string, number>> = {};
+  for (const r of rows) {
+    const bucket = (out[r.questionId] ??= {});
+    let v: any;
+    try {
+      v = JSON.parse(r.value);
+    } catch {
+      v = r.value;
+    }
+    for (const item of Array.isArray(v) ? v : [v]) {
+      const key = String(item ?? "");
+      if (!key) continue;
+      bucket[key] = (bucket[key] || 0) + 1;
+    }
+  }
+  return out;
+}
+
 // نموذج مع كامل الأسئلة والردود وإجاباتها ومشروعه (لصفحة الردود والتصدير)
 export async function getFormWithResponses(id: string) {
   const db = getDb();

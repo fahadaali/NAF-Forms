@@ -83,6 +83,8 @@ const ICONS: Record<string, string> = {
   printer:
     '<path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M8 17h8v4H8z"/>',
   bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+  "eye-off":
+    '<path d="M3 3l18 18"/><path d="M10.6 5.2A9.6 9.6 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-2.4 3.3"/><path d="M6.5 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.3 9.3 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
   square: '<rect x="4" y="4" width="16" height="16" rx="3"/>',
 };
 
@@ -131,6 +133,7 @@ const FIELD_ICON: Record<string, string> = {
   IMAGE_CHOICE: "image",
   SIGNATURE: "pen",
   CONSENT: "badge-check",
+  HIDDEN: "eye-off",
   SECTION: "heading",
   IMAGE: "image",
   VIDEO: "film",

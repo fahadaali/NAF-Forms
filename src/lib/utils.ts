@@ -1,5 +1,9 @@
 import { DEFAULT_SETTINGS, type FormSettings } from "./types";
-import { NON_INPUT_TYPES, type FieldTypeId } from "./field-types";
+import {
+  NON_INPUT_TYPES,
+  HIDDEN_FIELD_TYPES,
+  type FieldTypeId,
+} from "./field-types";
 
 export function safeParse<T>(raw: string | null | undefined, fallback: T): T {
   if (!raw) return fallback;
@@ -82,6 +86,11 @@ export function youtubeEmbed(url?: string): string | null {
 
 export function isInputQuestion(type: string): boolean {
   return !NON_INPUT_TYPES.includes(type as FieldTypeId);
+}
+
+// حقل يُسجَّل دون عرضه في صفحة التعبئة
+export function isHiddenField(type: string): boolean {
+  return HIDDEN_FIELD_TYPES.includes(type as FieldTypeId);
 }
 
 const AR_DATE = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {

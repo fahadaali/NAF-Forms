@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getFormWithResponses } from "@/lib/repo";
+import { getFormWithResponses, getVisitStats } from "@/lib/repo";
 import { authorizeForm } from "@/lib/session";
 import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
@@ -20,7 +20,10 @@ export default async function ResponsesPage({
 }) {
   const formId = (await params).formId;
   if (!(await authorizeForm(formId))) notFound();
-  const form = await getFormWithResponses(formId);
+  const [form, visitStats] = await Promise.all([
+    getFormWithResponses(formId),
+    getVisitStats(formId),
+  ]);
   if (!form || !form.project) notFound();
 
   const questions = form.questions.filter((q) => isInputQuestion(q.type));
@@ -211,6 +214,21 @@ export default async function ResponsesPage({
     examAvg = `${(s / form.responses.length).toFixed(1)} / ${t}`;
   }
 
+  // تحليلات الإكمال: معدّل الإكمال، زمن التعبئة، ونقاط التسرّب بأسماء الأسئلة
+  const labelById = new Map(form.questions.map((q) => [q.id, q.label]));
+  const funnel = {
+    started: visitStats.started,
+    completed: visitStats.completed,
+    rate: visitStats.started
+      ? Math.round((visitStats.completed / visitStats.started) * 100)
+      : null,
+    avgSeconds: visitStats.avgSeconds,
+    dropOff: visitStats.dropOff.slice(0, 8).map((d) => ({
+      label: labelById.get(d.questionId) || "—",
+      count: d.count,
+    })),
+  };
+
   return (
     <div className="min-h-screen">
       <Navbar
@@ -243,6 +261,7 @@ export default async function ResponsesPage({
           stats={stats}
           rows={rows}
           timeline={timeline}
+          funnel={funnel}
         />
       </main>
     </div>

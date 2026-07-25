@@ -5,6 +5,7 @@ import { Icon } from "@/components/ui/Icon";
 import {
   youtubeEmbed,
   isInputQuestion,
+  isHiddenField,
   computeVisibleQuestions,
   validateAnswer,
 } from "@/lib/utils";
@@ -51,6 +52,54 @@ export default function FillForm({
   const [emailError, setEmailError] = useState("");
   const [hp, setHp] = useState(""); // مصيدة سبام
 
+  // تتبّع الزيارة (تحليلات الإكمال) + المسودّة + حصص الخيارات
+  const visitId = useRef<string | null>(null);
+  const [draftToken, setDraftToken] = useState<string | null>(null);
+  const [resumeUrl, setResumeUrl] = useState("");
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [quotaRemaining, setQuotaRemaining] = useState<
+    Record<string, Record<string, number>>
+  >({});
+
+  // التعبئة المسبقة من الرابط + قيم الحقول المخفية (مرة واحدة عند التحميل)
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const seed: Record<string, any> = {};
+    for (const q of form.questions) {
+      const cfg = q.config || {};
+      if (isHiddenField(q.type)) {
+        const fromUrl = cfg.paramName ? sp.get(cfg.paramName) : null;
+        const val = fromUrl ?? cfg.defaultValue ?? "";
+        if (val !== "") seed[q.id] = val;
+      } else if (cfg.prefillKey) {
+        const val = sp.get(cfg.prefillKey);
+        if (val !== null && val !== "") seed[q.id] = val;
+      }
+    }
+    if (Object.keys(seed).length) setAnswers((a) => ({ ...seed, ...a }));
+
+    // استئناف مسودّة محفوظة
+    const token = sp.get("resume");
+    if (token) {
+      setDraftToken(token);
+      fetch(`/api/f/${form.slug}/draft?token=${encodeURIComponent(token)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!d?.ok) return;
+          setAnswers((a) => ({ ...a, ...(d.answers || {}) }));
+          if (d.email) setEmail(d.email);
+        })
+        .catch(() => {});
+    }
+
+    // المتبقي من حصص الخيارات
+    fetch(`/api/f/${form.slug}/quotas`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.remaining && setQuotaRemaining(d.remaining))
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function unlock() {
     setChecking(true);
     setPwError("");
@@ -93,11 +142,13 @@ export default function FillForm({
   // إن وُجدت فواصل صفحات (PAGE_BREAK) نجمّع ما بينها في بطاقة واحدة،
   // وإلا فبطاقة لكل عنصر (النمط الافتراضي).
   const steps = useMemo(() => {
-    const hasBreaks = questions.some((q) => q.type === "PAGE_BREAK");
+    // الحقول المخفية تُسجَّل دون أن تُعرض، فلا تُحتسب بطاقة
+    const shown = questions.filter((q) => !isHiddenField(q.type));
+    const hasBreaks = shown.some((q) => q.type === "PAGE_BREAK");
     if (hasBreaks) {
-      const pages: (typeof questions)[] = [];
-      let cur: typeof questions = [];
-      for (const q of questions) {
+      const pages: (typeof shown)[] = [];
+      let cur: typeof shown = [];
+      for (const q of shown) {
         if (q.type === "PAGE_BREAK") {
           pages.push(cur);
           cur = [];
@@ -106,9 +157,9 @@ export default function FillForm({
       pages.push(cur);
       return pages.filter((p) => p.length > 0);
     }
-    return questions
+    return shown
       .filter((q) => q.type !== "PAGE_BREAK")
-      .map((q) => [q] as typeof questions);
+      .map((q) => [q] as typeof shown);
   }, [questions]);
 
   const safeStep = Math.min(step, Math.max(0, steps.length - 1));
@@ -197,7 +248,14 @@ export default function FillForm({
     const res = await fetch(`/api/f/${form.slug}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers, password, email, hp }),
+      body: JSON.stringify({
+        answers,
+        password,
+        email,
+        hp,
+        visitId: visitId.current,
+        draftToken,
+      }),
     });
     setSubmitting(false);
     if (!res.ok) {
@@ -236,6 +294,43 @@ export default function FillForm({
     () => (steps.length ? Math.round(((safeStep + 1) / steps.length) * 100) : 0),
     [safeStep, steps.length]
   );
+
+  // تسجيل آخر سؤال وُصل إليه (لحساب نقاط التسرّب)
+  useEffect(() => {
+    if (phase !== "question" || !visitId.current) return;
+    const first = currentStep[0];
+    if (!first) return;
+    fetch(`/api/f/${form.slug}/visit`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visitId: visitId.current, questionId: first.id }),
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, safeStep]);
+
+  // حفظ الإجابات ومتابعتها لاحقًا برابط استئناف
+  async function saveForLater() {
+    setSavingDraft(true);
+    const res = await fetch(`/api/f/${form.slug}/draft`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers, email, token: draftToken }),
+    });
+    setSavingDraft(false);
+    if (!res.ok) {
+      setError("تعذّر حفظ المسودّة");
+      return;
+    }
+    const d = await res.json();
+    setDraftToken(d.token);
+    const url = `${window.location.origin}/f/${form.slug}?resume=${d.token}`;
+    setResumeUrl(url);
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      /* النسخ اختياري */
+    }
+  }
 
   // ===== بوابة كلمة المرور =====
   if (!unlocked) {
@@ -470,6 +565,13 @@ export default function FillForm({
                   }
                   setPhase("question");
                   setStep(0);
+                  // بدء تتبّع الزيارة (لا يعطّل التعبئة إن فشل)
+                  fetch(`/api/f/${form.slug}/visit`, { method: "POST" })
+                    .then((r) => (r.ok ? r.json() : null))
+                    .then((d) => {
+                      if (d?.visitId) visitId.current = d.visitId;
+                    })
+                    .catch(() => {});
                 }}
                 className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-lg font-bold text-white shadow-lg transition hover:opacity-90"
                 style={{ background: accent }}
@@ -582,11 +684,41 @@ export default function FillForm({
                   }}
                   accent={accent}
                   index={i}
+                  remaining={quotaRemaining[q.id]}
                 />
               </div>
             ))}
           </div>
           {error && <p className="mt-4 font-medium text-red-600">{error}</p>}
+
+          {/* حفظ ومتابعة لاحقًا */}
+          {behavior.allowSaveResume && (
+            <div className="mt-6 rounded-xl bg-black/5 p-3 text-sm">
+              <button
+                onClick={saveForLater}
+                disabled={savingDraft}
+                className="inline-flex items-center gap-1.5 font-medium disabled:opacity-60"
+                style={{ color: accent }}
+              >
+                <Icon name="save" className="h-4 w-4" />
+                {savingDraft ? "جارٍ الحفظ…" : "حفظ ومتابعة لاحقًا"}
+              </button>
+              {resumeUrl && (
+                <div className="mt-2">
+                  <p className="text-xs text-slate-500">
+                    احفظ هذا الرابط لمتابعة التعبئة لاحقًا (نُسخ تلقائيًا):
+                  </p>
+                  <input
+                    readOnly
+                    dir="ltr"
+                    value={resumeUrl}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="input mt-1 py-1.5 text-xs"
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="mt-8 flex items-center justify-between">
             {behavior.allowBack !== false ? (
@@ -630,12 +762,14 @@ function QuestionCard({
   onChange,
   accent,
   index,
+  remaining,
 }: {
   q: FormDTO["questions"][number];
   value: any;
   onChange: (v: any) => void;
   accent: string;
   index: number;
+  remaining?: Record<string, number>;
 }) {
   if (q.type === "SECTION") {
     return (
@@ -714,7 +848,13 @@ function QuestionCard({
       </h2>
       {q.description && <p className="mt-1.5 text-sm text-slate-500">{q.description}</p>}
       <div className="mt-5">
-        <QuestionInput question={q} value={value} onChange={onChange} accent={accent} />
+        <QuestionInput
+          question={q}
+          value={value}
+          onChange={onChange}
+          accent={accent}
+          remaining={remaining}
+        />
       </div>
     </div>
   );

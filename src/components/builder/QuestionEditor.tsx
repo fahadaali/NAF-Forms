@@ -386,6 +386,44 @@ export default function QuestionEditor({
               />
             )}
 
+            {/* حقل مخفي: يُملأ من الرابط أو بقيمة افتراضية */}
+            {q.type === "HIDDEN" && (
+              <div className="space-y-3">
+                <TextField
+                  label="اسم الوسيط في الرابط (مثال: source)"
+                  value={cfg.paramName || ""}
+                  onChange={(v) => setCfg({ paramName: v })}
+                />
+                <TextField
+                  label="قيمة افتراضية إن لم تُرسل في الرابط"
+                  value={cfg.defaultValue || ""}
+                  onChange={(v) => setCfg({ defaultValue: v })}
+                />
+                <p className="text-xs text-slate-400">
+                  أضف <span dir="ltr">?{cfg.paramName || "source"}=value</span>{" "}
+                  إلى رابط النموذج، فتُسجَّل القيمة مع الرد دون إظهارها.
+                </p>
+              </div>
+            )}
+
+            {/* حصص الخيارات: حدّ لعدد مرات اختيار كل خيار */}
+            {["MULTIPLE_CHOICE", "CHECKBOXES", "DROPDOWN"].includes(q.type) && (
+              <QuotasEditor
+                options={cfg.options || []}
+                quotas={cfg.quotas || {}}
+                onChange={(quotas) => setCfg({ quotas })}
+              />
+            )}
+
+            {/* التعبئة المسبقة من الرابط */}
+            {!isLayout && q.type !== "HIDDEN" && (
+              <TextField
+                label="تعبئة مسبقة من الرابط — اسم الوسيط (اختياري)"
+                value={cfg.prefillKey || ""}
+                onChange={(v) => setCfg({ prefillKey: v })}
+              />
+            )}
+
             {/* إجابة صحيحة للاختبارات */}
             {formType === "EXAM" && def?.gradable && (
               <div className="rounded-xl bg-amber-50 p-3">
@@ -492,7 +530,66 @@ function hasSettings(type: string, formType: string, priorCount: number): boolea
     "PHONE",
     "EMAIL",
     "NUMBER",
+    "HIDDEN",
   ].includes(type);
+}
+
+// حصص الخيارات: حدّ أقصى لعدد مرات اختيار كل خيار (0 أو فارغ = بلا حدّ)
+function QuotasEditor({
+  options,
+  quotas,
+  onChange,
+}: {
+  options: any[];
+  quotas: Record<string, number>;
+  onChange: (q: Record<string, number>) => void;
+}) {
+  const labels = options.map((o) => (typeof o === "string" ? o : o?.label));
+  const [open, setOpen] = useState(
+    Object.values(quotas).some((v) => Number(v) > 0)
+  );
+  if (!labels.length) return null;
+  return (
+    <div className="rounded-xl bg-white p-3">
+      <label className="flex items-center gap-2 text-sm font-semibold">
+        <input
+          type="checkbox"
+          checked={open}
+          onChange={(e) => {
+            setOpen(e.target.checked);
+            if (!e.target.checked) onChange({});
+          }}
+        />
+        تحديد عدد لكل خيار (مثل عدد المقاعد)
+      </label>
+      {open && (
+        <div className="mt-3 space-y-2">
+          {labels.map((label: string) => (
+            <div key={label} className="flex items-center gap-2">
+              <span className="flex-1 truncate text-sm">{label}</span>
+              <input
+                type="number"
+                min={0}
+                placeholder="بلا حدّ"
+                className="input w-28 py-1.5"
+                value={quotas[label] ?? ""}
+                onChange={(e) => {
+                  const next = { ...quotas };
+                  const n = Number(e.target.value);
+                  if (!e.target.value || n <= 0) delete next[label];
+                  else next[label] = n;
+                  onChange(next);
+                }}
+              />
+            </div>
+          ))}
+          <p className="text-xs text-slate-400">
+            عند اكتمال العدد يُعطَّل الخيار تلقائيًا ويُرفض على الخادم.
+          </p>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function ToolBtn({
