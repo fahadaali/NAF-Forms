@@ -30,7 +30,11 @@ export async function GET(
     if (form.type === "EXAM")
       record["الدرجة"] = `${meta.score ?? 0} / ${meta.total ?? 0}`;
     for (const q of questions) {
-      record[q.label] = answerToText(q.type, byQ[q.id]);
+      record[q.label] = answerToText(
+        q.type,
+        byQ[q.id],
+        safeParse<Record<string, any>>(q.config, {})
+      );
     }
     return record;
   });

@@ -48,7 +48,11 @@ export default async function PrintResponsePage({
           <div key={q.id}>
             <dt className="text-sm font-bold text-slate-700">{q.label}</dt>
             <dd className="mt-1 whitespace-pre-line text-slate-900">
-              {answerToText(q.type, byQ[q.id]) || "—"}
+              {answerToText(
+                q.type,
+                byQ[q.id],
+                safeParse<Record<string, any>>(q.config, {})
+              ) || "—"}
             </dd>
           </div>
         ))}

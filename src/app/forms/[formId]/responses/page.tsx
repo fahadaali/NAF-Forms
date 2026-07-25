@@ -125,7 +125,7 @@ export default async function ResponsesPage({
         kind: "location",
         answered,
         samples: values.slice(0, 50).map((v) => ({
-          text: answerToText(q.type, v),
+          text: answerToText(q.type, v, cfg),
           url:
             v && typeof v === "object"
               ? `https://www.openstreetmap.org/?mlat=${v.lat}&mlon=${v.lng}#map=15/${v.lat}/${v.lng}`
@@ -141,9 +141,14 @@ export default async function ResponsesPage({
       type: q.type,
       kind: "text",
       answered,
-      samples: values.slice(0, 50).map((v) => ({ text: answerToText(q.type, v) })),
+      samples: values.slice(0, 50).map((v) => ({ text: answerToText(q.type, v, cfg) })),
     };
   });
+
+  // إعدادات كل سؤال (تُستخدم في تنسيق الإجابات مثل عدد النجوم)
+  const cfgById: Record<string, Record<string, any>> = {};
+  for (const q of questions)
+    cfgById[q.id] = safeParse<Record<string, any>>(q.config, {});
 
   // صفوف الردود الفردية
   const rows: ResponseRow[] = form.responses.map((r) => {
@@ -164,7 +169,7 @@ export default async function ResponsesPage({
         return {
           label: q.label,
           type: q.type,
-          text: answerToText(q.type, v),
+          text: answerToText(q.type, v, cfgById[q.id]),
           url: q.type === "FILE" && v?.url ? v.url : undefined,
           loc: q.type === "LOCATION" && v && typeof v === "object" ? v : undefined,
         };

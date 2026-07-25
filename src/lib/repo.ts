@@ -178,25 +178,32 @@ export async function getProjectById(id: string) {
     `SELECT * FROM "Form" WHERE "projectId" = ? AND "isTemplate" = 0 ORDER BY "updatedAt" DESC`,
     [id]
   );
-  const withCounts = await Promise.all(
-    forms.map(async (f: any) => {
-      const rc = await db.first(
-        `SELECT COUNT(*) as c FROM "Response" WHERE "formId" = ?`,
-        [f.id]
-      );
-      const qc = await db.first(
-        `SELECT COUNT(*) as c FROM "Question" WHERE "formId" = ?`,
-        [f.id]
-      );
-      return {
-        ...mapForm(f),
-        _count: {
-          responses: Number(rc?.c || 0),
-          questions: Number(qc?.c || 0),
-        },
-      };
-    })
+  // عدّادات مجمّعة باستعلامين فقط بدل استعلامين لكل نموذج (تفادي N+1)
+  const respCounts = await db.all(
+    `SELECT "formId", COUNT(*) as c FROM "Response"
+     WHERE "formId" IN (SELECT "id" FROM "Form" WHERE "projectId" = ?)
+     GROUP BY "formId"`,
+    [id]
   );
+  const qCounts = await db.all(
+    `SELECT "formId", COUNT(*) as c FROM "Question"
+     WHERE "formId" IN (SELECT "id" FROM "Form" WHERE "projectId" = ?)
+     GROUP BY "formId"`,
+    [id]
+  );
+  const rMap = new Map<string, number>(
+    respCounts.map((r: any) => [r.formId, Number(r.c)])
+  );
+  const qMap = new Map<string, number>(
+    qCounts.map((r: any) => [r.formId, Number(r.c)])
+  );
+  const withCounts = forms.map((f: any) => ({
+    ...mapForm(f),
+    _count: {
+      responses: rMap.get(f.id) || 0,
+      questions: qMap.get(f.id) || 0,
+    },
+  }));
   return { ...mapProject(p), forms: withCounts };
 }
 
@@ -400,15 +407,19 @@ export async function listTemplates() {
   const rows = await db.all(
     `SELECT * FROM "Form" WHERE "isTemplate" = 1 ORDER BY "createdAt" ASC`
   );
-  return Promise.all(
-    rows.map(async (f: any) => {
-      const qc = await db.first(
-        `SELECT COUNT(*) as c FROM "Question" WHERE "formId" = ?`,
-        [f.id]
-      );
-      return { ...mapForm(f), _count: { questions: Number(qc?.c || 0) } };
-    })
+  // عدّاد الأسئلة باستعلام واحد مجمّع (تفادي N+1)
+  const qCounts = await db.all(
+    `SELECT "formId", COUNT(*) as c FROM "Question"
+     WHERE "formId" IN (SELECT "id" FROM "Form" WHERE "isTemplate" = 1)
+     GROUP BY "formId"`
   );
+  const qMap = new Map<string, number>(
+    qCounts.map((r: any) => [r.formId, Number(r.c)])
+  );
+  return rows.map((f: any) => ({
+    ...mapForm(f),
+    _count: { questions: qMap.get(f.id) || 0 },
+  }));
 }
 
 export async function countForms(isTemplate: boolean) {
