@@ -87,6 +87,14 @@ CREATE TABLE IF NOT EXISTS "Draft" (
   "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" DATETIME NOT NULL
 );
+CREATE TABLE IF NOT EXISTS "ResponseReview" (
+  "responseId" TEXT NOT NULL PRIMARY KEY,
+  "status" TEXT NOT NULL DEFAULT 'NEW',
+  "rating" INTEGER NOT NULL DEFAULT 0,
+  "notes" TEXT NOT NULL DEFAULT '',
+  "updatedAt" DATETIME NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "ResponseReview_status_idx" ON "ResponseReview"("status");
 CREATE INDEX IF NOT EXISTS "Visit_formId_idx" ON "Visit"("formId");
 CREATE INDEX IF NOT EXISTS "Draft_formId_idx" ON "Draft"("formId");
 CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");

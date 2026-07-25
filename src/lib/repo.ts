@@ -590,6 +590,102 @@ export async function deleteResponse(id: string) {
   await db.run(`DELETE FROM "Response" WHERE "id" = ?`, [id]);
 }
 
+// ============================ مراجعة الردود (تتبّع المتقدمين) ============================
+export interface ReviewRow {
+  responseId: string;
+  status: string;
+  rating: number;
+  notes: string;
+}
+
+function mapReview(r: any): ReviewRow {
+  return {
+    responseId: r.responseId,
+    status: r.status || "NEW",
+    rating: Number(r.rating ?? 0),
+    notes: r.notes ?? "",
+  };
+}
+
+// مراجعات كل ردود نموذج (مفهرسة بمعرّف الرد)
+export async function getReviewsByForm(formId: string) {
+  const rows = await getDb().all(
+    `SELECT * FROM "ResponseReview"
+     WHERE "responseId" IN (SELECT "id" FROM "Response" WHERE "formId" = ?)`,
+    [formId]
+  );
+  const map: Record<string, ReviewRow> = {};
+  for (const r of rows) map[r.responseId] = mapReview(r);
+  return map;
+}
+
+export async function upsertReview(
+  responseId: string,
+  data: { status?: string; rating?: number; notes?: string }
+) {
+  const db = getDb();
+  const ts = now();
+  const existing = await db.first(
+    `SELECT * FROM "ResponseReview" WHERE "responseId" = ?`,
+    [responseId]
+  );
+  if (!existing) {
+    await db.run(
+      `INSERT INTO "ResponseReview" ("responseId","status","rating","notes","updatedAt") VALUES (?,?,?,?,?)`,
+      [
+        responseId,
+        data.status ?? "NEW",
+        Number(data.rating ?? 0),
+        data.notes ?? "",
+        ts,
+      ]
+    );
+  } else {
+    const sets: string[] = [];
+    const vals: any[] = [];
+    if (data.status !== undefined) {
+      sets.push(`"status" = ?`);
+      vals.push(data.status);
+    }
+    if (data.rating !== undefined) {
+      sets.push(`"rating" = ?`);
+      vals.push(Number(data.rating));
+    }
+    if (data.notes !== undefined) {
+      sets.push(`"notes" = ?`);
+      vals.push(data.notes);
+    }
+    sets.push(`"updatedAt" = ?`);
+    vals.push(ts, responseId);
+    await db.run(
+      `UPDATE "ResponseReview" SET ${sets.join(", ")} WHERE "responseId" = ?`,
+      vals
+    );
+  }
+  const fresh = await db.first(
+    `SELECT * FROM "ResponseReview" WHERE "responseId" = ?`,
+    [responseId]
+  );
+  return fresh ? mapReview(fresh) : null;
+}
+
+// عدد المحاولات المسجّلة ببريد معيّن (لسياسة إعادة محاولة الاختبار)
+export async function countAttemptsByEmail(formId: string, email: string) {
+  const rows = await getDb().all(
+    `SELECT "meta" FROM "Response" WHERE "formId" = ?`,
+    [formId]
+  );
+  let n = 0;
+  for (const r of rows) {
+    try {
+      if (JSON.parse(r.meta)?.email === email) n++;
+    } catch {
+      /* تجاهل الميتا غير الصالحة */
+    }
+  }
+  return n;
+}
+
 // ============================ الزيارات (تحليلات الإكمال) ============================
 export async function startVisit(formId: string) {
   const id = nanoid();

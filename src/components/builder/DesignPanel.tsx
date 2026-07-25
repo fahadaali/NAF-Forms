@@ -468,6 +468,81 @@ export default function DesignPanel({
                 }
               />
             </div>
+            <div>
+              <label className="label">
+                عدد الأسئلة المعروضة (بنك أسئلة عشوائي)
+              </label>
+              <input
+                type="number"
+                min={0}
+                className="input"
+                placeholder="كل الأسئلة"
+                value={exam.questionCount ?? ""}
+                onChange={(e) =>
+                  patch({
+                    exam: {
+                      ...exam,
+                      questionCount: e.target.value
+                        ? Number(e.target.value)
+                        : null,
+                    },
+                  })
+                }
+              />
+              <p className="mt-1 text-xs text-slate-400">
+                يُختار هذا العدد عشوائيًا من أسئلة الاختبار لكل مستفيد.
+              </p>
+            </div>
+            <div>
+              <label className="label">أقصى عدد محاولات لكل بريد</label>
+              <input
+                type="number"
+                min={0}
+                className="input"
+                placeholder="بلا حد"
+                value={exam.maxAttempts ?? ""}
+                onChange={(e) =>
+                  patch({
+                    exam: {
+                      ...exam,
+                      maxAttempts: e.target.value ? Number(e.target.value) : null,
+                    },
+                  })
+                }
+              />
+              <p className="mt-1 text-xs text-slate-400">
+                يتطلّب تفعيل «طلب بريد المستفيد قبل البدء».
+              </p>
+            </div>
+          </div>
+
+          {/* الشهادة */}
+          <div className="mt-4 border-t border-slate-100 pt-4">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={!!exam.certificate}
+                onChange={(e) =>
+                  patch({ exam: { ...exam, certificate: e.target.checked } })
+                }
+              />
+              إصدار شهادة قابلة للطباعة للناجحين
+            </label>
+            {exam.certificate && (
+              <div className="mt-2">
+                <label className="label">عنوان الشهادة</label>
+                <input
+                  className="input"
+                  placeholder="شهادة إتمام"
+                  value={exam.certificateTitle || ""}
+                  onChange={(e) =>
+                    patch({
+                      exam: { ...exam, certificateTitle: e.target.value },
+                    })
+                  }
+                />
+              </div>
+            )}
           </div>
           <div className="mt-3 space-y-2">
             <Toggle

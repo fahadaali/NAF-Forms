@@ -2,6 +2,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
+import {
+  REVIEW_STATUSES,
+  REVIEW_STATUS_LABELS,
+  REVIEW_STATUS_CHIP,
+} from "@/lib/review";
 
 export interface QuestionStat {
   id: string;
@@ -24,7 +29,18 @@ export interface ResponseRow {
   ts: string; // ISO للفرز والتصفية الزمنية
   score?: string;
   email?: string;
-  cells: { label: string; type: string; text: string; url?: string; loc?: { lat: number; lng: number } }[];
+  // مراجعة الرد (تتبّع المتقدمين)
+  status: string;
+  rating: number;
+  notes: string;
+  cells: {
+    label: string;
+    type: string;
+    text: string;
+    url?: string;
+    urls?: { name: string; url: string }[];
+    loc?: { lat: number; lng: number };
+  }[];
 }
 
 export interface FunnelStats {
@@ -60,8 +76,42 @@ export default function ResponsesDashboard({
   const [query, setQuery] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  // مراجعات محلّية حتى تظهر التعديلات فورًا دون إعادة تحميل
+  const [reviews, setReviews] = useState<
+    Record<string, { status: string; rating: number; notes: string }>
+  >(() =>
+    Object.fromEntries(
+      rows.map((r) => [
+        r.id,
+        { status: r.status, rating: r.rating, notes: r.notes },
+      ])
+    )
+  );
+
+  const reviewOf = (id: string) =>
+    reviews[id] || { status: "NEW", rating: 0, notes: "" };
+
+  async function saveReview(
+    id: string,
+    patch: Partial<{ status: string; rating: number; notes: string }>
+  ) {
+    setReviews((prev) => ({ ...prev, [id]: { ...reviewOf(id), ...patch } }));
+    await fetch(`/api/responses/${id}/review`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    }).catch(() => {});
+  }
+
+  // عدّاد لكل حالة
+  const statusCounts = REVIEW_STATUSES.map((s) => ({
+    status: s as string,
+    count: rows.filter((r) => reviewOf(r.id).status === s).length,
+  })).filter((x) => x.count > 0);
 
   const filteredRows = rows.filter((r) => {
+    if (statusFilter && reviewOf(r.id).status !== statusFilter) return false;
     if (query.trim()) {
       const hay = [
         r.email || "",
@@ -85,6 +135,7 @@ export default function ResponsesDashboard({
     if (query.trim()) p.set("q", query.trim());
     if (from) p.set("from", from);
     if (to) p.set("to", to);
+    if (statusFilter) p.set("status", statusFilter);
     return `/api/forms/${formId}/export?${p.toString()}`;
   }
 
@@ -178,19 +229,51 @@ export default function ResponsesDashboard({
             <input type="date" className="input py-1.5" value={from} onChange={(e) => setFrom(e.target.value)} />
             <span className="text-slate-500">إلى</span>
             <input type="date" className="input py-1.5" value={to} onChange={(e) => setTo(e.target.value)} />
-            {(from || to || query) && (
+            {(from || to || query || statusFilter) && (
               <button
                 className="text-naf-600 hover:underline"
                 onClick={() => {
                   setFrom("");
                   setTo("");
                   setQuery("");
+                  setStatusFilter("");
                 }}
               >
                 مسح
               </button>
             )}
           </div>
+
+          {/* تصفية حسب حالة المراجعة */}
+          {statusCounts.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                onClick={() => setStatusFilter("")}
+                className={`chip ${
+                  statusFilter === ""
+                    ? "bg-naf-600 text-white"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                الكل ({rows.length})
+              </button>
+              {statusCounts.map(({ status, count }) => (
+                <button
+                  key={status}
+                  onClick={() =>
+                    setStatusFilter(statusFilter === status ? "" : status)
+                  }
+                  className={`chip ${
+                    statusFilter === status
+                      ? "bg-naf-600 text-white"
+                      : REVIEW_STATUS_CHIP[status]
+                  }`}
+                >
+                  {REVIEW_STATUS_LABELS[status]} ({count})
+                </button>
+              ))}
+            </div>
+          )}
           {(query || from || to) && (
             <p className="text-sm text-slate-400">
               {filteredRows.length} نتيجة من {rows.length}
@@ -199,7 +282,19 @@ export default function ResponsesDashboard({
           {filteredRows.map((r) => (
             <div key={r.id} className="card p-5">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
-                <span className="font-bold">رد #{rows.length - rows.indexOf(r)}</span>
+                <span className="flex items-center gap-2 font-bold">
+                  رد #{rows.length - rows.indexOf(r)}
+                  <span
+                    className={`chip ${REVIEW_STATUS_CHIP[reviewOf(r.id).status]}`}
+                  >
+                    {REVIEW_STATUS_LABELS[reviewOf(r.id).status]}
+                  </span>
+                  {reviewOf(r.id).rating > 0 && (
+                    <span className="text-xs text-amber-500">
+                      {"★".repeat(reviewOf(r.id).rating)}
+                    </span>
+                  )}
+                </span>
                 <div className="flex items-center gap-3">
                   {r.email && (
                     <span className="chip inline-flex items-center gap-1 bg-slate-100 text-slate-600" dir="ltr">
@@ -241,7 +336,20 @@ export default function ResponsesDashboard({
                   <div key={j} className="rounded-lg bg-slate-50 p-3">
                     <dt className="text-xs font-medium text-slate-400">{c.label}</dt>
                     <dd className="mt-0.5 text-sm">
-                      {c.url ? (
+                      {c.urls && c.urls.length ? (
+                        <span className="flex flex-col gap-0.5">
+                          {c.urls.map((f, k) => (
+                            <a
+                              key={k}
+                              href={f.url}
+                              target="_blank"
+                              className="text-naf-600 underline"
+                            >
+                              {f.name || "ملف"}
+                            </a>
+                          ))}
+                        </span>
+                      ) : c.url ? (
                         <a href={c.url} target="_blank" className="text-naf-600 underline">
                           {c.text || "عرض الملف"}
                         </a>
@@ -260,6 +368,12 @@ export default function ResponsesDashboard({
                   </div>
                 ))}
               </dl>
+
+              {/* مراجعة الرد: الحالة والتقييم والملاحظات الداخلية */}
+              <ReviewBar
+                review={reviewOf(r.id)}
+                onChange={(patch) => saveReview(r.id, patch)}
+              />
             </div>
           ))}
         </div>
@@ -404,6 +518,81 @@ function Donut({ data }: { data: { label: string; count: number }[] }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// مراجعة الرد: حالة + تقييم بالنجوم + ملاحظات داخلية (تُحفظ تلقائيًا)
+function ReviewBar({
+  review,
+  onChange,
+}: {
+  review: { status: string; rating: number; notes: string };
+  onChange: (patch: Partial<{ status: string; rating: number; notes: string }>) => void;
+}) {
+  const [notes, setNotes] = useState(review.notes);
+  const [openNotes, setOpenNotes] = useState(!!review.notes);
+  const [savedAt, setSavedAt] = useState("");
+
+  return (
+    <div className="mt-4 border-t border-slate-100 pt-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-400">الحالة</span>
+          <select
+            className="input py-1 text-sm"
+            value={review.status}
+            onChange={(e) => onChange({ status: e.target.value })}
+          >
+            {REVIEW_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {REVIEW_STATUS_LABELS[s]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-slate-400">التقييم</span>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              title={`${n} من 5`}
+              onClick={() => onChange({ rating: review.rating === n ? 0 : n })}
+              className={
+                n <= review.rating ? "text-amber-500" : "text-slate-300"
+              }
+            >
+              <Icon name="star" className="h-4 w-4" />
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setOpenNotes((o) => !o)}
+          className="inline-flex items-center gap-1 text-xs font-medium text-naf-600 hover:underline"
+        >
+          <Icon name="edit" className="h-3.5 w-3.5" />
+          {openNotes ? "إخفاء الملاحظات" : "ملاحظات داخلية"}
+        </button>
+        {savedAt && <span className="text-xs text-green-600">حُفظ</span>}
+      </div>
+
+      {openNotes && (
+        <textarea
+          className="input mt-2 text-sm"
+          rows={3}
+          placeholder="ملاحظات داخلية (لا تظهر للمستفيد)"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          onBlur={() => {
+            if (notes !== review.notes) {
+              onChange({ notes });
+              setSavedAt(new Date().toLocaleTimeString("ar-SA"));
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

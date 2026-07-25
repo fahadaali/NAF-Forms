@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getFormWithResponses, getVisitStats } from "@/lib/repo";
+import { getFormWithResponses, getVisitStats, getReviewsByForm } from "@/lib/repo";
 import { authorizeForm } from "@/lib/session";
 import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
@@ -20,9 +20,10 @@ export default async function ResponsesPage({
 }) {
   const formId = (await params).formId;
   if (!(await authorizeForm(formId))) notFound();
-  const [form, visitStats] = await Promise.all([
+  const [form, visitStats, reviews] = await Promise.all([
     getFormWithResponses(formId),
     getVisitStats(formId),
+    getReviewsByForm(formId),
   ]);
   if (!form || !form.project) notFound();
 
@@ -116,10 +117,12 @@ export default async function ResponsesPage({
         type: q.type,
         kind: "file",
         answered,
-        samples: values.slice(0, 50).map((v) => ({
-          text: v?.name || "ملف",
-          url: v?.url,
-        })),
+        // نفرد الملفات المتعددة كعناصر مستقلة في العيّنات
+        samples: values
+          .flatMap((v) => (Array.isArray(v) ? v : [v]))
+          .filter((f: any) => f)
+          .slice(0, 50)
+          .map((f: any) => ({ text: f?.name || "ملف", url: f?.url })),
       };
     }
 
@@ -170,13 +173,23 @@ export default async function ResponsesPage({
         form.type === "EXAM" && meta.total != null
           ? `${meta.score ?? 0} / ${meta.total}`
           : undefined,
+      status: reviews[r.id]?.status || "NEW",
+      rating: reviews[r.id]?.rating || 0,
+      notes: reviews[r.id]?.notes || "",
       cells: questions.map((q) => {
         const v = byQ[q.id];
         return {
           label: q.label,
           type: q.type,
           text: answerToText(q.type, v, cfgById[q.id]),
-          url: q.type === "FILE" && v?.url ? v.url : undefined,
+          url: q.type === "FILE" && !Array.isArray(v) && v?.url ? v.url : undefined,
+          // تعدّد الملفات: قائمة روابط
+          urls:
+            q.type === "FILE" && Array.isArray(v)
+              ? v
+                  .filter((f: any) => f?.url)
+                  .map((f: any) => ({ name: f.name || "ملف", url: f.url }))
+              : undefined,
           loc: q.type === "LOCATION" && v && typeof v === "object" ? v : undefined,
         };
       }),

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getFormWithResponses } from "@/lib/repo";
+import { getFormWithResponses, getReviewsByForm } from "@/lib/repo";
 import { authorizeForm } from "@/lib/session";
+import { REVIEW_STATUS_LABELS } from "@/lib/review";
 import * as XLSX from "xlsx";
 import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
 
@@ -17,12 +18,16 @@ export async function GET(
   const query = (searchParams.get("q") || "").trim().toLowerCase();
   const from = searchParams.get("from") || "";
   const to = searchParams.get("to") || "";
+  const status = searchParams.get("status") || "";
 
   const formId = (await params).id;
   if (!(await authorizeForm(formId)))
     return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
 
-  const form = await getFormWithResponses(formId);
+  const [form, reviews] = await Promise.all([
+    getFormWithResponses(formId),
+    getReviewsByForm(formId),
+  ]);
   if (!form)
     return NextResponse.json({ error: "غير موجود" }, { status: 404 });
 
@@ -38,6 +43,11 @@ export async function GET(
     if (meta.email) record["البريد الإلكتروني"] = meta.email;
     if (form.type === "EXAM")
       record["الدرجة"] = `${meta.score ?? 0} / ${meta.total ?? 0}`;
+    // حالة المراجعة والتقييم والملاحظات (تتبّع المتقدمين)
+    const rev = reviews[r.id];
+    record["الحالة"] = REVIEW_STATUS_LABELS[rev?.status || "NEW"];
+    record["التقييم"] = rev?.rating ? String(rev.rating) : "";
+    record["ملاحظات داخلية"] = rev?.notes || "";
     for (const q of questions) {
       record[q.label] = answerToText(
         q.type,
@@ -45,20 +55,25 @@ export async function GET(
         safeParse<Record<string, any>>(q.config, {})
       );
     }
-    // نحتفظ بالطابع الزمني الأصلي للتصفية دون إظهاره في المخرجات
-    return { record, ts: r.submittedAt.getTime() };
+    // نحتفظ بالطابع الزمني والحالة للتصفية دون إظهارهما كأعمدة إضافية
+    return {
+      record,
+      ts: r.submittedAt.getTime(),
+      status: rev?.status || "NEW",
+    };
   });
 
   // تطبيق الفلاتر بنفس منطق لوحة الردود
   const rows = allRows
-    .filter(({ record, ts }) => {
+    .filter((row) => {
       if (query) {
-        const hay = Object.values(record).join(" ").toLowerCase();
+        const hay = Object.values(row.record).join(" ").toLowerCase();
         if (!hay.includes(query)) return false;
       }
-      if (from && ts < new Date(from).getTime()) return false;
+      if (status && row.status !== status) return false;
+      if (from && row.ts < new Date(from).getTime()) return false;
       // نهاية اليوم المحدد
-      if (to && ts > new Date(to).getTime() + 86_399_000) return false;
+      if (to && row.ts > new Date(to).getTime() + 86_399_000) return false;
       return true;
     })
     .map(({ record }) => record);
@@ -86,6 +101,9 @@ export async function GET(
     "تاريخ ووقت التقديم",
     ...(hasEmail ? ["البريد الإلكتروني"] : []),
     ...(form.type === "EXAM" ? ["الدرجة"] : []),
+    "الحالة",
+    "التقييم",
+    "ملاحظات داخلية",
     ...questions.map((q) => q.label),
   ];
 

@@ -52,6 +52,10 @@ export interface FormSettings {
     shuffle?: boolean; // خلط ترتيب الأسئلة
     showAnswers?: boolean; // إظهار الإجابات الصحيحة بعد التسليم
     passScore?: number | null; // درجة النجاح
+    questionCount?: number | null; // اختيار عدد عشوائي من بنك الأسئلة (0/فارغ = الكل)
+    maxAttempts?: number | null; // أقصى عدد محاولات للبريد نفسه
+    certificate?: boolean; // شهادة قابلة للطباعة للناجحين
+    certificateTitle?: string; // عنوان الشهادة
   };
 }
 
