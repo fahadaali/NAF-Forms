@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export default function CreateProjectButton() {
   const router = useRouter();
@@ -27,9 +28,9 @@ export default function CreateProjectButton() {
 
   return (
     <>
-      <button className="btn-primary" onClick={() => setOpen(true)}>
+      <Button onClick={() => setOpen(true)}>
         + مشروع جديد
-      </button>
+      </Button>
       {open && (
         <div
           className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4"
@@ -62,12 +63,12 @@ export default function CreateProjectButton() {
               onChange={(e) => setColor(e.target.value)}
             />
             <div className="flex justify-end gap-2">
-              <button className="btn-ghost" onClick={() => setOpen(false)}>
+              <Button variant="outline" onClick={() => setOpen(false)}>
                 إلغاء
-              </button>
-              <button className="btn-primary" disabled={busy} onClick={create}>
+              </Button>
+              <Button disabled={busy} onClick={create}>
                 {busy ? "جارٍ…" : "إنشاء"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

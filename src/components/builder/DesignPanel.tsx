@@ -4,6 +4,7 @@ import type { FormSettings } from "@/lib/types";
 import { youtubeEmbed } from "@/lib/utils";
 import { Icon } from "@/components/ui/Icon";
 import { formatDateTime } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 // ترويسة قسم بأيقونة منحنية
 function SectionHead({ icon, children }: { icon: string; children: React.ReactNode }) {
@@ -683,8 +684,8 @@ function IntegrationsPanel({
             <label className="label">رمز الوصول (سرّي)</label>
             <div className="flex gap-2">
               <input className="input py-1.5 text-xs" dir="ltr" readOnly value={integrations.apiToken || ""} />
-              <button
-                className="btn-ghost shrink-0 py-1.5 text-xs"
+              <Button variant="outline" size="sm"
+                className="shrink-0"
                 onClick={() =>
                   onChange({
                     ...integrations,
@@ -693,7 +694,7 @@ function IntegrationsPanel({
                 }
               >
                 تدوير
-              </button>
+              </Button>
             </div>
             <p className="text-xs text-muted-foreground">الاستخدام:</p>
             <code className="block overflow-x-auto rounded-sm bg-muted p-2 text-xs" dir="ltr">
@@ -710,12 +711,12 @@ function IntegrationsPanel({
       {/* سجل التسليم */}
       <div className="border-t border-border pt-4">
         <div className="flex flex-wrap items-center gap-2">
-          <button className="btn-ghost py-1.5 text-sm" disabled={busy} onClick={loadLogs}>
+          <Button variant="outline" size="sm" disabled={busy} onClick={loadLogs}>
             سجل التسليم
-          </button>
-          <button className="btn-ghost py-1.5 text-sm" disabled={busy} onClick={resend}>
+          </Button>
+          <Button variant="outline" size="sm" disabled={busy} onClick={resend}>
             إعادة إرسال آخر رد (اختبار)
-          </button>
+          </Button>
           {busy && <span className="text-xs text-muted-foreground">جارٍ…</span>}
           {msg && <span className="text-xs text-muted-foreground">{msg}</span>}
         </div>

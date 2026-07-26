@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface U {
   id: string;
@@ -79,9 +80,9 @@ export default function UsersManager({
               <option value="admin">مسؤول</option>
             </select>
           </div>
-          <button className="btn-primary" disabled={busy || !email} onClick={add}>
+          <Button disabled={busy || !email} onClick={add}>
             + إضافة
-          </button>
+          </Button>
         </div>
         {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
         <p className="mt-2 text-xs text-muted-foreground">
@@ -117,12 +118,11 @@ export default function UsersManager({
                 <option value="member">عضو</option>
                 <option value="admin">مسؤول</option>
               </select>
-              <button
-                className="btn-ghost py-1.5 text-xs"
+              <Button variant="outline" size="sm"
                 onClick={() => patch(u.id, { action: "reset" })}
               >
                 إعادة تعيين لـ 1234
-              </button>
+              </Button>
               {u.id !== meId && (
                 <button
                   className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"

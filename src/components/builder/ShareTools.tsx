@@ -2,6 +2,9 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Icon } from "@/components/ui/Icon";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 
 export default function ShareTools({ url }: { url: string }) {
   const [qr, setQr] = useState("");
@@ -36,7 +39,7 @@ export default function ShareTools({ url }: { url: string }) {
           <a
             href={qr}
             download="naf-form-qr.png"
-            className="btn-ghost mt-4 inline-flex items-center gap-1.5 text-sm"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-4")}
           >
             <Icon name="download" className="h-4 w-4" /> تنزيل الرمز
           </a>
@@ -49,8 +52,8 @@ export default function ShareTools({ url }: { url: string }) {
           ألصق هذا الكود في موقعك لعرض النموذج داخله.
         </p>
         <textarea className="input h-24 font-mono text-xs" dir="ltr" readOnly value={embed} />
-        <button
-          className="btn-ghost mt-2 inline-flex items-center gap-1.5 text-sm"
+        <Button variant="outline"
+          className="mt-2 gap-1.5 text-sm"
           onClick={() => copy(embed, "embed")}
         >
           {copied === "embed" ? (
@@ -60,7 +63,7 @@ export default function ShareTools({ url }: { url: string }) {
           ) : (
             "نسخ الكود"
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

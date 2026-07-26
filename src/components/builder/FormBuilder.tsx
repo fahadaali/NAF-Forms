@@ -11,6 +11,7 @@ import { Icon, IconTip } from "@/components/ui/Icon";
 import DesignPanel from "./DesignPanel";
 import ShareTools from "./ShareTools";
 import { bidi } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 let tmpCounter = 0;
 
@@ -360,25 +361,25 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
               <Icon name="refresh" className="h-4 w-4" />
             </button>
           </IconTip>
-          <button
+          <Button variant="outline" size="sm"
             onClick={openResponses}
-            className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm"
+            className="gap-1.5"
           >
             <Icon name="chart" className="h-4 w-4" /> الردود
-          </button>
-          <button
+          </Button>
+          <Button variant="outline" size="sm"
             onClick={openPreview}
-            className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm"
+            className="gap-1.5"
           >
             <Icon name="eye" className="h-4 w-4" /> معاينة
-          </button>
-          <button
-            className="btn-primary inline-flex items-center gap-1.5 py-1.5 text-sm"
+          </Button>
+          <Button size="sm"
+            className="gap-1.5"
             disabled={saving}
             onClick={() => save()}
           >
             <Icon name="save" className="h-4 w-4" /> حفظ
-          </button>
+          </Button>
         </div>
         {/* التبويبات */}
         <div className="mx-auto flex max-w-6xl gap-1 px-4">
@@ -501,36 +502,35 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                 لا يمكن استقبال الردود إلا بعد نشر النموذج.
               </p>
               <div className="flex gap-2">
-                <button
-                  className={`inline-flex items-center gap-1.5 ${status === "PUBLISHED" ? "btn-primary" : "btn-ghost"}`}
+                <Button
+                  variant={status === "PUBLISHED" ? "default" : "outline"}
                   onClick={() => save("PUBLISHED")}
                 >
                   <Icon name="check-circle" className="h-4 w-4" /> نشر
-                </button>
-                <button
-                  className={`inline-flex items-center gap-1.5 ${status === "DRAFT" ? "btn-primary" : "btn-ghost"}`}
+                </Button>
+                <Button
+                  variant={status === "DRAFT" ? "default" : "outline"}
                   onClick={() => save("DRAFT")}
                 >
                   <Icon name="edit" className="h-4 w-4" /> مسودة
-                </button>
-                <button
-                  className={`inline-flex items-center gap-1.5 ${status === "CLOSED" ? "btn-danger" : "btn-ghost"}`}
+                </Button>
+                <Button
+                  variant={status === "CLOSED" ? "destructive" : "outline"}
                   onClick={() => save("CLOSED")}
                 >
                   <Icon name="lock" className="h-4 w-4" /> إغلاق
-                </button>
+                </Button>
               </div>
             </div>
             <div className="card p-6">
               <h3 className="mb-2 font-bold">رابط التقديم</h3>
               <div className="flex gap-2">
                 <input className="input" dir="ltr" readOnly value={publicUrl} />
-                <button
-                  className="btn-ghost"
+                <Button variant="outline"
                   onClick={() => navigator.clipboard.writeText(publicUrl)}
                 >
                   نسخ
-                </button>
+                </Button>
               </div>
 
               {/* تخصيص الرابط */}
@@ -549,13 +549,13 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                     setSlugMsg(null);
                   }}
                 />
-                <button
-                  className="btn-ghost shrink-0 py-1.5 text-sm"
+                <Button variant="outline" size="sm"
+                  className="shrink-0"
                   disabled={savingSlug || !slugDraft.trim() || slugDraft === slug}
                   onClick={saveSlug}
                 >
                   {savingSlug ? "جارٍ…" : "تحديث"}
-                </button>
+                </Button>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 حروف إنجليزية وأرقام وشرطات فقط. تغيير الرابط يُبطل الروابط

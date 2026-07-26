@@ -10,6 +10,7 @@ import ResponsesDashboard, {
   type QuestionStat,
   type ResponseRow,
 } from "@/components/dashboard/ResponsesDashboard";
+import { buttonVariants } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -260,7 +261,7 @@ export default async function ResponsesPage({
           </div>
           <Link
             href={`/forms/${form.id}/edit`}
-            className="btn-ghost inline-flex items-center gap-1.5 text-sm"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
           >
             <Icon name="edit" className="h-4 w-4" /> تحرير النموذج
           </Link>

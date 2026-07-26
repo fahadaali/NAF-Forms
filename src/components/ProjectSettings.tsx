@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
+import { Button } from "@/components/ui/button";
 
 export default function ProjectSettings({
   project,
@@ -41,12 +42,12 @@ export default function ProjectSettings({
 
   return (
     <>
-      <button
-        className="btn-ghost inline-flex items-center gap-1.5 text-sm"
+      <Button variant="outline"
+        className="gap-1.5 text-sm"
         onClick={() => setOpen(true)}
       >
         <Icon name="gear" className="h-4 w-4" /> إعدادات المشروع
-      </button>
+      </Button>
       {open && (
         <div
           className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4"
@@ -77,19 +78,19 @@ export default function ProjectSettings({
               onChange={(e) => setColor(e.target.value)}
             />
             <div className="flex items-center justify-between">
-              <button
-                className="btn-danger inline-flex items-center gap-1.5"
+              <Button variant="destructive"
+                className="gap-1.5"
                 onClick={remove}
               >
                 <Icon name="trash" className="h-4 w-4" /> حذف المشروع
-              </button>
+              </Button>
               <div className="flex gap-2">
-                <button className="btn-ghost" onClick={() => setOpen(false)}>
+                <Button variant="outline" onClick={() => setOpen(false)}>
                   إلغاء
-                </button>
-                <button className="btn-primary" disabled={busy} onClick={save}>
+                </Button>
+                <Button disabled={busy} onClick={save}>
                   {busy ? "جارٍ…" : "حفظ"}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 
 export default function NotFound() {
   return (
@@ -12,7 +14,7 @@ export default function NotFound() {
         <p className="mt-2 text-muted-foreground">
           تعذّر العثور على ما تبحث عنه — ربما حُذف النموذج أو المشروع.
         </p>
-        <Link href="/" className="btn-primary mt-6 inline-flex">
+        <Link href="/" className={cn(buttonVariants(), "mt-6")}>
           العودة للرئيسية
         </Link>
       </div>

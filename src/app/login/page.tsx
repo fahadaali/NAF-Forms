@@ -2,6 +2,7 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { NafLogo } from "@/components/ui/naf-logo";
+import { Button } from "@/components/ui/button";
 
 function LoginForm() {
   const router = useRouter();
@@ -59,13 +60,13 @@ function LoginForm() {
           onKeyDown={(e) => e.key === "Enter" && submit()}
         />
         {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-        <button
+        <Button
           onClick={submit}
           disabled={busy || !email || !password}
-          className="btn-primary mt-4 w-full disabled:opacity-50"
+          className="mt-4 w-full disabled:opacity-50"
         >
           {busy ? "جارٍ الدخول…" : "دخول"}
-        </button>
+        </Button>
       </div>
     </div>
   );

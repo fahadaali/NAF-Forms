@@ -48,33 +48,12 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* أساس الزر مُعرَّف كأداة (`@utility`) لا كصنف عادي، لأن Tailwind 4
-   لا يسمح بـ `@apply` لصنف غير مسجَّل كأداة. */
-@utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-[0.97];
-}
+/* حُذفت هنا أصناف الأزرار المحلية (btn و btn-primary و btn-ghost و
+   btn-danger). مصدر تنسيق الأزرار الوحيد صار مكوّن `button` من السجلّ:
+   `<Button>` للعناصر الزرّية، و`buttonVariants()` للروابط والوسوم
+   الأخرى (القاعدة ٤: لا تُعد بناء ما هو موجود في السجلّ). */
 
 @layer components {
-  .btn-primary {
-    @apply btn bg-primary text-primary-foreground shadow-sm;
-  }
-  .btn-primary:hover {
-    @apply shadow-md;
-    transform: translateY(-1px);
-  }
-  .btn-ghost {
-    @apply btn border border-border bg-card text-foreground;
-  }
-  .btn-ghost:hover {
-    @apply border-primary bg-muted;
-  }
-  .btn-danger {
-    @apply btn border border-destructive/30 bg-destructive/10 text-destructive;
-  }
-  .btn-danger:hover {
-    @apply bg-destructive/20;
-  }
-
   .card {
     @apply rounded-xl border border-border bg-card text-card-foreground shadow-sm;
   }

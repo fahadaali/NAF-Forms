@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FORM_TYPE_LABELS } from "@/lib/field-types";
+import { Button } from "@/components/ui/button";
 
 interface Template {
   id: string;
@@ -48,9 +49,9 @@ export default function NewFormButton({
 
   return (
     <>
-      <button className="btn-primary" onClick={() => setOpen(true)}>
+      <Button onClick={() => setOpen(true)}>
         + نموذج جديد
-      </button>
+      </Button>
       {open && (
         <div
           className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4"
@@ -107,16 +108,15 @@ export default function NewFormButton({
                   ))}
                 </div>
                 <div className="flex justify-end gap-2">
-                  <button className="btn-ghost" onClick={() => setOpen(false)}>
+                  <Button variant="outline" onClick={() => setOpen(false)}>
                     إلغاء
-                  </button>
-                  <button
-                    className="btn-primary"
+                  </Button>
+                  <Button
                     disabled={busy}
                     onClick={createBlank}
                   >
                     {busy ? "جارٍ…" : "إنشاء وبدء البناء"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (

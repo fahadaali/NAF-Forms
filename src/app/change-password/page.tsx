@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { NafLogo } from "@/components/ui/naf-logo";
+import { Button } from "@/components/ui/button";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
@@ -58,13 +59,13 @@ export default function ChangePasswordPage() {
           onKeyDown={(e) => e.key === "Enter" && submit()}
         />
         {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-        <button
+        <Button
           onClick={submit}
           disabled={busy || !pw || !confirm}
-          className="btn-primary mt-4 w-full disabled:opacity-50"
+          className="mt-4 w-full disabled:opacity-50"
         >
           {busy ? "جارٍ الحفظ…" : "حفظ ومتابعة"}
-        </button>
+        </Button>
       </div>
     </div>
   );

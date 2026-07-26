@@ -8,6 +8,7 @@ import {
   REVIEW_STATUS_CHIP,
 } from "@/lib/review";
 import { bidi } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 export interface QuestionStat {
   id: string;
@@ -185,7 +186,7 @@ export default function ResponsesDashboard({
           {(["csv", "xlsx", "json"] as const).map((fmt) => (
             <a
               key={fmt}
-              className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
               href={exportUrl(fmt)}
             >
               <Icon name="download" className="h-4 w-4" />

@@ -14,6 +14,7 @@ import Navbar from "@/components/Navbar";
 import NewFormButton from "@/components/NewFormButton";
 import FormRowActions from "@/components/FormRowActions";
 import ProjectSettings from "@/components/ProjectSettings";
+import { buttonVariants } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -97,20 +98,20 @@ export default async function ProjectPage({
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/forms/${f.id}/responses`}
-                    className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-xs"
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
                   >
                     <Icon name="chart" className="h-4 w-4" /> الردود
                   </Link>
                   <Link
                     href={`/f/${f.slug}`}
                     target="_blank"
-                    className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-xs"
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
                   >
                     <Icon name="eye" className="h-4 w-4" /> معاينة
                   </Link>
                   <Link
                     href={`/forms/${f.id}/edit`}
-                    className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-xs"
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
                   >
                     <Icon name="edit" className="h-4 w-4" /> تحرير
                   </Link>
