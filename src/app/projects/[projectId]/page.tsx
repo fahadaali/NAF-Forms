@@ -38,7 +38,7 @@ export default async function ProjectPage({
         <div className="mb-6 flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <span
-              className="h-12 w-12 rounded-2xl"
+              className="h-12 w-12 rounded-xl"
               style={{ background: project.color }}
             />
             <div>

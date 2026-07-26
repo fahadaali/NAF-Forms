@@ -645,7 +645,7 @@ function IntegrationsPanel({
             <li>افتح جدول Google Sheets ثم: الإضافات ← Apps Script.</li>
             <li>
               الصق دالة تستقبل <span dir="ltr">POST</span> وتضيف صفًا، مثل:
-              <code className="mt-1 block rounded bg-muted p-2 text-xs" dir="ltr">
+              <code className="mt-1 block rounded-sm bg-muted p-2 text-xs" dir="ltr">
                 {`function doPost(e){const d=JSON.parse(e.postData.contents);const s=SpreadsheetApp.getActiveSheet();const f=d.fields||{};if(s.getLastRow()===0)s.appendRow(['submittedAt','email',...Object.keys(f)]);s.appendRow([d.submittedAt,d.email,...Object.values(f).map(v=>typeof v==='object'?JSON.stringify(v):v)]);return ContentService.createTextOutput('ok');}`}
               </code>
             </li>
@@ -692,7 +692,7 @@ function IntegrationsPanel({
               </button>
             </div>
             <p className="text-xs text-muted-foreground">الاستخدام:</p>
-            <code className="block overflow-x-auto rounded bg-muted p-2 text-xs" dir="ltr">
+            <code className="block overflow-x-auto rounded-sm bg-muted p-2 text-xs" dir="ltr">
               curl -H &quot;Authorization: Bearer {integrations.apiToken || "TOKEN"}&quot; {apiUrl}
             </code>
             <p className="text-xs text-muted-foreground">
@@ -751,7 +751,7 @@ function Color({ label, value, onChange }: { label: string; value?: string; onCh
       <div className="flex items-center gap-2">
         <input
           type="color"
-          className="h-9 w-12 cursor-pointer rounded"
+          className="h-9 w-12 cursor-pointer rounded-sm"
           value={value || "#000000"}
           onChange={(e) => onChange(e.target.value)}
         />

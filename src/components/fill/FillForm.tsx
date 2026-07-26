@@ -363,7 +363,7 @@ export default function FillForm({
     return (
       <div style={pageStyle} className="grid place-items-center px-4">
         <div
-          className="w-full max-w-sm rounded-3xl p-8 text-center shadow-xl"
+          className="w-full max-w-sm rounded-xl p-8 text-center shadow-xl"
           style={{ background: theme.cardBg }}
         >
           <div className="mb-3 flex justify-center text-muted-foreground">
@@ -402,7 +402,7 @@ export default function FillForm({
     return (
       <div style={pageStyle} className="grid place-items-center px-4">
         <div
-          className="w-full max-w-lg rounded-3xl p-10 text-center shadow-xl"
+          className="w-full max-w-lg rounded-xl p-10 text-center shadow-xl"
           style={{ background: theme.cardBg }}
         >
           <div className="mb-4 flex justify-center text-success">
@@ -412,7 +412,7 @@ export default function FillForm({
           <p className="mt-3 text-muted-foreground">{after.message}</p>
           {after.showScore && result?.total ? (
             <div
-              className="mx-auto mt-6 inline-block rounded-2xl px-8 py-4 text-white"
+              className="mx-auto mt-6 inline-block rounded-xl px-8 py-4 text-white"
               style={{ background: accent }}
             >
               <div className="text-sm opacity-90">درجتك</div>
@@ -512,7 +512,7 @@ export default function FillForm({
     return (
       <div style={pageStyle} className="px-4 py-10">
         <div className="mx-auto max-w-2xl">
-          <div className="overflow-hidden rounded-3xl shadow-xl" style={{ background: theme.cardBg }}>
+          <div className="overflow-hidden rounded-xl shadow-xl" style={{ background: theme.cardBg }}>
             {cover.imageUrl && (
               <img src={cover.imageUrl} alt="" className="h-48 w-full object-cover" />
             )}
@@ -640,7 +640,7 @@ export default function FillForm({
           {questions
             .filter((q) => q.type !== "PAGE_BREAK")
             .map((q, i) => (
-              <div key={q.id} className="rounded-2xl p-6 shadow-sm" style={{ background: theme.cardBg }}>
+              <div key={q.id} className="rounded-xl p-6 shadow-sm" style={{ background: theme.cardBg }}>
                 <QuestionCard q={q} value={answers[q.id]} onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))} accent={accent} index={i} />
               </div>
             ))}
@@ -718,7 +718,7 @@ export default function FillForm({
       )}
 
       <div className="flex flex-1 items-center justify-center py-6">
-        <div key={safeStep} className={`w-full max-w-2xl rounded-3xl p-8 shadow-xl ${anim}`} style={{ background: theme.cardBg }}>
+        <div key={safeStep} className={`w-full max-w-2xl rounded-xl p-8 shadow-xl ${anim}`} style={{ background: theme.cardBg }}>
           <div className={multi ? "space-y-8 divide-y divide-border" : ""}>
             {currentStep.map((q, i) => (
               <div key={q.id} className={multi && i > 0 ? "pt-6" : ""}>
@@ -843,10 +843,10 @@ function QuestionCard({
           <img
             src={url}
             alt={q.config?.caption || ""}
-            className="mx-auto max-h-[420px] w-full rounded-2xl object-contain"
+            className="mx-auto max-h-[420px] w-full rounded-xl object-contain"
           />
         ) : (
-          <div className="grid h-48 place-items-center rounded-2xl bg-muted text-muted-foreground">
+          <div className="grid h-48 place-items-center rounded-xl bg-muted text-muted-foreground">
             <Icon name="image" className="h-10 w-10" />
           </div>
         )}
@@ -867,11 +867,11 @@ function QuestionCard({
       <div>
         {q.label && <h2 className="mb-3 text-xl font-bold">{q.label}</h2>}
         {embed ? (
-          <iframe className="aspect-video w-full rounded-2xl" src={embed} allowFullScreen />
+          <iframe className="aspect-video w-full rounded-xl" src={embed} allowFullScreen />
         ) : fileUrl ? (
-          <video src={fileUrl} controls className="w-full rounded-2xl" />
+          <video src={fileUrl} controls className="w-full rounded-xl" />
         ) : (
-          <div className="grid h-48 place-items-center rounded-2xl bg-muted text-muted-foreground">
+          <div className="grid h-48 place-items-center rounded-xl bg-muted text-muted-foreground">
             <Icon name="film" className="h-10 w-10" />
           </div>
         )}

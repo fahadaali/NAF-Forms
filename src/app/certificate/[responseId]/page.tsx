@@ -38,13 +38,13 @@ export default async function CertificatePage({
       <div className="mx-auto max-w-3xl">
         <PrintButton />
         <div
-          className="relative overflow-hidden rounded-3xl bg-card p-12 text-center shadow-xl print:rounded-none print:shadow-none"
+          className="relative overflow-hidden rounded-xl bg-card p-12 text-center shadow-xl print:rounded-none print:shadow-none"
           style={{ borderTop: `8px solid ${accent}` }}
         >
           <img
             src="/naf-logo.jpg"
             alt="ناف"
-            className="mx-auto mb-6 h-20 w-20 rounded-2xl object-cover"
+            className="mx-auto mb-6 h-20 w-20 rounded-xl object-cover"
           />
           <h1 className="text-3xl font-bold" style={{ color: accent }}>
             {title}
@@ -59,7 +59,7 @@ export default async function CertificatePage({
 
           {total > 0 && (
             <div
-              className="mx-auto mt-8 inline-block rounded-2xl px-10 py-4 text-white"
+              className="mx-auto mt-8 inline-block rounded-xl px-10 py-4 text-white"
               style={{ background: accent }}
             >
               <div className="text-sm opacity-90">الدرجة</div>

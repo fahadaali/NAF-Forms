@@ -86,7 +86,7 @@ export default function QuestionEditor({
       }}
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDropItem}
-      className={`group relative rounded-2xl border bg-card transition ${
+      className={`group relative rounded-xl border bg-card transition ${
         selected
           ? "border-primary shadow-md ring-1 ring-ring"
           : "border-border hover:border-border hover:shadow-sm"
@@ -94,7 +94,7 @@ export default function QuestionEditor({
     >
       {/* شريط الأدوات (يظهر عند التحويم أو التحديد) */}
       <div
-        className={`absolute -top-3 left-3 flex items-center gap-0.5 rounded-full border border-border bg-card px-1 py-0.5 shadow-sm transition ${
+        className={`absolute -top-3 left-3 flex items-center gap-1 rounded-full border border-border bg-card px-1 py-0.5 shadow-sm transition ${
           selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         }`}
       >
@@ -667,7 +667,7 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
             <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
               <span
                 className={`inline-block h-4 w-4 border border-border ${
-                  round ? "rounded-full" : "rounded"
+                  round ? "rounded-full" : "rounded-sm"
                 }`}
               />
               {o}
@@ -677,7 +677,7 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span
                 className={`inline-block h-4 w-4 border border-border ${
-                  round ? "rounded-full" : "rounded"
+                  round ? "rounded-full" : "rounded-sm"
                 }`}
               />
               أخرى…
@@ -824,7 +824,7 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
     case "CONSENT":
       return (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="inline-block h-5 w-5 rounded border border-border" />
+          <span className="inline-block h-5 w-5 rounded-sm border border-border" />
           {cfg.statement || "أوافق على الشروط والأحكام"}
         </div>
       );

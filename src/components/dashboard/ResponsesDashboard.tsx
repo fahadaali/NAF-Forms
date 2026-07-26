@@ -339,7 +339,7 @@ export default function ResponsesDashboard({
                     <dt className="text-xs font-medium text-muted-foreground">{c.label}</dt>
                     <dd className="mt-0.5 text-sm">
                       {c.urls && c.urls.length ? (
-                        <span className="flex flex-col gap-0.5">
+                        <span className="flex flex-col gap-1">
                           {c.urls.map((f, k) => (
                             <a
                               key={k}

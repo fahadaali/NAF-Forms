@@ -57,7 +57,7 @@ export default function CreateProjectButton() {
             <label className="label">لون المشروع</label>
             <input
               type="color"
-              className="mb-5 h-10 w-20 cursor-pointer rounded"
+              className="mb-5 h-10 w-20 cursor-pointer rounded-sm"
               value={color}
               onChange={(e) => setColor(e.target.value)}
             />

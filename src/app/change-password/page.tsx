@@ -35,11 +35,11 @@ export default function ChangePasswordPage() {
       style={{ background: "linear-gradient(135deg, #2a3149, #1c2338)" }}
     >
       <div className="grid-bg pointer-events-none absolute inset-0 opacity-20" />
-      <div className="glass relative w-full max-w-sm rounded-2xl p-8 text-center">
+      <div className="glass relative w-full max-w-sm rounded-xl p-8 text-center">
         <img
           src="/naf-logo.jpg"
           alt="ناف"
-          className="mx-auto mb-5 h-16 w-16 rounded-2xl object-cover shadow-lg ring-1 ring-border"
+          className="mx-auto mb-5 h-16 w-16 rounded-xl object-cover shadow-lg ring-1 ring-border"
         />
         <h1 className="text-xl font-bold">تعيين كلمة مرور جديدة</h1>
         <p className="mt-1 text-sm text-muted-foreground">

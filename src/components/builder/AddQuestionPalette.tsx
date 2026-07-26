@@ -15,7 +15,7 @@ export default function AddQuestionPalette({
     !q || label.includes(q) || hint.includes(q);
 
   return (
-    <aside className="sticky top-32 max-h-[calc(100vh-9rem)] overflow-y-auto rounded-2xl border border-border bg-card p-4">
+    <aside className="sticky top-32 max-h-[calc(100vh-9rem)] overflow-y-auto rounded-xl border border-border bg-card p-4">
       <h3 className="mb-1 font-bold">العناصر</h3>
       <p className="mb-3 text-xs text-muted-foreground">اضغط عنصرًا لإضافته إلى النموذج.</p>
       <div className="relative mb-3">

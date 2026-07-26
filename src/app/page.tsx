@@ -32,7 +32,7 @@ export default async function HomePage() {
         {/* بطاقة ترحيبية */}
         {/* لوحة داكنة مقصودة: نُطاق `dark` يجعلها تستهلك رموز الثيم الداكنة
             بدل تدرّج مكتوب بقيم حرفية (القاعدة ١: لا قيمة تصميم حرفية). */}
-        <section className="dark relative mb-8 overflow-hidden rounded-3xl border border-border bg-card p-8 text-card-foreground md:p-10">
+        <section className="dark relative mb-8 overflow-hidden rounded-xl border border-border bg-card p-8 text-card-foreground md:p-10">
           <div className="grid-bg pointer-events-none absolute inset-0 opacity-[0.15]" />
           <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-2xl">
@@ -53,7 +53,7 @@ export default async function HomePage() {
             <img
               src="/naf-logo.jpg"
               alt="ناف"
-              className="hidden h-32 w-32 animate-floaty rounded-3xl object-cover shadow-lg ring-1 ring-border md:block"
+              className="hidden h-32 w-32 animate-floaty rounded-xl object-cover shadow-lg ring-1 ring-border md:block"
             />
           </div>
         </section>

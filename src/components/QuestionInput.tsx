@@ -194,7 +194,7 @@ export default function QuestionInput({
                 <input
                   type="checkbox"
                   style={style}
-                  className="h-4 w-4 rounded"
+                  className="h-4 w-4 rounded-sm"
                   disabled={full}
                   checked={arr.includes(o)}
                   onChange={() => toggle(o)}
@@ -373,7 +373,7 @@ export default function QuestionInput({
                 type="button"
                 onClick={() => move(i, -1)}
                 disabled={i === 0}
-                className="rounded px-2 text-muted-foreground hover:bg-muted disabled:opacity-30"
+                className="rounded-sm px-2 text-muted-foreground hover:bg-muted disabled:opacity-30"
               >
                 ↑
               </button>
@@ -381,7 +381,7 @@ export default function QuestionInput({
                 type="button"
                 onClick={() => move(i, 1)}
                 disabled={i === ordered.length - 1}
-                className="rounded px-2 text-muted-foreground hover:bg-muted disabled:opacity-30"
+                className="rounded-sm px-2 text-muted-foreground hover:bg-muted disabled:opacity-30"
               >
                 ↓
               </button>
@@ -425,7 +425,7 @@ export default function QuestionInput({
           <input
             type="checkbox"
             style={style}
-            className="mt-0.5 h-5 w-5 rounded"
+            className="mt-0.5 h-5 w-5 rounded-sm"
             checked={value === true}
             onChange={(e) => onChange(e.target.checked)}
           />
