@@ -21,12 +21,12 @@ export const REVIEW_STATUS_LABELS: Record<string, string> = {
 
 // أصناف الألوان لكل حالة (تُستخدم مع chip)
 export const REVIEW_STATUS_CHIP: Record<string, string> = {
-  NEW: "bg-slate-100 text-slate-600",
-  SCREENING: "bg-sky-100 text-sky-700",
-  INTERVIEW: "bg-amber-100 text-amber-800",
-  OFFER: "bg-violet-100 text-violet-700",
-  HIRED: "bg-green-100 text-green-700",
-  REJECTED: "bg-red-100 text-red-700",
+  NEW: "bg-muted text-muted-foreground",
+  SCREENING: "bg-info/15 text-info",
+  INTERVIEW: "bg-warning/15 text-warning",
+  OFFER: "bg-chart-4/15 text-chart-4",
+  HIRED: "bg-success/15 text-success",
+  REJECTED: "bg-destructive/15 text-destructive",
 };
 
 export function isReviewStatus(v: unknown): v is ReviewStatus {

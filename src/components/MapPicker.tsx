@@ -107,7 +107,7 @@ export default function MapPicker({
         type="button"
         onClick={useMyLocation}
         disabled={geoBusy}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium hover:border-naf-400 hover:bg-naf-50 disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:border-primary hover:bg-accent disabled:opacity-60"
       >
         <Icon name="map-pin" className="h-4 w-4" />
         {geoBusy ? "جارٍ تحديد موقعك…" : "استخدم موقعي الحالي"}
@@ -139,9 +139,9 @@ export default function MapPicker({
           />
         </div>
       </div>
-      {geoError && <p className="text-sm text-red-600">{geoError}</p>}
+      {geoError && <p className="text-sm text-destructive">{geoError}</p>}
 
-      <div className="overflow-hidden rounded-xl border border-slate-300">
+      <div className="overflow-hidden rounded-xl border border-border">
         <MapContainer
           center={[center.lat, center.lng]}
           zoom={value ? 13 : zoom}
@@ -156,7 +156,7 @@ export default function MapPicker({
           <Recenter value={value ?? null} />
           {value && <Marker position={[value.lat, value.lng]} icon={icon} />}
         </MapContainer>
-        <div className="bg-slate-50 px-3 py-2 text-xs text-slate-500">
+        <div className="bg-muted px-3 py-2 text-xs text-muted-foreground">
           {value
             ? `الإحداثيات: ${value.lat.toFixed(5)} , ${value.lng.toFixed(5)}`
             : "انقر على الخريطة، أو أدخل الإحداثيات، أو استخدم موقعك الحالي"}

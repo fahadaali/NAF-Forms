@@ -40,10 +40,10 @@ function LoginForm() {
         <img
           src="/naf-logo.jpg"
           alt="ناف"
-          className="mx-auto mb-5 h-20 w-20 rounded-2xl object-cover shadow-glow ring-1 ring-brand-taupe/40"
+          className="mx-auto mb-5 h-20 w-20 rounded-2xl object-cover shadow-lg ring-1 ring-border"
         />
         <h1 className="text-xl font-extrabold">لوحة تحكم ناف</h1>
-        <p className="mt-1 text-sm text-slate-500">سجّل الدخول بالبريد وكلمة المرور</p>
+        <p className="mt-1 text-sm text-muted-foreground">سجّل الدخول بالبريد وكلمة المرور</p>
         <input
           type="email"
           dir="ltr"
@@ -62,7 +62,7 @@ function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
         />
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
         <button
           onClick={submit}
           disabled={busy || !email || !password}

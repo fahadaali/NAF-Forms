@@ -27,11 +27,11 @@ export default async function PrintResponsePage({
   const questions = form.questions.filter((q) => isInputQuestion(q.type));
 
   return (
-    <div className="mx-auto max-w-2xl bg-white p-8 print:p-0">
+    <div className="mx-auto max-w-2xl bg-card p-8 print:p-0">
       <PrintButton />
-      <div className="mb-6 border-b border-slate-200 pb-4">
+      <div className="mb-6 border-b border-border pb-4">
         <h1 className="text-2xl font-extrabold">{form.title}</h1>
-        <p className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-slate-500">
+        <p className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
           <Icon name="clock" className="h-4 w-4" />
           {formatDateTime(response.submittedAt)}
           {meta.email ? (
@@ -49,8 +49,8 @@ export default async function PrintResponsePage({
       <dl className="space-y-4">
         {questions.map((q) => (
           <div key={q.id}>
-            <dt className="text-sm font-bold text-slate-700">{q.label}</dt>
-            <dd className="mt-1 whitespace-pre-line text-slate-900">
+            <dt className="text-sm font-bold text-foreground">{q.label}</dt>
+            <dd className="mt-1 whitespace-pre-line text-foreground">
               {answerToText(
                 q.type,
                 byQ[q.id],

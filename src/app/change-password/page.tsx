@@ -39,10 +39,10 @@ export default function ChangePasswordPage() {
         <img
           src="/naf-logo.jpg"
           alt="ناف"
-          className="mx-auto mb-5 h-16 w-16 rounded-2xl object-cover shadow-glow ring-1 ring-brand-taupe/40"
+          className="mx-auto mb-5 h-16 w-16 rounded-2xl object-cover shadow-lg ring-1 ring-border"
         />
         <h1 className="text-xl font-extrabold">تعيين كلمة مرور جديدة</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           هذا أول دخول لك — اختر كلمة مرور خاصة بك للمرات القادمة.
         </p>
         <input
@@ -61,7 +61,7 @@ export default function ChangePasswordPage() {
           onChange={(e) => setConfirm(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
         />
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
         <button
           onClick={submit}
           disabled={busy || !pw || !confirm}

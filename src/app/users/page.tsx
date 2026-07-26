@@ -22,7 +22,7 @@ export default async function UsersPage() {
       <Navbar crumbs={[{ label: "المستخدمون" }]} />
       <main className="mx-auto max-w-4xl px-4 py-8">
         <h1 className="mb-1 text-2xl font-extrabold">المستخدمون</h1>
-        <p className="mb-6 text-sm text-slate-500">
+        <p className="mb-6 text-sm text-muted-foreground">
           إدارة حسابات لوحة التحكم وأدوارها.
         </p>
         <UsersManager initial={users} meId={admin.uid} />

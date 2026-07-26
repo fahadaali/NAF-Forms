@@ -8,7 +8,7 @@ import type { QuestionDTO } from "@/lib/types";
 const MapPicker = dynamic(() => import("./MapPicker"), {
   ssr: false,
   loading: () => (
-    <div className="grid h-64 place-items-center rounded-xl border border-slate-300 bg-slate-50 text-sm text-slate-400">
+    <div className="grid h-64 place-items-center rounded-xl border border-border bg-muted text-sm text-muted-foreground">
       جارٍ تحميل الخريطة…
     </div>
   ),
@@ -130,10 +130,10 @@ export default function QuestionInput({
             return (
               <label
                 key={o}
-                className={`flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50 ${
+                className={`flex items-center gap-3 rounded-xl border border-border px-4 py-3 has-[:checked]:border-primary has-[:checked]:bg-accent ${
                   full
                     ? "cursor-not-allowed opacity-50"
-                    : "cursor-pointer hover:bg-slate-50"
+                    : "cursor-pointer hover:bg-muted"
                 }`}
               >
                 <input
@@ -146,13 +146,13 @@ export default function QuestionInput({
                 />
                 <span className="text-sm">
                   {o}
-                  <span className="text-xs text-slate-400">{quotaNote(o)}</span>
+                  <span className="text-xs text-muted-foreground">{quotaNote(o)}</span>
                 </span>
               </label>
             );
           })}
           {cfg.allowOther && (
-            <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50">
+            <label className="flex items-center gap-3 rounded-xl border border-border px-4 py-3 has-[:checked]:border-primary has-[:checked]:bg-accent">
               <input
                 type="radio"
                 style={style}
@@ -185,10 +185,10 @@ export default function QuestionInput({
             return (
               <label
                 key={o}
-                className={`flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50 ${
+                className={`flex items-center gap-3 rounded-xl border border-border px-4 py-3 has-[:checked]:border-primary has-[:checked]:bg-accent ${
                   full
                     ? "cursor-not-allowed opacity-50"
-                    : "cursor-pointer hover:bg-slate-50"
+                    : "cursor-pointer hover:bg-muted"
                 }`}
               >
                 <input
@@ -201,7 +201,7 @@ export default function QuestionInput({
                 />
                 <span className="text-sm">
                   {o}
-                  <span className="text-xs text-slate-400">{quotaNote(o)}</span>
+                  <span className="text-xs text-muted-foreground">{quotaNote(o)}</span>
                 </span>
               </label>
             );
@@ -224,15 +224,15 @@ export default function QuestionInput({
                 onClick={() => onChange(n)}
                 className={`h-12 w-12 rounded-full border text-sm font-bold transition ${
                   value === n
-                    ? "border-naf-500 bg-naf-600 text-white"
-                    : "border-slate-300 bg-white hover:border-naf-400"
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card hover:border-primary"
                 }`}
               >
                 {n}
               </button>
             ))}
           </div>
-          <div className="mt-2 flex justify-between text-xs text-slate-500">
+          <div className="mt-2 flex justify-between text-xs text-muted-foreground">
             <span>{cfg.minLabel}</span>
             <span>{cfg.maxLabel}</span>
           </div>
@@ -274,7 +274,7 @@ export default function QuestionInput({
               <tr>
                 <th></th>
                 {cols.map((c) => (
-                  <th key={c} className="p-2 text-xs font-medium text-slate-600">
+                  <th key={c} className="p-2 text-xs font-medium text-muted-foreground">
                     {c}
                   </th>
                 ))}
@@ -282,8 +282,8 @@ export default function QuestionInput({
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={r} className={i % 2 ? "bg-slate-50/60" : ""}>
-                  <td className="p-2 text-right text-sm font-medium text-slate-700">
+                <tr key={r} className={i % 2 ? "bg-muted/60" : ""}>
+                  <td className="p-2 text-right text-sm font-medium text-foreground">
                     {r}
                   </td>
                   {cols.map((c) => (
@@ -363,9 +363,9 @@ export default function QuestionInput({
           {ordered.map((o, i) => (
             <div
               key={o}
-              className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3"
+              className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3"
             >
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-naf-600 text-sm font-bold text-white">
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
                 {i + 1}
               </span>
               <span className="flex-1 text-sm">{o}</span>
@@ -373,7 +373,7 @@ export default function QuestionInput({
                 type="button"
                 onClick={() => move(i, -1)}
                 disabled={i === 0}
-                className="rounded px-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+                className="rounded px-2 text-muted-foreground hover:bg-muted disabled:opacity-30"
               >
                 ↑
               </button>
@@ -381,7 +381,7 @@ export default function QuestionInput({
                 type="button"
                 onClick={() => move(i, 1)}
                 disabled={i === ordered.length - 1}
-                className="rounded px-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+                className="rounded px-2 text-muted-foreground hover:bg-muted disabled:opacity-30"
               >
                 ↓
               </button>
@@ -401,13 +401,13 @@ export default function QuestionInput({
               type="button"
               onClick={() => onChange(o.label)}
               className={`overflow-hidden rounded-xl border-2 text-center transition ${
-                value === o.label ? "border-naf-500 ring-2 ring-naf-200" : "border-slate-200"
+                value === o.label ? "border-primary ring-2 ring-ring" : "border-border"
               }`}
             >
               {o.url ? (
                 <img src={o.url} alt={o.label} className="h-28 w-full object-cover" />
               ) : (
-                <div className="grid h-28 w-full place-items-center bg-slate-100 text-slate-400">
+                <div className="grid h-28 w-full place-items-center bg-muted text-muted-foreground">
                   <Icon name="image" className="h-8 w-8" />
                 </div>
               )}
@@ -421,7 +421,7 @@ export default function QuestionInput({
     case "CONSENT": {
       const statement = cfg.statement || "أوافق على الشروط والأحكام";
       return (
-        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 px-4 py-3.5 hover:bg-slate-50 has-[:checked]:border-naf-400 has-[:checked]:bg-naf-50">
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border px-4 py-3.5 hover:bg-muted has-[:checked]:border-primary has-[:checked]:bg-accent">
           <input
             type="checkbox"
             style={style}
@@ -504,9 +504,9 @@ function SliderField({
         className="w-full"
         onChange={(e) => onChange(Number(e.target.value))}
       />
-      <div className="mt-1 flex justify-between text-xs text-slate-500">
+      <div className="mt-1 flex justify-between text-xs text-muted-foreground">
         <span>{min}</span>
-        <span className="rounded-lg bg-naf-50 px-2 py-0.5 font-bold text-naf-700">{val}</span>
+        <span className="rounded-lg bg-accent px-2 py-0.5 font-bold text-primary">{val}</span>
         <span>{max}</span>
       </div>
     </div>
@@ -566,17 +566,17 @@ function SignaturePad({
         onPointerMove={draw}
         onPointerUp={end}
         onPointerLeave={end}
-        className="w-full touch-none rounded-xl border-2 border-dashed border-slate-300 bg-white"
+        className="w-full touch-none rounded-xl border-2 border-dashed border-border bg-card"
         style={{ touchAction: "none" }}
       />
       <div className="mt-2 flex items-center justify-between">
-        <span className="text-xs text-slate-400">وقّع بالماوس أو الإصبع داخل الإطار</span>
-        <button type="button" onClick={clear} className="text-sm text-red-500 hover:underline">
+        <span className="text-xs text-muted-foreground">وقّع بالماوس أو الإصبع داخل الإطار</span>
+        <button type="button" onClick={clear} className="text-sm text-destructive hover:underline">
           مسح
         </button>
       </div>
       {value && (
-        <p className="mt-1 inline-flex items-center gap-1 text-xs text-green-600">
+        <p className="mt-1 inline-flex items-center gap-1 text-xs text-success">
           <Icon name="check" className="h-3.5 w-3.5" /> تم التوقيع
         </p>
       )}
@@ -656,16 +656,16 @@ function FileField({
 
   return (
     <div>
-      <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center hover:border-naf-400 hover:bg-naf-50">
-        <Icon name="paperclip" className="h-7 w-7 text-slate-400" />
-        <span className="text-sm font-medium text-slate-700">
+      <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted px-6 py-8 text-center hover:border-primary hover:bg-accent">
+        <Icon name="paperclip" className="h-7 w-7 text-muted-foreground" />
+        <span className="text-sm font-medium text-foreground">
           {busy
             ? "جارٍ الرفع…"
             : multiple
             ? "اضغط لرفع ملف أو أكثر"
             : "اضغط لرفع ملف"}
         </span>
-        <span className="text-xs text-slate-400">
+        <span className="text-xs text-muted-foreground">
           {cfg.accept} — حتى {cfg.maxSizeMB ?? 10}MB
           {multiple ? ` · حتى ${maxFiles} ملفات` : ""}
         </span>
@@ -682,25 +682,25 @@ function FileField({
           }}
         />
       </label>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
       {files.length > 0 && (
         <div className="mt-3 space-y-2">
           {files.map((f, i) => (
             <div
               key={`${f.url}-${i}`}
-              className="flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 text-sm"
+              className="flex items-center justify-between rounded-xl border border-success/30 bg-success/10 px-4 py-2.5 text-sm"
             >
-              <span className="inline-flex items-center gap-1 truncate text-green-800">
+              <span className="inline-flex items-center gap-1 truncate text-success">
                 <Icon name="check" className="h-3.5 w-3.5 shrink-0" /> {f.name}
               </span>
               <span className="flex shrink-0 items-center gap-3">
-                <a href={f.url} target="_blank" className="text-naf-600 hover:underline">
+                <a href={f.url} target="_blank" className="text-primary hover:underline">
                   عرض
                 </a>
                 <button
                   type="button"
                   onClick={() => removeAt(i)}
-                  className="text-red-500 hover:underline"
+                  className="text-destructive hover:underline"
                 >
                   إزالة
                 </button>

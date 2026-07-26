@@ -44,7 +44,7 @@ export default async function ProjectPage({
             <div>
               <h1 className="text-2xl font-extrabold">{project.name}</h1>
               {project.description && (
-                <p className="text-sm text-slate-500">{project.description}</p>
+                <p className="text-sm text-muted-foreground">{project.description}</p>
               )}
             </div>
           </div>
@@ -62,12 +62,12 @@ export default async function ProjectPage({
         </div>
 
         {project.forms.length === 0 ? (
-          <div className="card grid place-items-center p-12 text-center text-slate-500">
-            <Icon name="edit" className="mb-2 h-10 w-10 text-slate-300" />
+          <div className="card grid place-items-center p-12 text-center text-muted-foreground">
+            <Icon name="edit" className="mb-2 h-10 w-10 text-muted-foreground" />
             لا توجد نماذج في هذا المشروع بعد.
           </div>
         ) : (
-          <div className="card divide-y divide-slate-100">
+          <div className="card divide-y divide-border">
             {project.forms.map((f) => (
               <div
                 key={f.id}
@@ -77,7 +77,7 @@ export default async function ProjectPage({
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/forms/${f.id}/edit`}
-                      className="truncate font-bold hover:text-naf-700"
+                      className="truncate font-bold hover:text-primary"
                     >
                       {f.title}
                     </Link>
@@ -88,7 +88,7 @@ export default async function ProjectPage({
                       {FORM_TYPE_LABELS[f.type]}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {f._count.questions} سؤال · {f._count.responses} رد · آخر
                     تحديث {formatDateTime(f.updatedAt)}
                   </p>

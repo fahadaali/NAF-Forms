@@ -32,7 +32,7 @@ export default function StarRating({
             style={{ fontSize: size, lineHeight: 1 }}
             aria-label={`${n} من ${max}`}
           >
-            <span className={n <= active ? "text-amber-400" : "text-slate-300"}>
+            <span className={n <= active ? "text-warning" : "text-muted-foreground"}>
               ★
             </span>
           </button>

@@ -35,12 +35,12 @@ export default function ImageOptionsEditor({
       <label className="label">خيارات مصوّرة</label>
       <div className="grid gap-3 sm:grid-cols-2">
         {options.map((o, i) => (
-          <div key={i} className="rounded-xl border border-slate-200 p-3">
-            <div className="mb-2 grid h-24 place-items-center overflow-hidden rounded-lg bg-slate-100">
+          <div key={i} className="rounded-xl border border-border p-3">
+            <div className="mb-2 grid h-24 place-items-center overflow-hidden rounded-lg bg-muted">
               {o.url ? (
                 <img src={o.url} alt="" className="h-full w-full object-cover" />
               ) : (
-                <Icon name="image" className="h-7 w-7 text-slate-400" />
+                <Icon name="image" className="h-7 w-7 text-muted-foreground" />
               )}
             </div>
             <input
@@ -50,7 +50,7 @@ export default function ImageOptionsEditor({
               onChange={(e) => set(i, { label: e.target.value })}
             />
             <div className="flex items-center justify-between">
-              <label className="cursor-pointer text-xs font-medium text-naf-600 hover:underline">
+              <label className="cursor-pointer text-xs font-medium text-primary hover:underline">
                 رفع صورة
                 <input
                   type="file"
@@ -62,7 +62,7 @@ export default function ImageOptionsEditor({
               <button
                 type="button"
                 onClick={() => remove(i)}
-                className="text-xs text-red-500 hover:underline"
+                className="text-xs text-destructive hover:underline"
                 disabled={options.length <= 1}
               >
                 حذف
@@ -74,7 +74,7 @@ export default function ImageOptionsEditor({
       <button
         type="button"
         onClick={add}
-        className="mt-2 text-sm font-medium text-naf-600 hover:underline"
+        className="mt-2 text-sm font-medium text-primary hover:underline"
       >
         + إضافة خيار مصوّر
       </button>

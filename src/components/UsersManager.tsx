@@ -83,15 +83,15 @@ export default function UsersManager({
             + إضافة
           </button>
         </div>
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-        <p className="mt-2 text-xs text-slate-400">
+        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+        <p className="mt-2 text-xs text-muted-foreground">
           يُنشأ الحساب بكلمة المرور الافتراضية <b>1234</b>، ويُطلب من المستخدم
           تغييرها عند أول دخول.
         </p>
       </div>
 
       {/* قائمة المستخدمين */}
-      <div className="card divide-y divide-slate-100">
+      <div className="card divide-y divide-border">
         {initial.map((u) => (
           <div key={u.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
             <div className="min-w-0">
@@ -100,7 +100,7 @@ export default function UsersManager({
                   {u.email}
                 </span>
                 {u.id === meId && (
-                  <span className="chip bg-naf-50 text-naf-700">أنت</span>
+                  <span className="chip bg-accent text-primary">أنت</span>
                 )}
                 {u.mustChangePassword && (
                   <span className="chip chip-draft">لم يغيّر كلمة المرور</span>
@@ -125,7 +125,7 @@ export default function UsersManager({
               </button>
               {u.id !== meId && (
                 <button
-                  className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
+                  className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
                   onClick={() => remove(u.id)}
                 >
                   حذف

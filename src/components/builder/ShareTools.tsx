@@ -26,9 +26,9 @@ export default function ShareTools({ url }: { url: string }) {
       <div className="card p-6 text-center">
         <h3 className="mb-3 font-bold">رمز QR</h3>
         {qr ? (
-          <img src={qr} alt="QR" className="mx-auto rounded-xl border border-slate-200" />
+          <img src={qr} alt="QR" className="mx-auto rounded-xl border border-border" />
         ) : (
-          <div className="mx-auto grid h-[220px] w-[220px] place-items-center text-slate-300">
+          <div className="mx-auto grid h-[220px] w-[220px] place-items-center text-muted-foreground">
             جارٍ التوليد…
           </div>
         )}
@@ -45,7 +45,7 @@ export default function ShareTools({ url }: { url: string }) {
 
       <div className="card p-6">
         <h3 className="mb-2 font-bold">كود التضمين (Embed)</h3>
-        <p className="mb-2 text-sm text-slate-500">
+        <p className="mb-2 text-sm text-muted-foreground">
           ألصق هذا الكود في موقعك لعرض النموذج داخله.
         </p>
         <textarea className="input h-24 font-mono text-xs" dir="ltr" readOnly value={embed} />

@@ -56,20 +56,20 @@ export default function QuestionEditor({
         <span
           draggable
           onDragStart={onDragStartItem}
-          className="flex cursor-grab select-none items-center text-slate-300 active:cursor-grabbing"
+          className="flex cursor-grab select-none items-center text-muted-foreground active:cursor-grabbing"
         >
           <Icon name="grip" className="h-4 w-4" />
         </span>
         <div className="flex flex-1 items-center gap-2">
-          <span className="h-px flex-1 border-t border-dashed border-naf-300" />
-          <span className="chip inline-flex items-center gap-1.5 bg-naf-50 text-naf-700">
+          <span className="h-px flex-1 border-t border-dashed border-border" />
+          <span className="chip inline-flex items-center gap-1.5 bg-accent text-primary">
             <Icon name="rows" className="h-3.5 w-3.5" />
             فاصل بطاقة — بداية بطاقة جديدة
           </span>
-          <span className="h-px flex-1 border-t border-dashed border-naf-300" />
+          <span className="h-px flex-1 border-t border-dashed border-border" />
         </div>
         <ToolBtn label="نسخ" icon="copy" onClick={onDuplicate} />
-        <ToolBtn label="حذف" icon="trash" onClick={onRemove} className="text-red-400" />
+        <ToolBtn label="حذف" icon="trash" onClick={onRemove} className="text-destructive" />
       </div>
     );
   }
@@ -86,15 +86,15 @@ export default function QuestionEditor({
       }}
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDropItem}
-      className={`group relative rounded-2xl border bg-white transition ${
+      className={`group relative rounded-2xl border bg-card transition ${
         selected
-          ? "border-naf-400 shadow-md ring-1 ring-naf-200"
-          : "border-slate-200 hover:border-slate-300 hover:shadow-sm"
-      } ${isSection ? "border-r-4 border-r-naf-400" : ""}`}
+          ? "border-primary shadow-md ring-1 ring-ring"
+          : "border-border hover:border-border hover:shadow-sm"
+      } ${isSection ? "border-r-4 border-r-primary" : ""}`}
     >
       {/* شريط الأدوات (يظهر عند التحويم أو التحديد) */}
       <div
-        className={`absolute -top-3 left-3 flex items-center gap-0.5 rounded-full border border-slate-200 bg-white px-1 py-0.5 shadow-sm transition ${
+        className={`absolute -top-3 left-3 flex items-center gap-0.5 rounded-full border border-border bg-card px-1 py-0.5 shadow-sm transition ${
           selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         }`}
       >
@@ -103,7 +103,7 @@ export default function QuestionEditor({
             label={q.required ? "إلزامي (اضغط لجعله اختياري)" : "اجعله إلزاميًا"}
             icon="star"
             onClick={() => onChange({ required: !q.required })}
-            className={q.required ? "text-red-500" : "text-slate-400"}
+            className={q.required ? "text-destructive" : "text-muted-foreground"}
           />
         )}
         <ToolBtn
@@ -123,13 +123,13 @@ export default function QuestionEditor({
           label="حذف"
           icon="trash"
           onClick={onRemove}
-          className="text-red-500"
+          className="text-destructive"
         />
         <IconTip label="اسحب لإعادة الترتيب">
           <span
             draggable
             onDragStart={onDragStartItem}
-            className="flex cursor-grab select-none items-center px-1 text-slate-400 active:cursor-grabbing"
+            className="flex cursor-grab select-none items-center px-1 text-muted-foreground active:cursor-grabbing"
           >
             <Icon name="grip" className="h-4 w-4" />
           </span>
@@ -139,19 +139,19 @@ export default function QuestionEditor({
       <div className="p-5">
         {/* نوع العنصر */}
         <div className="mb-2 flex items-center gap-2">
-          <span className="chip inline-flex items-center gap-1.5 bg-slate-100 text-slate-500">
+          <span className="chip inline-flex items-center gap-1.5 bg-muted text-muted-foreground">
             <Icon name={fieldIcon(q.type)} className="h-3.5 w-3.5" />
             {def?.label}
           </span>
           {!isLayout && (
-            <span className="text-xs text-slate-400">سؤال {index + 1}</span>
+            <span className="text-xs text-muted-foreground">سؤال {index + 1}</span>
           )}
         </div>
 
         {/* عنوان العنصر */}
         <div className="flex items-start gap-1">
           <input
-            className="w-full rounded-lg border border-transparent bg-transparent px-1 py-1 text-base font-semibold hover:border-slate-200 focus:border-naf-400 focus:bg-white focus:outline-none"
+            className="w-full rounded-lg border border-transparent bg-transparent px-1 py-1 text-base font-semibold hover:border-border focus:border-primary focus:bg-card focus:outline-none"
             placeholder={
               isSection
                 ? "عنوان القسم"
@@ -163,14 +163,14 @@ export default function QuestionEditor({
             onChange={(e) => onChange({ label: e.target.value })}
           />
           {!isLayout && q.required && (
-            <span className="mt-2 text-lg text-red-500">*</span>
+            <span className="mt-2 text-lg text-destructive">*</span>
           )}
         </div>
 
         {/* وصف/تعليمات */}
         {(selected || q.description) && (
           <input
-            className="mt-1 w-full rounded-lg border border-transparent bg-transparent px-1 py-1 text-sm text-slate-500 hover:border-slate-200 focus:border-naf-400 focus:bg-white focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-transparent bg-transparent px-1 py-1 text-sm text-muted-foreground hover:border-border focus:border-primary focus:bg-card focus:outline-none"
             placeholder="وصف أو تعليمات (اختياري)"
             value={q.description}
             onChange={(e) => onChange({ description: e.target.value })}
@@ -224,7 +224,7 @@ export default function QuestionEditor({
               onSelect();
               setLocalOpen((o) => !o);
             }}
-            className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-naf-600 hover:underline"
+            className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
           >
             <Icon name="gear" className="h-3.5 w-3.5" />
             {settingsOpen ? "إخفاء الخيارات" : "خيارات الحقل"}
@@ -234,7 +234,7 @@ export default function QuestionEditor({
         {/* الإعدادات التفصيلية (مطويّة افتراضيًا) */}
         {settingsOpen && (
           <div
-            className="mt-3 space-y-4 rounded-xl bg-slate-50 p-4"
+            className="mt-3 space-y-4 rounded-xl bg-muted p-4"
             onClick={(e) => e.stopPropagation()}
           >
             {(q.type === "MULTIPLE_CHOICE" ||
@@ -418,7 +418,7 @@ export default function QuestionEditor({
                   value={cfg.defaultValue || ""}
                   onChange={(v) => setCfg({ defaultValue: v })}
                 />
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   أضف <span dir="ltr">?{cfg.paramName || "source"}=value</span>{" "}
                   إلى رابط النموذج، فتُسجَّل القيمة مع الرد دون إظهارها.
                 </p>
@@ -445,8 +445,8 @@ export default function QuestionEditor({
 
             {/* إجابة صحيحة للاختبارات */}
             {formType === "EXAM" && def?.gradable && (
-              <div className="rounded-xl bg-amber-50 p-3">
-                <label className="label text-amber-800">
+              <div className="rounded-xl bg-warning/10 p-3">
+                <label className="label text-warning">
                   الإجابة الصحيحة (اختبار)
                 </label>
                 {(() => {
@@ -569,7 +569,7 @@ function QuotasEditor({
   );
   if (!labels.length) return null;
   return (
-    <div className="rounded-xl bg-white p-3">
+    <div className="rounded-xl bg-card p-3">
       <label className="flex items-center gap-2 text-sm font-semibold">
         <input
           type="checkbox"
@@ -602,7 +602,7 @@ function QuotasEditor({
               />
             </div>
           ))}
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted-foreground">
             عند اكتمال العدد يُعطَّل الخيار تلقائيًا ويُرفض على الخادم.
           </p>
         </div>
@@ -616,7 +616,7 @@ function ToolBtn({
   label,
   onClick,
   disabled,
-  className = "text-slate-500",
+  className = "text-muted-foreground",
 }: {
   icon: string;
   label: string;
@@ -634,7 +634,7 @@ function ToolBtn({
           e.stopPropagation();
           onClick();
         }}
-        className={`rounded-full p-1.5 hover:bg-slate-100 disabled:opacity-30 ${className}`}
+        className={`rounded-full p-1.5 hover:bg-muted disabled:opacity-30 ${className}`}
       >
         <Icon name={icon} className="h-4 w-4" />
       </button>
@@ -646,7 +646,7 @@ function ToolBtn({
 function FieldPreview({ q }: { q: QuestionDTO }) {
   const cfg = q.config || {};
   const box =
-    "rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400";
+    "rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground";
   switch (q.type) {
     case "PARAGRAPH":
       return <div className={`${box} h-16`}>{cfg.placeholder || "إجابة نصية طويلة…"}</div>;
@@ -664,9 +664,9 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
       return (
         <div className="space-y-1.5">
           {opts.slice(0, 6).map((o, i) => (
-            <div key={i} className="flex items-center gap-2 text-sm text-slate-600">
+            <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
               <span
-                className={`inline-block h-4 w-4 border border-slate-300 ${
+                className={`inline-block h-4 w-4 border border-border ${
                   round ? "rounded-full" : "rounded"
                 }`}
               />
@@ -674,9 +674,9 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
             </div>
           ))}
           {cfg.allowOther && (
-            <div className="flex items-center gap-2 text-sm text-slate-400">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span
-                className={`inline-block h-4 w-4 border border-slate-300 ${
+                className={`inline-block h-4 w-4 border border-border ${
                   round ? "rounded-full" : "rounded"
                 }`}
               />
@@ -695,7 +695,7 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
           {nums.slice(0, 12).map((n) => (
             <span
               key={n}
-              className="grid h-9 w-9 place-items-center rounded-full border border-slate-300 text-sm text-slate-500"
+              className="grid h-9 w-9 place-items-center rounded-full border border-border text-sm text-muted-foreground"
             >
               {n}
             </span>
@@ -705,18 +705,18 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
     }
     case "RATING":
       return (
-        <div className="text-2xl text-slate-300">
+        <div className="text-2xl text-muted-foreground">
           {"★".repeat(Number(cfg.max ?? 5))}
         </div>
       );
     case "SLIDER":
       return (
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">{cfg.min ?? 0}</span>
-          <div className="h-1.5 flex-1 rounded-full bg-slate-200">
-            <div className="h-full w-1/2 rounded-full bg-slate-300" />
+          <span className="text-xs text-muted-foreground">{cfg.min ?? 0}</span>
+          <div className="h-1.5 flex-1 rounded-full bg-accent">
+            <div className="h-full w-1/2 rounded-full bg-primary" />
           </div>
-          <span className="text-xs text-slate-400">{cfg.max ?? 100}</span>
+          <span className="text-xs text-muted-foreground">{cfg.max ?? 100}</span>
         </div>
       );
     case "GRID": {
@@ -724,7 +724,7 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
       const cols: string[] = cfg.cols || [];
       return (
         <div className="overflow-x-auto">
-          <table className="text-center text-xs text-slate-500">
+          <table className="text-center text-xs text-muted-foreground">
             <thead>
               <tr>
                 <th></th>
@@ -741,7 +741,7 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
                   <td className="px-2 py-1 text-right">{r}</td>
                   {cols.map((c) => (
                     <td key={c} className="px-2 py-1">
-                      <span className="inline-block h-3.5 w-3.5 rounded-full border border-slate-300" />
+                      <span className="inline-block h-3.5 w-3.5 rounded-full border border-border" />
                     </td>
                   ))}
                 </tr>
@@ -770,9 +770,9 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
           {opts.slice(0, 5).map((o, i) => (
             <div
               key={o}
-              className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-500"
+              className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground"
             >
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-slate-200 text-xs">
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-accent text-xs">
                 {i + 1}
               </span>
               {o}
@@ -786,15 +786,15 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
       return (
         <div className="grid grid-cols-3 gap-2">
           {opts.slice(0, 6).map((o, i) => (
-            <div key={i} className="overflow-hidden rounded-lg border border-slate-200">
+            <div key={i} className="overflow-hidden rounded-lg border border-border">
               {o.url ? (
                 <img src={o.url} alt="" className="h-16 w-full object-cover" />
               ) : (
-                <div className="grid h-16 place-items-center bg-slate-100 text-slate-400">
+                <div className="grid h-16 place-items-center bg-muted text-muted-foreground">
                   <Icon name="image" className="h-6 w-6" />
                 </div>
               )}
-              <div className="truncate p-1 text-center text-xs text-slate-500">
+              <div className="truncate p-1 text-center text-xs text-muted-foreground">
                 {o.label}
               </div>
             </div>
@@ -804,27 +804,27 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
     }
     case "LOCATION":
       return (
-        <div className="flex h-24 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-400">
+        <div className="flex h-24 items-center justify-center gap-2 rounded-lg border border-border bg-muted text-sm text-muted-foreground">
           <Icon name="map-pin" className="h-5 w-5" /> خريطة لتحديد الموقع
         </div>
       );
     case "FILE":
       return (
-        <div className="flex h-20 items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-sm text-slate-400">
+        <div className="flex h-20 items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted text-sm text-muted-foreground">
           <Icon name="paperclip" className="h-5 w-5" /> رفع ملف (
           {cfg.accept || "أي صيغة"})
         </div>
       );
     case "SIGNATURE":
       return (
-        <div className="flex h-20 items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-white text-sm text-slate-400">
+        <div className="flex h-20 items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-card text-sm text-muted-foreground">
           <Icon name="pen" className="h-5 w-5" /> منطقة التوقيع
         </div>
       );
     case "CONSENT":
       return (
-        <div className="flex items-center gap-2 text-sm text-slate-600">
-          <span className="inline-block h-5 w-5 rounded border border-slate-300" />
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="inline-block h-5 w-5 rounded border border-border" />
           {cfg.statement || "أوافق على الشروط والأحكام"}
         </div>
       );
@@ -864,8 +864,8 @@ function LogicEditor({
 }) {
   const enabled = !!(logic && logic.whenQuestionId);
   return (
-    <div className="rounded-xl bg-indigo-50/60 p-3">
-      <label className="flex items-center gap-2 text-sm font-semibold text-indigo-900">
+    <div className="rounded-xl bg-info/10 p-3">
+      <label className="flex items-center gap-2 text-sm font-semibold text-info">
         <input
           type="checkbox"
           checked={enabled}
@@ -957,7 +957,7 @@ function MediaUploadButton({
 
   return (
     <div>
-      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-xs font-medium hover:border-naf-400 hover:bg-naf-50">
+      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs font-medium hover:border-primary hover:bg-accent">
         <Icon name={kind === "IMAGE" ? "image" : "film"} className="h-4 w-4" />
         <span>
           {busy
@@ -972,16 +972,16 @@ function MediaUploadButton({
           onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
         />
       </label>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
       {url && kind === "IMAGE" && (
         <img
           src={url}
           alt=""
-          className="mt-1.5 max-h-28 rounded-lg border border-slate-200 object-contain"
+          className="mt-1.5 max-h-28 rounded-lg border border-border object-contain"
         />
       )}
       {url && kind === "VIDEO" && (
-        <p className="mt-1.5 inline-flex items-center gap-1 truncate text-xs text-green-700">
+        <p className="mt-1.5 inline-flex items-center gap-1 truncate text-xs text-success">
           <Icon name="check" className="h-3.5 w-3.5" /> فيديو مرفق
         </p>
       )}
