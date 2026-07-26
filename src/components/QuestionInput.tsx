@@ -687,7 +687,11 @@ function FileField({
           }}
         />
       </label>
-      {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+      {error && (
+        <p className="mt-2 flex items-center gap-1.5 text-sm text-destructive">
+          <Icon name="alert" className="h-4 w-4" /> {error}
+        </p>
+      )}
       {files.length > 0 && (
         <div className="mt-3 space-y-2">
           {files.map((f, i) => (

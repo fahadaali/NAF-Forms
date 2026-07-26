@@ -975,7 +975,11 @@ function MediaUploadButton({
           onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
         />
       </label>
-      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
+      {error && (
+        <p className="mt-1 flex items-center gap-1.5 text-xs text-destructive">
+          <Icon name="alert" className="h-4 w-4" /> {error}
+        </p>
+      )}
       {url && kind === "IMAGE" && (
         <img
           src={url}

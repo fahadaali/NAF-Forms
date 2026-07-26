@@ -140,7 +140,11 @@ export default function MapPicker({
           />
         </div>
       </div>
-      {geoError && <p className="text-sm text-destructive">{geoError}</p>}
+      {geoError && (
+        <p className="flex items-center gap-1.5 text-sm text-destructive">
+          <Icon name="alert" className="h-4 w-4" /> {geoError}
+        </p>
+      )}
 
       <div className="overflow-hidden rounded-xl border border-border">
         <MapContainer

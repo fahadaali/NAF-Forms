@@ -63,6 +63,7 @@ import {
   Redo2,
   ChevronUp,
   Check,
+  TriangleAlert,
   Sun,
   Moon,
   GitBranch,
@@ -110,6 +111,7 @@ const ICONS: Record<string, LucideIcon> = {
   "x-circle": CircleX,
   clock: Clock,
   lock: Lock,
+  alert: TriangleAlert, // «تحذير» مسجَّلة في naf-icons.md
 
   // ===== كيانات وأدوات =====
   gear: Settings,

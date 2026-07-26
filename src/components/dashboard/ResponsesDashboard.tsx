@@ -12,6 +12,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableHeader,
+} from "@/components/ui/table";
 
 export interface QuestionStat {
   id: string;
@@ -597,12 +603,12 @@ function CrossTab({
         setAId={setAId}
         setBId={setBId}
       />
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[420px] border-collapse text-sm">
-          <caption className="sr-only">
+      <div className="mt-4">
+        <Table className="min-w-[420px]">
+          <TableCaption className="sr-only">
             جدول تقاطعي بين «<bdi>{qa.label}</bdi>» و«<bdi>{qb.label}</bdi>»
-          </caption>
-          <thead>
+          </TableCaption>
+          <TableHeader>
             <tr>
               <th scope="col" className="p-2 text-start text-xs text-muted-foreground">
                 {qa.label} / {qb.label}
@@ -616,8 +622,8 @@ function CrossTab({
                 المجموع
               </th>
             </tr>
-          </thead>
-          <tbody>
+          </TableHeader>
+          <TableBody>
             {aVals.map((av, i) => (
               <tr key={av} className={i % 2 ? "bg-muted/60" : ""}>
                 <th scope="row" className="p-2 text-start text-sm font-medium text-foreground">
@@ -651,8 +657,8 @@ function CrossTab({
               ))}
               <td className="p-2 text-center font-bold">{grand}</td>
             </tr>
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </Card>
   );

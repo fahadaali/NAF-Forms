@@ -11,6 +11,7 @@ import {
 } from "@/lib/utils";
 import type { FormDTO } from "@/lib/types";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type Phase = "intro" | "question" | "done";
 
@@ -383,7 +384,11 @@ export default function FillForm({
             onKeyDown={(e) => e.key === "Enter" && unlock()}
             autoFocus
           />
-          {pwError && <p className="mt-2 text-sm text-destructive">{pwError}</p>}
+          {pwError && (
+            <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-destructive">
+              <Icon name="alert" className="h-4 w-4" /> {pwError}
+            </p>
+          )}
           <button
             onClick={unlock}
             disabled={checking || !password}
@@ -597,7 +602,9 @@ export default function FillForm({
                     }}
                   />
                   {emailError && (
-                    <p className="mt-1 text-sm text-destructive">{emailError}</p>
+                    <p className="mt-1 flex items-center gap-1.5 text-sm text-destructive">
+                      <Icon name="alert" className="h-4 w-4" /> {emailError}
+                    </p>
                   )}
                 </div>
               )}
@@ -654,7 +661,12 @@ export default function FillForm({
                 <QuestionCard q={q} value={answers[q.id]} onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))} accent={accent} index={i} />
               </div>
             ))}
-          {error && <p className="text-center font-medium text-destructive">{error}</p>}
+          {error && (
+            <Alert variant="destructive">
+              <Icon name="alert" className="h-5 w-5" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <button
             onClick={submit}
             disabled={submitting}
@@ -747,7 +759,12 @@ export default function FillForm({
               </div>
             ))}
           </div>
-          {error && <p className="mt-4 font-medium text-destructive">{error}</p>}
+          {error && (
+            <Alert variant="destructive" className="mt-4">
+              <Icon name="alert" className="h-5 w-5" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
           {/* حفظ ومتابعة لاحقًا */}
           {behavior.allowSaveResume && (

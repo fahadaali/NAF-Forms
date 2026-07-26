@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Icon } from "@/components/ui/Icon";
 
 interface U {
   id: string;
@@ -85,7 +87,12 @@ export default function UsersManager({
             + إضافة
           </Button>
         </div>
-        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+        {error && (
+          <Alert variant="destructive" className="mt-2">
+            <Icon name="alert" className="h-5 w-5" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         <p className="mt-2 text-xs text-muted-foreground">
           يُنشأ الحساب بكلمة المرور الافتراضية <b>1234</b>، ويُطلب من المستخدم
           تغييرها عند أول دخول.
