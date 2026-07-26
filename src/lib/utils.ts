@@ -1,4 +1,5 @@
 import { DEFAULT_SETTINGS, type FormSettings } from "./types";
+import { formatDate, formatTime } from "./naf-format";
 import {
   NON_INPUT_TYPES,
   HIDDEN_FIELD_TYPES,
@@ -94,30 +95,15 @@ export function isHiddenField(type: string): boolean {
 }
 
 /**
- * التاريخ والوقت بالصيغة المعتمدة في naf-terms §٥:
- * ميلادي `2026/07/26`، ووقت بنظام ٢٤ ساعة `14:30`، وأرقام غربية دائمًا.
+ * التاريخ والوقت من مكتبة التنسيق المشتركة `naf-format` في السجلّ.
+ * لا تنسيق داخلي: القاعدة ٨ تُلزم بأن يمرّ كل رقم وتاريخ من هناك.
  *
  * الصيغة السابقة كانت `ar-SA-u-ca-gregory` بـ dateStyle/timeStyle، فأنتجت
  * أرقامًا عربية-هندية (٢٠٢٦/٠٧/٢٦) ونظام ١٢ ساعة بعلامة ص/م — وكلاهما
- * مخالف. الوسم `-u-nu-latn` يفرض الأرقام الغربية، و`hourCycle: "h23"`
- * يفرض نظام ٢٤ ساعة بصرف النظر عن تفضيل اللغة.
+ * مخالف لـ naf-terms §٥.
  */
-const AR_DATE = new Intl.DateTimeFormat("en-GB-u-ca-gregory", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  hourCycle: "h23",
-});
-
 export function formatDateTime(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  // نُجمّع من الأجزاء بدل الاعتماد على ترتيب اللغة: أي لغة تفرض ترتيبها
-  // (ar-SA تعطي يوم/شهر/سنة مع محارف اتجاه مدسوسة)، والمطلوب سنة/شهر/يوم.
-  const part: Record<string, string> = {};
-  for (const p of AR_DATE.formatToParts(date)) part[p.type] = p.value;
-  return `${part.year}/${part.month}/${part.day} ${part.hour}:${part.minute}`;
+  return `${formatDate(d)} ${formatTime(d)}`;
 }
 
 /**

@@ -300,7 +300,11 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
       : `/f/${slug}`;
 
   return (
-    <div>
+    // overflow-x-clip: تلميحات أزرار شريط أدوات السؤال معروضة بـ opacity-0
+    // فتشغل مساحة تخطيط، والتلميح الأقرب لحدّ الشاشة يزيد عرض التمرير ١٣
+    // بكسل على عرض ٣٧٥. `clip` لا يُنشئ حاوية تمرير فيبقى sticky يعمل،
+    // بخلاف `hidden`.
+    <div className="overflow-x-clip">
       {/* الشريط العلوي */}
       <div className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">

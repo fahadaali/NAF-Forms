@@ -12,9 +12,11 @@ export default function LogoutButton() {
   return (
     <button
       onClick={logout}
+      aria-label="تسجيل الخروج"
       className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
     >
-      <Icon name="logout" className="h-4 w-4" /> تسجيل الخروج
+      <Icon name="logout" className="h-4 w-4" />
+      <span className="hidden sm:inline">تسجيل الخروج</span>
     </button>
   );
 }

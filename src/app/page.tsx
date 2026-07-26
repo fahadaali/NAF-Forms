@@ -9,6 +9,7 @@ import { currentSession, ownerFilter } from "@/lib/session";
 import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { Icon } from "@/components/ui/Icon";
 import { formatDateTime } from "@/lib/utils";
+import { formatNumber } from "@/lib/naf-format";
 import Navbar from "@/components/Navbar";
 import CreateProjectButton from "@/components/CreateProjectButton";
 import { NafLogo } from "@/components/ui/naf-logo";
@@ -82,7 +83,7 @@ export default async function HomePage() {
                         {p.name}
                       </h3>
                       <p className="text-xs text-muted-foreground">
-                        <bdi>{p._count.forms}</bdi> نموذج
+                        <bdi>{formatNumber(p._count.forms)}</bdi> نموذج
                       </p>
                     </div>
                   </div>
@@ -118,7 +119,7 @@ export default async function HomePage() {
                   {t.description}
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  <bdi>{t._count.questions}</bdi> سؤال
+                  <bdi>{formatNumber(t._count.questions)}</bdi> سؤال
                 </p>
               </Card>
             ))}
@@ -132,7 +133,9 @@ export default async function HomePage() {
 function Stat({ n, label }: { n: number; label: string }) {
   return (
     <div>
-      <div className="text-3xl font-bold text-card-foreground">{n}</div>
+      <div className="text-3xl font-bold text-card-foreground">
+        <bdi>{formatNumber(n)}</bdi>
+      </div>
       <div className="text-primary">{label}</div>
     </div>
   );

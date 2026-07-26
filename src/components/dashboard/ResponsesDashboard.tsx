@@ -12,6 +12,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { Card } from "@/components/ui/card";
+import { formatNumber } from "@/lib/naf-format";
 import {
   Table,
   TableBody,
@@ -162,7 +163,7 @@ export default function ResponsesDashboard({
     <div>
       {/* بطاقات إحصائية */}
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <StatCard icon="chart" label="إجمالي الردود" value={String(total)} />
+        <StatCard icon="chart" label="إجمالي الردود" value={formatNumber(total)} />
         <StatCard
           icon="clock"
           label="آخر رد"
@@ -171,7 +172,7 @@ export default function ResponsesDashboard({
         {formType === "EXAM" ? (
           <StatCard icon="target" label="متوسط الدرجات" value={examAvg || "—"} />
         ) : (
-          <StatCard icon="list" label="عدد الأسئلة" value={String(stats.length)} />
+          <StatCard icon="list" label="عدد الأسئلة" value={formatNumber(stats.length)} />
         )}
       </div>
 
@@ -268,7 +269,7 @@ export default function ResponsesDashboard({
                     : "bg-muted text-muted-foreground"
                 }`}
               >
-                الكل (<bdi>{rows.length}</bdi>)
+                الكل (<bdi>{formatNumber(rows.length)}</bdi>)
               </button>
               {statusCounts.map(({ status, count }) => (
                 <button
@@ -282,14 +283,15 @@ export default function ResponsesDashboard({
                       : REVIEW_STATUS_CHIP[status]
                   }`}
                 >
-                  {REVIEW_STATUS_LABELS[status]} (<bdi>{count}</bdi>)
+                  {REVIEW_STATUS_LABELS[status]} (<bdi>{formatNumber(count)}</bdi>)
                 </button>
               ))}
             </div>
           )}
           {(query || from || to) && (
             <p className="text-sm text-muted-foreground">
-              <bdi>{filteredRows.length}</bdi> نتيجة من <bdi>{rows.length}</bdi>
+              <bdi>{formatNumber(filteredRows.length)}</bdi> نتيجة من{" "}
+              <bdi>{formatNumber(rows.length)}</bdi>
             </p>
           )}
           {filteredRows.map((r) => (
@@ -822,8 +824,8 @@ function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
         <Icon name="target" className="h-5 w-5 text-primary" /> تحليلات الإكمال
       </h3>
       <div className="grid gap-4 sm:grid-cols-4">
-        <Metric label="بدأوا التعبئة" value={String(funnel.started)} />
-        <Metric label="أكملوا" value={String(funnel.completed)} />
+        <Metric label="بدأوا التعبئة" value={formatNumber(funnel.started)} />
+        <Metric label="أكملوا" value={formatNumber(funnel.completed)} />
         <Metric
           label="معدّل الإكمال"
           value={funnel.rate == null ? "—" : `${funnel.rate}%`}

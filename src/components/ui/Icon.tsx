@@ -158,16 +158,28 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 /**
- * الأيقونات التي تُقلب في RTL وفق «قواعد القلب» في naf-icons.md.
+ * القلب وفق «قواعد القلب» في naf-icons.md. المجموعتان تختلفان في اتجاه
+ * القلب لأن الخريطة تسجّل أسماءها من مرجعين مختلفين:
  *
- * `arrow-right` و `arrow-left` **ليستا** هنا: الخريطة تسجّل «رجوع» بـ
- * ArrowRight و«التالي» بـ ArrowLeft، وهما بهذا الاتجاه صحيحتان في RTL
- * أصلًا (الرجوع يمينًا والتقدّم يسارًا). قلبهما بـ CSS يعكس المعنى.
+ * - `MIRROR_IN_RTL`: أسماء Lucide بصورتها الأصلية (اتجاهها LTR)، فتُقلب في
+ *   RTL. مثال: LogOut سهمها يخرج يمينًا، والخروج في العربية يتجه يسارًا.
  *
- * الشيفرون الرأسي والساعة وعلامة الصح والبحث والمستخدم والخرائط والصور
- * مستثناة صراحةً من القلب.
+ * - `MIRROR_IN_LTR`: الخريطة تسجّل «رجوع» بـ ArrowRight و«التالي» بـ
+ *   ArrowLeft — وهما بهذا الاتجاه صحيحتان في RTL أصلًا (الرجوع يمينًا
+ *   والتقدّم يسارًا)، أي أن الاسم المسجَّل هو الصورة المقلوبة سلفًا. فتحتاج
+ *   القلب في LTR لا في RTL.
+ *
+ * المنصة كلها RTL اليوم، لكن ضبط الاتجاهين يمنع خطأً صامتًا لو عُرضت
+ * صفحة بـ dir="ltr" لاحقًا.
+ *
+ * لا تُقلب: الشيفرون الرأسي والساعة وعلامة الصح والبحث والمستخدم والخرائط
+ * والصور والشعار — مستثناة صراحةً في الخريطة.
+ *
+ * `external-link` غير مذكورة في أي من قائمتَي القلب — تُركت بلا قلب
+ * بانتظار قرار يُسجَّل في السجلّ.
  */
-const MIRRORED = new Set(["logout", "undo", "redo"]);
+const MIRROR_IN_RTL = new Set(["logout", "undo", "redo"]);
+const MIRROR_IN_LTR = new Set(["arrow-right", "arrow-left"]);
 
 export function Icon({
   name,
@@ -177,7 +189,11 @@ export function Icon({
   className?: string;
 }) {
   const Cmp = ICONS[name] ?? Square;
-  const mirror = MIRRORED.has(name) ? " rtl:-scale-x-100" : "";
+  const mirror = MIRROR_IN_RTL.has(name)
+    ? " rtl:-scale-x-100"
+    : MIRROR_IN_LTR.has(name)
+    ? " ltr:-scale-x-100"
+    : "";
   return <Cmp className={`${className}${mirror}`} aria-hidden />;
 }
 

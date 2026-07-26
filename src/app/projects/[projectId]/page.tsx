@@ -16,6 +16,7 @@ import FormRowActions from "@/components/FormRowActions";
 import ProjectSettings from "@/components/ProjectSettings";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { formatNumber } from "@/lib/naf-format";
 
 export const dynamic = "force-dynamic";
 
@@ -91,8 +92,8 @@ export default async function ProjectPage({
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    <bdi>{f._count.questions}</bdi> سؤال ·{" "}
-                    <bdi>{f._count.responses}</bdi> رد · آخر تحديث{" "}
+                    <bdi>{formatNumber(f._count.questions)}</bdi> سؤال ·{" "}
+                    <bdi>{formatNumber(f._count.responses)}</bdi> رد · آخر تحديث{" "}
                     <bdi>{formatDateTime(f.updatedAt)}</bdi>
                   </p>
                 </div>
