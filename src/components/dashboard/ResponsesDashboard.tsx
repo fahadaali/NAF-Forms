@@ -12,7 +12,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { Card } from "@/components/ui/card";
-import { formatNumber } from "@/lib/naf-format";
+import { formatNumber, formatTime } from "@/lib/naf-format";
 import {
   Table,
   TableBody,
@@ -787,7 +787,7 @@ function ReviewBar({
           onBlur={() => {
             if (notes !== review.notes) {
               onChange({ notes });
-              setSavedAt(new Date().toLocaleTimeString("ar-SA"));
+              setSavedAt(formatTime(new Date()));
             }
           }}
         />

@@ -3,6 +3,7 @@ import { getResponseWithAnswers, getFormWithQuestions } from "@/lib/repo";
 import { parseSettings, safeParse, formatDateTime } from "@/lib/utils";
 import PrintButton from "@/components/PrintButton";
 import { NafLogo } from "@/components/ui/naf-logo";
+import { NAF_PRIMARY } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export default async function CertificatePage({
   if (!passed) notFound();
 
   const theme = settings.theme || {};
-  const accent = theme.primary || "#44528a";
+  const accent = theme.primary || NAF_PRIMARY;
   const title = settings.exam?.certificateTitle || "شهادة إتمام";
 
   return (

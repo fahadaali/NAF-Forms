@@ -11,6 +11,7 @@ import ResponsesDashboard, {
   type ResponseRow,
 } from "@/components/dashboard/ResponsesDashboard";
 import { buttonVariants } from "@/components/ui/button";
+import { formatDate } from "@/lib/naf-format";
 
 export const dynamic = "force-dynamic";
 
@@ -197,11 +198,10 @@ export default async function ResponsesPage({
     };
   });
 
-  // توزيع الردود حسب اليوم (آخر النتائج)
-  const dayFmt = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
-    day: "numeric",
-    month: "numeric",
-  });
+  // توزيع الردود حسب اليوم (آخر النتائج).
+  // `ar-SA` كانت تُنتج أرقامًا عربية-هندية على محور الرسم البياني، و naf-terms
+  // §٥ تفرض الأرقام الغربية. نشتقّ اليوم/الشهر من التاريخ المعتمد نفسه.
+  const dayFmt = { format: (d: Date) => formatDate(d).slice(5) }; // MM/DD
   const byDay = new Map<string, number>();
   // ترتيب تصاعدي زمنيًا للعرض
   const ordered = [...form.responses].sort(

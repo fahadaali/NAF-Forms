@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   const project = await createProject({
     name: body.name?.trim() || "مشروع جديد",
     description: body.description || "",
-    color: body.color || "#44528a",
+    color: body.color || undefined,
     ownerId: session.uid,
   });
   return NextResponse.json(project);

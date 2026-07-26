@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { Card } from "@/components/ui/card";
+import { NAF_PRIMARY } from "@/lib/brand";
 
 export default function CreateProjectButton() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
-  const [color, setColor] = useState("#44528a");
+  const [color, setColor] = useState(NAF_PRIMARY);
   const [busy, setBusy] = useState(false);
 
   async function create() {

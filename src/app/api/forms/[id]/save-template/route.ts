@@ -3,6 +3,7 @@ import { ensureProject, createForm } from "@/lib/repo";
 import { authorizeForm } from "@/lib/session";
 import { nanoid } from "nanoid";
 import { slugify } from "@/lib/utils";
+import { NAF_MUTED_FOREGROUND } from "@/lib/brand";
 
 const TEMPLATES_PROJECT_ID = "system-templates";
 
@@ -21,7 +22,7 @@ export async function POST(
     id: TEMPLATES_PROJECT_ID,
     name: "قوالب النظام",
     description: "قوالب جاهزة للاستخدام السريع",
-    color: "#64748b",
+    color: NAF_MUTED_FOREGROUND,
   });
 
   const tpl = await createForm(

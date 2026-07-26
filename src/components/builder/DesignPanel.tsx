@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { Card } from "@/components/ui/card";
+import { NAF_FOREGROUND } from "@/lib/brand";
 
 // ترويسة قسم بأيقونة منحنية
 function SectionHead({ icon, children }: { icon: string; children: React.ReactNode }) {
@@ -744,7 +745,7 @@ function Color({ label, value, onChange }: { label: string; value?: string; onCh
         <input
           type="color"
           className="h-9 w-12 cursor-pointer rounded-sm"
-          value={value || "#000000"}
+          value={value || NAF_FOREGROUND}
           onChange={(e) => onChange(e.target.value)}
         />
         <Input size="sm" dir="ltr" value={value || ""} onChange={(e) => onChange(e.target.value)} />

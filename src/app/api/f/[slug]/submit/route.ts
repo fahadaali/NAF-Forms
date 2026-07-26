@@ -20,6 +20,7 @@ import {
 import { sendMail } from "@/lib/mailer";
 import { deliverAndLog } from "@/lib/deliver";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { formatDate, formatTime } from "@/lib/naf-format";
 
 // استلام رد على النموذج (عام) مع تسجيل تاريخ ووقت التقديم وحساب درجة الاختبار
 export async function POST(
@@ -238,7 +239,7 @@ export async function POST(
       html: `
         <div dir="rtl" style="font-family:Tahoma,Arial,sans-serif">
           <h2>وصل رد جديد على النموذج «${form.title}»</h2>
-          <p>وقت التقديم: ${new Date().toLocaleString("ar-SA")}</p>
+          <p>وقت التقديم: ${formatDate(new Date())} ${formatTime(new Date())}</p>
           ${email ? `<p>بريد المستفيد: ${email}</p>` : ""}
           <p>إجمالي الردود الآن: ${respCount}</p>
         </div>`,

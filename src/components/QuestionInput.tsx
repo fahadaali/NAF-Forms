@@ -7,6 +7,7 @@ import type { QuestionDTO } from "@/lib/types";
 import { bidi } from "@/lib/utils";
 import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
+import { NAF_PRIMARY, NAF_FOREGROUND } from "@/lib/brand";
 
 const MapPicker = dynamic(() => import("./MapPicker"), {
   ssr: false,
@@ -21,7 +22,7 @@ export default function QuestionInput({
   question,
   value,
   onChange,
-  accent = "#44528a",
+  accent = NAF_PRIMARY,
   remaining,
 }: {
   question: QuestionDTO;
@@ -539,7 +540,7 @@ function SignaturePad({
   function draw(e: React.PointerEvent) {
     if (!drawing.current) return;
     const ctx = ref.current!.getContext("2d")!;
-    ctx.strokeStyle = "#0f172a";
+    ctx.strokeStyle = NAF_FOREGROUND;
     ctx.lineWidth = 2.5;
     ctx.lineCap = "round";
     const p = pos(e);

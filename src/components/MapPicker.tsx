@@ -5,13 +5,14 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/input";
+import { NAF_PRIMARY, NAF_CARD } from "@/lib/brand";
 
 // إصلاح أيقونة العلامة الافتراضية في Leaflet مع الحزم
 const icon = L.icon({
   iconUrl:
     "data:image/svg+xml;base64," +
     btoa(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42"><path fill="#44528a" stroke="#fff" stroke-width="2" d="M16 1C8 1 2 7 2 15c0 10 14 26 14 26s14-16 14-26C30 7 24 1 16 1z"/><circle cx="16" cy="15" r="5" fill="#fff"/></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42"><path fill="${NAF_PRIMARY}" stroke="${NAF_CARD}" stroke-width="2" d="M16 1C8 1 2 7 2 15c0 10 14 26 14 26s14-16 14-26C30 7 24 1 16 1z"/><circle cx="16" cy="15" r="5" fill="${NAF_CARD}"/></svg>`
     ),
   iconSize: [32, 42],
   iconAnchor: [16, 42],

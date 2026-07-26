@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { Card } from "@/components/ui/card";
+import { formatTime } from "@/lib/naf-format";
 
 let tmpCounter = 0;
 
@@ -148,7 +149,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
     if (nextStatus) setStatus(nextStatus);
     setSaving(false);
     setDirty(false);
-    setSavedAt(new Date().toLocaleTimeString("ar-SA"));
+    setSavedAt(formatTime(new Date()));
     router.refresh();
   }
   saveRef.current = save;

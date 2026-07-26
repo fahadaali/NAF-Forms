@@ -12,6 +12,7 @@ import {
 import type { FormDTO } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { NAF_PRIMARY } from "@/lib/brand";
 
 type Phase = "intro" | "question" | "done";
 
@@ -193,7 +194,7 @@ export default function FillForm({
   // فسطح التعبئة لا يتبع الوضعين الفاتح/الداكن. لذلك يبقى `text-white` هنا بدل
   // `text-primary-foreground`: الرمز ينقلب مع الوضع والخلفية لا تنقلب.
   // ربط هذا السطح بالسجلّ موقوف على قرار الألوان المخزَّنة (audit/mapping.md §٥).
-  const accent = theme.primary || "#44528a";
+  const accent = theme.primary || NAF_PRIMARY;
 
   // تحقق من بطاقة كاملة (قد تضم عدة أسئلة)
   function validateStep(stepQs: typeof questions): boolean {
@@ -706,7 +707,8 @@ export default function FillForm({
         autoComplete="off"
         value={hp}
         onChange={(e) => setHp(e.target.value)}
-        style={{ position: "absolute", left: "-9999px", opacity: 0 }}
+        // خاصية منطقية: القاعدة ٢ تمنع `left` في CSS الصِرف كما تمنع `left-*`
+        style={{ position: "absolute", insetInlineStart: "-9999px", opacity: 0 }}
         aria-hidden
       />
       {behavior.showProgress !== false && (
