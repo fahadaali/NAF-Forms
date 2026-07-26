@@ -41,7 +41,7 @@ export default function ChangePasswordPage() {
           alt="ناف"
           className="mx-auto mb-5 h-16 w-16 rounded-2xl object-cover shadow-lg ring-1 ring-border"
         />
-        <h1 className="text-xl font-extrabold">تعيين كلمة مرور جديدة</h1>
+        <h1 className="text-xl font-bold">تعيين كلمة مرور جديدة</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           هذا أول دخول لك — اختر كلمة مرور خاصة بك للمرات القادمة.
         </p>

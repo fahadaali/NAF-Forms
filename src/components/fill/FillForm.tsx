@@ -369,7 +369,7 @@ export default function FillForm({
           <div className="mb-3 flex justify-center text-muted-foreground">
             <Icon name="lock" className="h-12 w-12" />
           </div>
-          <h1 className="text-xl font-extrabold">{form.title}</h1>
+          <h1 className="text-xl font-bold">{form.title}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             هذا النموذج محمي بكلمة مرور. أدخلها للمتابعة.
           </p>
@@ -408,7 +408,7 @@ export default function FillForm({
           <div className="mb-4 flex justify-center text-success">
             <Icon name="check-circle" className="h-16 w-16" />
           </div>
-          <h1 className="text-2xl font-extrabold">{after.title}</h1>
+          <h1 className="text-2xl font-bold">{after.title}</h1>
           <p className="mt-3 text-muted-foreground">{after.message}</p>
           {after.showScore && result?.total ? (
             <div
@@ -416,7 +416,7 @@ export default function FillForm({
               style={{ background: accent }}
             >
               <div className="text-sm opacity-90">درجتك</div>
-              <div className="text-3xl font-extrabold">
+              <div className="text-3xl font-bold">
                 {result.score} / {result.total}
               </div>
             </div>
@@ -520,7 +520,7 @@ export default function FillForm({
               {cover.logoUrl && (
                 <img src={cover.logoUrl} alt="" className="mb-4 h-14 object-contain" />
               )}
-              <h1 className="text-3xl font-extrabold">{form.title}</h1>
+              <h1 className="text-3xl font-bold">{form.title}</h1>
               {form.description && (
                 <p className="mt-3 whitespace-pre-line text-muted-foreground">{form.description}</p>
               )}
@@ -636,7 +636,7 @@ export default function FillForm({
     return (
       <div style={pageStyle} className="px-4 py-10">
         <div className="mx-auto max-w-2xl space-y-4">
-          <h1 className="text-2xl font-extrabold">{form.title}</h1>
+          <h1 className="text-2xl font-bold">{form.title}</h1>
           {questions
             .filter((q) => q.type !== "PAGE_BREAK")
             .map((q, i) => (
@@ -823,7 +823,7 @@ function QuestionCard({
     return (
       <div>
         {q.label && (
-          <h2 className="text-2xl font-extrabold" style={{ color: accent }}>
+          <h2 className="text-2xl font-bold" style={{ color: accent }}>
             {q.label}
           </h2>
         )}
@@ -890,7 +890,7 @@ function QuestionCard({
       <div className="mb-1 text-sm font-medium" style={{ color: accent }}>
         سؤال {index + 1}
       </div>
-      <h2 className="text-xl font-bold leading-relaxed">
+      <h2 className="text-xl font-bold">
         {q.label}
         {q.required && <span className="mr-1 text-destructive">*</span>}
       </h2>

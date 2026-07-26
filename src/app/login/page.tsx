@@ -42,7 +42,7 @@ function LoginForm() {
           alt="ناف"
           className="mx-auto mb-5 h-20 w-20 rounded-2xl object-cover shadow-lg ring-1 ring-border"
         />
-        <h1 className="text-xl font-extrabold">لوحة تحكم ناف</h1>
+        <h1 className="text-xl font-bold">لوحة تحكم ناف</h1>
         <p className="mt-1 text-sm text-muted-foreground">سجّل الدخول بالبريد وكلمة المرور</p>
         <input
           type="email"

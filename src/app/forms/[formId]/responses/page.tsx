@@ -253,7 +253,7 @@ export default async function ResponsesPage({
       <main className="mx-auto max-w-5xl px-4 py-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-extrabold">ردود: {form.title}</h1>
+            <h1 className="text-2xl font-bold">ردود: {form.title}</h1>
             <span className={`chip mt-1 ${FORM_TYPE_CHIP[form.type]}`}>
               {FORM_TYPE_LABELS[form.type]}
             </span>

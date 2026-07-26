@@ -36,10 +36,10 @@ export default async function HomePage() {
           <div className="grid-bg pointer-events-none absolute inset-0 opacity-[0.15]" />
           <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-2xl">
-              <h1 className="text-3xl font-extrabold text-card-foreground md:text-4xl">
+              <h1 className="text-3xl font-bold text-card-foreground md:text-4xl">
                 نظام استبانات <span className="text-primary">ناف</span>
               </h1>
-              <p className="mt-3 leading-relaxed text-muted-foreground">
+              <p className="mt-3 text-muted-foreground">
                 منصة موحّدة لبناء الاختبارات، والتقديم الوظيفي، والاستبيانات
                 والاستطلاعات — مع أنواع بيانات متعددة، وقوالب جاهزة، ولوحة ردود
                 تفصيلية، وتصدير بأكثر من صيغة.
@@ -136,7 +136,7 @@ export default async function HomePage() {
 function Stat({ n, label }: { n: number; label: string }) {
   return (
     <div>
-      <div className="text-3xl font-extrabold text-card-foreground">{n}</div>
+      <div className="text-3xl font-bold text-card-foreground">{n}</div>
       <div className="text-primary">{label}</div>
     </div>
   );

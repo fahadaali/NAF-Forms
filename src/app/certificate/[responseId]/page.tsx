@@ -46,14 +46,14 @@ export default async function CertificatePage({
             alt="ناف"
             className="mx-auto mb-6 h-20 w-20 rounded-2xl object-cover"
           />
-          <h1 className="text-3xl font-extrabold" style={{ color: accent }}>
+          <h1 className="text-3xl font-bold" style={{ color: accent }}>
             {title}
           </h1>
           <p className="mt-6 text-muted-foreground">تشهد منصة ناف بأن</p>
           <p className="mt-2 text-2xl font-bold">
             {meta.email || "المستفيد"}
           </p>
-          <p className="mt-4 leading-relaxed text-muted-foreground">
+          <p className="mt-4 text-muted-foreground">
             قد أتمّ بنجاح «<span className="font-semibold">{form.title}</span>»
           </p>
 
@@ -63,7 +63,7 @@ export default async function CertificatePage({
               style={{ background: accent }}
             >
               <div className="text-sm opacity-90">الدرجة</div>
-              <div className="text-3xl font-extrabold">
+              <div className="text-3xl font-bold">
                 {score} / {total}
               </div>
             </div>

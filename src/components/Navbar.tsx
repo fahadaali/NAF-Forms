@@ -17,7 +17,7 @@ export default async function Navbar({
     <header className="glass sticky top-0 z-20">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2.5">
         <div className="flex items-center gap-2 text-sm">
-          <Link href="/" className="flex items-center gap-2.5 font-extrabold">
+          <Link href="/" className="flex items-center gap-2.5 font-bold">
             <img
               src="/naf-logo.jpg"
               alt="ناف"

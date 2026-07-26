@@ -392,7 +392,7 @@ function StatCard({ icon, label, value }: { icon: string; label: string; value: 
       </span>
       <div>
         <div className="text-xs text-muted-foreground">{label}</div>
-        <div className="text-lg font-extrabold">{value}</div>
+        <div className="text-lg font-bold">{value}</div>
       </div>
     </div>
   );
@@ -858,7 +858,7 @@ function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl bg-muted p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="mt-0.5 text-lg font-extrabold">{value}</div>
+      <div className="mt-0.5 text-lg font-bold">{value}</div>
     </div>
   );
 }
@@ -873,12 +873,12 @@ function TimelineChart({ data }: { data: { label: string; count: number }[] }) {
       <div className="flex items-end gap-1.5 overflow-x-auto pb-1" style={{ height: 140 }}>
         {data.map((d) => (
           <div key={d.label} className="flex min-w-[28px] flex-1 flex-col items-center justify-end gap-1">
-            <span className="text-[10px] font-bold text-primary">{d.count}</span>
+            <span className="text-xs font-bold text-primary">{d.count}</span>
             <div
               className="w-full rounded-t-md bg-accent0"
               style={{ height: `${(d.count / max) * 100}%`, minHeight: d.count ? 4 : 0 }}
             />
-            <span className="whitespace-nowrap text-[10px] text-muted-foreground">{d.label}</span>
+            <span className="whitespace-nowrap text-xs text-muted-foreground">{d.label}</span>
           </div>
         ))}
       </div>

@@ -429,7 +429,7 @@ export default function QuestionInput({
             checked={value === true}
             onChange={(e) => onChange(e.target.checked)}
           />
-          <span className="text-sm leading-relaxed">
+          <span className="text-sm">
             {statement}
             {cfg.linkUrl && (
               <>

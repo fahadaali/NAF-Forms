@@ -8,7 +8,7 @@ export default function NotFound() {
         <div className="mb-4 flex justify-center text-muted-foreground">
           <Icon name="search" className="h-16 w-16" />
         </div>
-        <h1 className="text-2xl font-extrabold">الصفحة غير موجودة</h1>
+        <h1 className="text-2xl font-bold">الصفحة غير موجودة</h1>
         <p className="mt-2 text-muted-foreground">
           تعذّر العثور على ما تبحث عنه — ربما حُذف النموذج أو المشروع.
         </p>

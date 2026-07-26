@@ -42,7 +42,7 @@ export default async function ProjectPage({
               style={{ background: project.color }}
             />
             <div>
-              <h1 className="text-2xl font-extrabold">{project.name}</h1>
+              <h1 className="text-2xl font-bold">{project.name}</h1>
               {project.description && (
                 <p className="text-sm text-muted-foreground">{project.description}</p>
               )}

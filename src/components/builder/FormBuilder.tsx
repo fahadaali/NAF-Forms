@@ -301,7 +301,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
           <Link
             href="/"
-            className="flex items-center gap-1.5 font-extrabold text-primary"
+            className="flex items-center gap-1.5 font-bold text-primary"
           >
             <Icon name="arrow-right" className="h-4 w-4" />
             ناف
