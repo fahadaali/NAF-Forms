@@ -641,7 +641,7 @@ function IntegrationsPanel({
           <summary className="cursor-pointer text-xs font-medium text-primary">
             كيف أجهّز الرابط؟
           </summary>
-          <ol className="mt-2 list-decimal space-y-1 pr-5 text-xs text-muted-foreground">
+          <ol className="mt-2 list-decimal space-y-1 ps-5 text-xs text-muted-foreground">
             <li>افتح جدول Google Sheets ثم: الإضافات ← Apps Script.</li>
             <li>
               الصق دالة تستقبل <span dir="ltr">POST</span> وتضيف صفًا، مثل:
@@ -696,8 +696,8 @@ function IntegrationsPanel({
               curl -H &quot;Authorization: Bearer {integrations.apiToken || "TOKEN"}&quot; {apiUrl}
             </code>
             <p className="text-xs text-muted-foreground">
-              تدعم <span dir="ltr">?limit=</span> و<span dir="ltr">?since=</span>{" "}
-              (تاريخ ISO). الرمز سرّي ولا يُرسل لصفحة التعبئة.
+              تدعم <bdi>?limit=</bdi> و<bdi>?since=</bdi> (تاريخ <bdi>ISO</bdi>).
+              الرمز سرّي ولا يُرسل لصفحة التعبئة.
             </p>
           </div>
         )}

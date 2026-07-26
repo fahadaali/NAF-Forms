@@ -19,11 +19,11 @@ export default function AddQuestionPalette({
       <h3 className="mb-1 font-bold">العناصر</h3>
       <p className="mb-3 text-xs text-muted-foreground">اضغط عنصرًا لإضافته إلى النموذج.</p>
       <div className="relative mb-3">
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+        <span className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground">
           <Icon name="search" className="h-4 w-4" />
         </span>
         <input
-          className="input py-1.5 pr-9 text-sm"
+          className="input py-1.5 ps-9 text-sm"
           aria-label="ابحث عن عنصر"
           placeholder="ابحث عن عنصر…"
           value={query}
@@ -47,7 +47,7 @@ export default function AddQuestionPalette({
                     key={f.id}
                     onClick={() => onAdd(f.id)}
                     title={f.hint}
-                    className="flex items-center gap-2 rounded-lg border border-border px-2.5 py-2 text-right text-xs font-medium transition hover:border-primary hover:bg-accent"
+                    className="flex items-center gap-2 rounded-lg border border-border px-2.5 py-2 text-start text-xs font-medium transition hover:border-primary hover:bg-accent"
                   >
                     <Icon
                       name={fieldIcon(f.id)}

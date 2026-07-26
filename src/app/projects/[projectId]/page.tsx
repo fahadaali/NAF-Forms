@@ -89,8 +89,9 @@ export default async function ProjectPage({
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {f._count.questions} سؤال · {f._count.responses} رد · آخر
-                    تحديث {formatDateTime(f.updatedAt)}
+                    <bdi>{f._count.questions}</bdi> سؤال ·{" "}
+                    <bdi>{f._count.responses}</bdi> رد · آخر تحديث{" "}
+                    <bdi>{formatDateTime(f.updatedAt)}</bdi>
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

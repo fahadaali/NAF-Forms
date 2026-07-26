@@ -41,9 +41,14 @@ export default async function PrintResponsePage({
               {meta.email}
             </>
           ) : null}
-          {form.type === "EXAM" && meta.total != null
-            ? ` · الدرجة: ${meta.score ?? 0}/${meta.total}`
-            : ""}
+          {form.type === "EXAM" && meta.total != null ? (
+            <>
+              {" · "}الدرجة:{" "}
+              <bdi>
+                {meta.score ?? 0}/{meta.total}
+              </bdi>
+            </>
+          ) : null}
         </p>
       </div>
       <dl className="space-y-4">

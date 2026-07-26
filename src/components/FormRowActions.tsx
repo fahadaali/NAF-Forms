@@ -63,22 +63,22 @@ export default function FormRowActions({
       {menu && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setMenu(false)} />
-          <div className="absolute left-0 top-9 z-20 w-44 overflow-hidden rounded-xl border border-border bg-card py-1 text-sm shadow-lg">
+          <div className="absolute end-0 top-9 z-20 w-44 overflow-hidden rounded-xl border border-border bg-card py-1 text-sm shadow-lg">
             <button
               onClick={duplicate}
-              className="flex w-full items-center gap-2 px-4 py-2 text-right hover:bg-muted"
+              className="flex w-full items-center gap-2 px-4 py-2 text-start hover:bg-muted"
             >
               <Icon name="copy" className="h-4 w-4" /> إنشاء نسخة
             </button>
             <button
               onClick={saveTemplate}
-              className="flex w-full items-center gap-2 px-4 py-2 text-right hover:bg-muted"
+              className="flex w-full items-center gap-2 px-4 py-2 text-start hover:bg-muted"
             >
               <Icon name="star" className="h-4 w-4" /> حفظ كقالب
             </button>
             <button
               onClick={remove}
-              className="flex w-full items-center gap-2 px-4 py-2 text-right text-destructive hover:bg-destructive/10"
+              className="flex w-full items-center gap-2 px-4 py-2 text-start text-destructive hover:bg-destructive/10"
             >
               <Icon name="trash" className="h-4 w-4" /> حذف
             </button>

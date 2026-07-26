@@ -119,7 +119,7 @@ export default function MapPicker({
           <input
             dir="ltr"
             inputMode="decimal"
-            className="input py-1.5 text-right"
+            className="input py-1.5 text-start"
             placeholder="24.7136"
             value={latText}
             onChange={(e) => setLatText(e.target.value)}
@@ -131,7 +131,7 @@ export default function MapPicker({
           <input
             dir="ltr"
             inputMode="decimal"
-            className="input py-1.5 text-right"
+            className="input py-1.5 text-start"
             placeholder="46.6753"
             value={lngText}
             onChange={(e) => setLngText(e.target.value)}
@@ -157,9 +157,14 @@ export default function MapPicker({
           {value && <Marker position={[value.lat, value.lng]} icon={icon} />}
         </MapContainer>
         <div className="bg-muted px-3 py-2 text-xs text-muted-foreground">
-          {value
-            ? `الإحداثيات: ${value.lat.toFixed(5)} , ${value.lng.toFixed(5)}`
-            : "انقر على الخريطة، أو أدخل الإحداثيات، أو استخدم موقعك الحالي"}
+          {value ? (
+            <>
+              الإحداثيات: <bdi>{value.lat.toFixed(5)}</bdi> ,{" "}
+              <bdi>{value.lng.toFixed(5)}</bdi>
+            </>
+          ) : (
+            "انقر على الخريطة، أو أدخل الإحداثيات، أو استخدم موقعك الحالي"
+          )}
         </div>
       </div>
     </div>

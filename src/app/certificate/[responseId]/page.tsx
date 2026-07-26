@@ -64,14 +64,20 @@ export default async function CertificatePage({
             >
               <div className="text-sm opacity-90">الدرجة</div>
               <div className="text-3xl font-bold">
-                {score} / {total}
+                <bdi>
+                  {score} / {total}
+                </bdi>
               </div>
             </div>
           )}
 
           <div className="mt-10 flex items-center justify-between border-t border-border pt-5 text-xs text-muted-foreground">
-            <span>تاريخ الإصدار: {formatDateTime(response.submittedAt)}</span>
-            <span dir="ltr">رقم الشهادة: {response.id}</span>
+            <span>
+              تاريخ الإصدار: <bdi>{formatDateTime(response.submittedAt)}</bdi>
+            </span>
+            <span>
+              رقم الشهادة: <bdi>{response.id}</bdi>
+            </span>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import StarRating from "./StarRating";
 import { Icon } from "@/components/ui/Icon";
 import type { QuestionDTO } from "@/lib/types";
+import { bidi } from "@/lib/utils";
 
 const MapPicker = dynamic(() => import("./MapPicker"), {
   ssr: false,
@@ -38,7 +39,7 @@ export default function QuestionInput({
     remaining && remaining[option] !== undefined
       ? remaining[option] <= 0
         ? " (اكتمل العدد)"
-        : ` (متبقٍ ${remaining[option]})`
+        : ` (متبقٍ ${bidi(remaining[option])})`
       : "";
 
   switch (question.type) {
@@ -60,7 +61,7 @@ export default function QuestionInput({
           type="text"
           dir="ltr"
           inputMode="decimal"
-          className="input text-right"
+          className="input text-start"
           placeholder={cfg.placeholder || "أدخل رقمًا"}
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
@@ -73,7 +74,7 @@ export default function QuestionInput({
           type="tel"
           dir="ltr"
           inputMode="tel"
-          className="input text-right"
+          className="input text-start"
           placeholder={cfg.placeholder || "05xxxxxxxx"}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
@@ -85,7 +86,7 @@ export default function QuestionInput({
         <input
           type="email"
           dir="ltr"
-          className="input text-right"
+          className="input text-start"
           placeholder={cfg.placeholder || "name@example.com"}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
@@ -283,7 +284,7 @@ export default function QuestionInput({
             <tbody>
               {rows.map((r, i) => (
                 <tr key={r} className={i % 2 ? "bg-muted/60" : ""}>
-                  <td className="p-2 text-right text-sm font-medium text-foreground">
+                  <td className="p-2 text-start text-sm font-medium text-foreground">
                     {r}
                   </td>
                   {cols.map((c) => (
@@ -614,7 +615,7 @@ function FileField({
     setError("");
     const maxMB = Number(cfg.maxSizeMB ?? 10);
     if (multiple && files.length + list.length > maxFiles) {
-      setError(`يمكن رفع ${maxFiles} ملفات كحدّ أقصى`);
+      setError(`يمكن رفع ${bidi(maxFiles)} ملفات كحدّ أقصى`);
       return;
     }
     setBusy(true);
@@ -622,7 +623,7 @@ function FileField({
       const uploaded: { name: string; url: string; size: number }[] = [];
       for (const file of list) {
         if (file.size > maxMB * 1024 * 1024) {
-          setError(`«${file.name}» يتجاوز ${maxMB} ميجابايت`);
+          setError(`«${bidi(file.name)}» يتجاوز ${bidi(maxMB)} ميجابايت`);
           continue;
         }
         const fd = new FormData();
@@ -666,8 +667,12 @@ function FileField({
             : "اضغط لرفع ملف"}
         </span>
         <span className="text-xs text-muted-foreground">
-          {cfg.accept} — حتى {cfg.maxSizeMB ?? 10}MB
-          {multiple ? ` · حتى ${maxFiles} ملفات` : ""}
+          <bdi>{cfg.accept}</bdi> — حتى <bdi>{cfg.maxSizeMB ?? 10}MB</bdi>
+          {multiple && (
+            <>
+              {" · "}حتى <bdi>{maxFiles}</bdi> ملفات
+            </>
+          )}
         </span>
         <input
           type="file"

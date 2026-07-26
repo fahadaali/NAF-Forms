@@ -441,7 +441,7 @@ export default function FillForm({
           )}
 
           {result?.review && result.review.length > 0 && (
-            <div className="mt-6 space-y-2 text-right">
+            <div className="mt-6 space-y-2 text-start">
               <h3 className="font-bold">مراجعة الإجابات</h3>
               {result.review.map((r: any, i: number) => (
                 <div
@@ -461,13 +461,20 @@ export default function FillForm({
                   </div>
                   {!r.correct && (
                     <div className="mt-1 text-xs text-muted-foreground">
-                      إجابتك: {String(Array.isArray(r.your) ? r.your.join("، ") : r.your) || "—"}
+                      إجابتك:{" "}
+                      <bdi>
+                        {String(
+                          Array.isArray(r.your) ? r.your.join("، ") : r.your
+                        ) || "—"}
+                      </bdi>
                       {" · "}الصحيحة:{" "}
-                      {String(
-                        Array.isArray(r.correctAnswer)
-                          ? r.correctAnswer.join("، ")
-                          : r.correctAnswer
-                      )}
+                      <bdi>
+                        {String(
+                          Array.isArray(r.correctAnswer)
+                            ? r.correctAnswer.join("، ")
+                            : r.correctAnswer
+                        )}
+                      </bdi>
                     </div>
                   )}
                 </div>
@@ -573,14 +580,14 @@ export default function FillForm({
               )}
 
               {behavior.collectEmail && (
-                <div className="mt-6 text-right">
+                <div className="mt-6 text-start">
                   <label className="label">
                     بريدك الإلكتروني <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="email"
                     dir="ltr"
-                    className="input text-right"
+                    className="input text-start"
                     placeholder="name@example.com"
                     value={email}
                     onChange={(e) => {
@@ -621,8 +628,10 @@ export default function FillForm({
                 <Icon name="arrow-right" className="h-5 w-5 rotate-180" />
               </button>
               <p className="mt-3 text-center text-xs text-muted-foreground">
-                {questions.filter((q) => isInputQuestion(q.type)).length} سؤال ·
-                اضغط Enter للانتقال
+                <bdi>
+                  {questions.filter((q) => isInputQuestion(q.type)).length}
+                </bdi>{" "}
+                سؤال · اضغط <bdi>Enter</bdi> للانتقال
               </p>
             </div>
           </div>
@@ -701,7 +710,7 @@ export default function FillForm({
           </div>
           <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>
-              {safeStep + 1} من {steps.length}
+              <bdi>{safeStep + 1}</bdi> من <bdi>{steps.length}</bdi>
             </span>
             {timeLimit && remaining !== null && (
               <span
@@ -888,11 +897,11 @@ function QuestionCard({
   return (
     <div>
       <div className="mb-1 text-sm font-medium" style={{ color: accent }}>
-        سؤال {index + 1}
+        سؤال <bdi>{index + 1}</bdi>
       </div>
       <h2 className="text-xl font-bold">
         {q.label}
-        {q.required && <span className="mr-1 text-destructive">*</span>}
+        {q.required && <span className="ms-1 text-destructive">*</span>}
       </h2>
       {q.description && <p className="mt-1.5 text-sm text-muted-foreground">{q.description}</p>}
       <div className="mt-5">

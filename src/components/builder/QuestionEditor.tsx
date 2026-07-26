@@ -5,6 +5,7 @@ import type { QuestionDTO } from "@/lib/types";
 import OptionsEditor from "./OptionsEditor";
 import ImageOptionsEditor from "./ImageOptionsEditor";
 import { Icon, IconTip, fieldIcon } from "@/components/ui/Icon";
+import { bidi } from "@/lib/utils";
 
 export default function QuestionEditor({
   q,
@@ -90,11 +91,11 @@ export default function QuestionEditor({
         selected
           ? "border-primary shadow-md ring-1 ring-ring"
           : "border-border hover:border-border hover:shadow-sm"
-      } ${isSection ? "border-r-4 border-r-primary" : ""}`}
+      } ${isSection ? "border-s-4 border-s-primary" : ""}`}
     >
       {/* شريط الأدوات (يظهر عند التحويم أو التحديد) */}
       <div
-        className={`absolute -top-3 left-3 flex items-center gap-1 rounded-full border border-border bg-card px-1 py-0.5 shadow-sm transition ${
+        className={`absolute -top-3 end-3 flex items-center gap-1 rounded-full border border-border bg-card px-1 py-0.5 shadow-sm transition ${
           selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         }`}
       >
@@ -419,8 +420,8 @@ export default function QuestionEditor({
                   onChange={(v) => setCfg({ defaultValue: v })}
                 />
                 <p className="text-xs text-muted-foreground">
-                  أضف <span dir="ltr">?{cfg.paramName || "source"}=value</span>{" "}
-                  إلى رابط النموذج، فتُسجَّل القيمة مع الرد دون إظهارها.
+                  أضف <bdi>?{cfg.paramName || "source"}=value</bdi> إلى رابط
+                  النموذج، فتُسجَّل القيمة مع الرد دون إظهارها.
                 </p>
               </div>
             )}
@@ -738,7 +739,7 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
             <tbody>
               {rows.slice(0, 4).map((r) => (
                 <tr key={r}>
-                  <td className="px-2 py-1 text-right">{r}</td>
+                  <td className="px-2 py-1 text-start">{r}</td>
                   {cols.map((c) => (
                     <td key={c} className="px-2 py-1">
                       <span className="inline-block h-3.5 w-3.5 rounded-full border border-border" />
@@ -937,7 +938,7 @@ function MediaUploadButton({
   async function upload(file: File) {
     setError("");
     if (file.size > maxMB * 1024 * 1024) {
-      setError(`الحد الأقصى ${maxMB} ميجابايت`);
+      setError(`الحد الأقصى ${bidi(maxMB)} ميجابايت`);
       return;
     }
     setBusy(true);

@@ -126,7 +126,7 @@ export default function NewFormButton({
                     key={t.id}
                     disabled={busy}
                     onClick={() => createFromTemplate(t.id)}
-                    className="rounded-xl border border-border p-4 text-right transition hover:border-primary hover:bg-accent disabled:opacity-50"
+                    className="rounded-xl border border-border p-4 text-start transition hover:border-primary hover:bg-accent disabled:opacity-50"
                   >
                     <span className="chip bg-muted text-muted-foreground">
                       {FORM_TYPE_LABELS[t.type]}

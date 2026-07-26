@@ -10,6 +10,7 @@ import AddQuestionPalette from "./AddQuestionPalette";
 import { Icon, IconTip } from "@/components/ui/Icon";
 import DesignPanel from "./DesignPanel";
 import ShareTools from "./ShareTools";
+import { bidi } from "@/lib/utils";
 
 let tmpCounter = 0;
 
@@ -344,7 +345,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                 ? "سيُحفظ تلقائيًا…"
                 : "تغييرات غير محفوظة"
               : savedAt
-              ? `حُفظ ${savedAt}`
+              ? `حُفظ ${bidi(savedAt)}`
               : ""}
           </span>
           <IconTip label={autoSave ? "إيقاف الحفظ التلقائي" : "تفعيل الحفظ التلقائي"}>

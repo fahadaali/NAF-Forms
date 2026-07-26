@@ -7,6 +7,7 @@ import {
   REVIEW_STATUS_LABELS,
   REVIEW_STATUS_CHIP,
 } from "@/lib/review";
+import { bidi } from "@/lib/utils";
 
 export interface QuestionStat {
   id: string;
@@ -215,11 +216,11 @@ export default function ResponsesDashboard({
       {total > 0 && tab === "individual" && (
         <div className="space-y-4">
           <div className="relative">
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <span className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               <Icon name="search" className="h-4 w-4" />
             </span>
             <input
-              className="input pr-9"
+              className="input ps-9"
               aria-label="بحث في الردود"
               placeholder="بحث في الردود…"
               value={query}
@@ -257,7 +258,7 @@ export default function ResponsesDashboard({
                     : "bg-muted text-muted-foreground"
                 }`}
               >
-                الكل ({rows.length})
+                الكل (<bdi>{rows.length}</bdi>)
               </button>
               {statusCounts.map(({ status, count }) => (
                 <button
@@ -271,21 +272,21 @@ export default function ResponsesDashboard({
                       : REVIEW_STATUS_CHIP[status]
                   }`}
                 >
-                  {REVIEW_STATUS_LABELS[status]} ({count})
+                  {REVIEW_STATUS_LABELS[status]} (<bdi>{count}</bdi>)
                 </button>
               ))}
             </div>
           )}
           {(query || from || to) && (
             <p className="text-sm text-muted-foreground">
-              {filteredRows.length} نتيجة من {rows.length}
+              <bdi>{filteredRows.length}</bdi> نتيجة من <bdi>{rows.length}</bdi>
             </p>
           )}
           {filteredRows.map((r) => (
             <div key={r.id} className="card p-5">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
                 <span className="flex items-center gap-2 font-bold">
-                  رد #{rows.length - rows.indexOf(r)}
+                  رد <bdi>#{rows.length - rows.indexOf(r)}</bdi>
                   <span
                     className={`chip ${REVIEW_STATUS_CHIP[reviewOf(r.id).status]}`}
                   >
@@ -330,7 +331,7 @@ export default function ResponsesDashboard({
               </div>
               {r.score && (
                 <div className="mb-2 inline-block rounded-lg bg-accent px-3 py-1 text-sm font-bold text-primary">
-                  الدرجة: {r.score}
+                  الدرجة: <bdi>{r.score}</bdi>
                 </div>
               )}
               <dl className="grid gap-2 sm:grid-cols-2">
@@ -593,11 +594,11 @@ function CrossTab({
       <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-[420px] border-collapse text-sm">
           <caption className="sr-only">
-            جدول تقاطعي بين «{qa.label}» و«{qb.label}»
+            جدول تقاطعي بين «<bdi>{qa.label}</bdi>» و«<bdi>{qb.label}</bdi>»
           </caption>
           <thead>
             <tr>
-              <th scope="col" className="p-2 text-right text-xs text-muted-foreground">
+              <th scope="col" className="p-2 text-start text-xs text-muted-foreground">
                 {qa.label} / {qb.label}
               </th>
               {bVals.map((bv) => (
@@ -613,7 +614,7 @@ function CrossTab({
           <tbody>
             {aVals.map((av, i) => (
               <tr key={av} className={i % 2 ? "bg-muted/60" : ""}>
-                <th scope="row" className="p-2 text-right text-sm font-medium text-foreground">
+                <th scope="row" className="p-2 text-start text-sm font-medium text-foreground">
                   {av}
                 </th>
                 {bVals.map((bv) => {
@@ -634,7 +635,7 @@ function CrossTab({
               </tr>
             ))}
             <tr className="border-t border-border">
-              <th scope="row" className="p-2 text-right text-xs text-muted-foreground">
+              <th scope="row" className="p-2 text-start text-xs text-muted-foreground">
                 المجموع
               </th>
               {bVals.map((bv) => (
@@ -797,7 +798,9 @@ function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
   const dur = (s: number | null) => {
     if (s == null) return "—";
     const m = Math.floor(s / 60);
-    return m > 0 ? `${m} د ${s % 60} ث` : `${s} ث`;
+    return m > 0
+      ? `${bidi(m)} د ${bidi(s % 60)} ث`
+      : `${bidi(s)} ث`;
   };
   const maxDrop = Math.max(1, ...funnel.dropOff.map((d) => d.count));
 
@@ -842,7 +845,7 @@ function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
                     style={{ width: `${(d.count / maxDrop) * 100}%` }}
                   />
                 </div>
-                <span className="w-8 text-left text-xs text-muted-foreground">
+                <span className="w-8 text-end text-xs text-muted-foreground">
                   {d.count}
                 </span>
               </div>

@@ -48,8 +48,8 @@ export default async function Navbar({
             </Link>
           )}
           {me && (
-            <span className="hidden text-xs text-muted-foreground sm:inline" dir="ltr">
-              {me.email}
+            <span className="hidden text-xs text-muted-foreground sm:inline">
+              <bdi>{me.email}</bdi>
             </span>
           )}
           <ThemeToggle />

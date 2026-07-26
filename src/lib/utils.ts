@@ -103,6 +103,20 @@ export function formatDateTime(d: Date | string): string {
   return AR_DATE.format(date);
 }
 
+/**
+ * عزل ثنائي الاتجاه لقيمة داخل نص عربي — مكافئ `<bdi>` في النصوص الصِرفة.
+ *
+ * القاعدة ٢ تُلزم بعزل كل رقم وتاريخ واسم ملف ومقطع لاتيني داخل نص عربي.
+ * في JSX نستخدم `<bdi>`، لكن بعض النصوص تُبنى كسلاسل (رسائل خطأ، قيم تُمرَّر
+ * كـ prop) فلا تقبل عنصرًا. هنا نستخدم محرفَي العزل من Unicode نفسهما اللذين
+ * يستخدمهما `<bdi>` داخليًا: FSI (U+2068) و PDI (U+2069).
+ *
+ * غير مرئيين، ولا يظهران في النسخ ولا في التصدير كنصّ مقروء.
+ */
+export function bidi(v: string | number): string {
+  return `⁨${v}⁩`;
+}
+
 // تمثيل الإجابة كنص لأغراض العرض/التصدير
 export function answerToText(
   type: string,
@@ -188,9 +202,9 @@ export function validateAnswer(
       if (raw === "" || Number.isNaN(n))
         return "هذه القيمة ليست رقمًا صحيحًا";
       if (config?.min != null && config.min !== "" && n < Number(config.min))
-        return `القيمة يجب ألا تقل عن ${config.min}`;
+        return `القيمة يجب ألا تقل عن ${bidi(config.min)}`;
       if (config?.max != null && config.max !== "" && n > Number(config.max))
-        return `القيمة يجب ألا تزيد عن ${config.max}`;
+        return `القيمة يجب ألا تزيد عن ${bidi(config.max)}`;
       return null;
     }
     case "EMAIL":

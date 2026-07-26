@@ -87,7 +87,7 @@ export default async function HomePage() {
                         {p.name}
                       </h3>
                       <p className="text-xs text-muted-foreground">
-                        {p._count.forms} نموذج
+                        <bdi>{p._count.forms}</bdi> نموذج
                       </p>
                     </div>
                   </div>
@@ -97,7 +97,7 @@ export default async function HomePage() {
                     </p>
                   )}
                   <p className="mt-3 text-xs text-muted-foreground">
-                    آخر تحديث: {formatDateTime(p.updatedAt)}
+                    آخر تحديث: <bdi>{formatDateTime(p.updatedAt)}</bdi>
                   </p>
                 </Link>
               ))}
@@ -122,7 +122,7 @@ export default async function HomePage() {
                   {t.description}
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  {t._count.questions} سؤال
+                  <bdi>{t._count.questions}</bdi> سؤال
                 </p>
               </div>
             ))}
