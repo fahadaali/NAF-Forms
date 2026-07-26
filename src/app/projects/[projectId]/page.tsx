@@ -15,6 +15,7 @@ import NewFormButton from "@/components/NewFormButton";
 import FormRowActions from "@/components/FormRowActions";
 import ProjectSettings from "@/components/ProjectSettings";
 import { buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -63,12 +64,12 @@ export default async function ProjectPage({
         </div>
 
         {project.forms.length === 0 ? (
-          <div className="card grid place-items-center p-12 text-center text-muted-foreground">
+          <Card className="grid place-items-center p-12 text-center text-muted-foreground">
             <Icon name="edit" className="mb-2 h-10 w-10 text-muted-foreground" />
             لا توجد نماذج في هذا المشروع بعد.
-          </div>
+          </Card>
         ) : (
-          <div className="card divide-y divide-border">
+          <Card className="divide-y divide-border">
             {project.forms.map((f) => (
               <div
                 key={f.id}
@@ -119,7 +120,7 @@ export default async function ProjectPage({
                 </div>
               </div>
             ))}
-          </div>
+          </Card>
         )}
       </main>
     </div>

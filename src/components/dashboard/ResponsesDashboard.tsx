@@ -11,6 +11,7 @@ import { bidi } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
+import { Card } from "@/components/ui/card";
 
 export interface QuestionStat {
   id: string;
@@ -199,10 +200,10 @@ export default function ResponsesDashboard({
       </div>
 
       {total === 0 && (
-        <div className="card grid place-items-center p-12 text-center text-muted-foreground">
+        <Card className="grid place-items-center p-12 text-center text-muted-foreground">
           <Icon name="mail" className="mb-2 h-10 w-10 text-muted-foreground" />
           لا توجد ردود بعد.
-        </div>
+        </Card>
       )}
 
       {total > 0 && tab === "summary" && (
@@ -286,7 +287,7 @@ export default function ResponsesDashboard({
             </p>
           )}
           {filteredRows.map((r) => (
-            <div key={r.id} className="card p-5">
+            <Card key={r.id} className="p-5">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
                 <span className="flex items-center gap-2 font-bold">
                   رد <bdi>#{rows.length - rows.indexOf(r)}</bdi>
@@ -382,7 +383,7 @@ export default function ResponsesDashboard({
                 review={reviewOf(r.id)}
                 onChange={(patch) => saveReview(r.id, patch)}
               />
-            </div>
+            </Card>
           ))}
         </div>
       )}
@@ -392,7 +393,7 @@ export default function ResponsesDashboard({
 
 function StatCard({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
-    <div className="card flex items-center gap-4 p-5">
+    <Card className="flex items-center gap-4 p-5">
       <span className="grid h-12 w-12 place-items-center rounded-xl bg-accent text-primary">
         <Icon name={icon} className="h-6 w-6" />
       </span>
@@ -400,13 +401,13 @@ function StatCard({ icon, label, value }: { icon: string; label: string; value: 
         <div className="text-xs text-muted-foreground">{label}</div>
         <div className="text-lg font-bold">{value}</div>
       </div>
-    </div>
+    </Card>
   );
 }
 
 function StatBlock({ q }: { q: QuestionStat }) {
   return (
-    <div className="card p-5">
+    <Card className="p-5">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-bold">{q.label}</h3>
         <span className="text-xs text-muted-foreground">{q.answered} إجابة</span>
@@ -464,7 +465,7 @@ function StatBlock({ q }: { q: QuestionStat }) {
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -547,7 +548,7 @@ function CrossTab({
   const qb = choice.find((c) => c.id === bId);
   if (!qa || !qb || aId === bId)
     return (
-      <div className="card p-5">
+      <Card className="p-5">
         <CrossHead
           choice={choice}
           aId={aId}
@@ -556,7 +557,7 @@ function CrossTab({
           setBId={setBId}
         />
         <p className="mt-3 text-sm text-muted-foreground">اختر سؤالين مختلفين.</p>
-      </div>
+      </Card>
     );
 
   // القيم المحتملة لكل سؤال من نتائج التحليل نفسها
@@ -588,7 +589,7 @@ function CrossTab({
   const grand = aVals.reduce((s, av) => s + rowTotal(av), 0);
 
   return (
-    <div className="card p-5">
+    <Card className="p-5">
       <CrossHead
         choice={choice}
         aId={aId}
@@ -653,7 +654,7 @@ function CrossTab({
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -791,13 +792,13 @@ function ReviewBar({
 function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
   if (!funnel.started)
     return (
-      <div className="card p-5 text-sm text-muted-foreground">
+      <Card className="p-5 text-sm text-muted-foreground">
         <h3 className="mb-1 flex items-center gap-2 font-bold text-foreground">
           <Icon name="target" className="h-5 w-5 text-primary" /> تحليلات الإكمال
         </h3>
         لم تُسجَّل محاولات تعبئة بعد. تُحتسب من لحظة ضغط «البدء» في النماذج
         المنشورة.
-      </div>
+      </Card>
     );
 
   const dur = (s: number | null) => {
@@ -810,7 +811,7 @@ function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
   const maxDrop = Math.max(1, ...funnel.dropOff.map((d) => d.count));
 
   return (
-    <div className="card p-5">
+    <Card className="p-5">
       <h3 className="mb-4 flex items-center gap-2 font-bold">
         <Icon name="target" className="h-5 w-5 text-primary" /> تحليلات الإكمال
       </h3>
@@ -858,7 +859,7 @@ function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
           </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -874,7 +875,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 function TimelineChart({ data }: { data: { label: string; count: number }[] }) {
   const max = Math.max(...data.map((d) => d.count), 1);
   return (
-    <div className="card p-5">
+    <Card className="p-5">
       <h3 className="mb-4 flex items-center gap-2 font-bold">
         <Icon name="trend-up" className="h-5 w-5 text-primary" /> الردود عبر الزمن
       </h3>
@@ -883,14 +884,14 @@ function TimelineChart({ data }: { data: { label: string; count: number }[] }) {
           <div key={d.label} className="flex min-w-[28px] flex-1 flex-col items-center justify-end gap-1">
             <span className="text-xs font-bold text-primary">{d.count}</span>
             <div
-              className="w-full rounded-t-md bg-accent0"
+              className="w-full rounded-t-md bg-primary"
               style={{ height: `${(d.count / max) * 100}%`, minHeight: d.count ? 4 : 0 }}
             />
             <span className="whitespace-nowrap text-xs text-muted-foreground">{d.label}</span>
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -905,7 +906,7 @@ function Bar({ label, count, total }: { label: string; count: number; total: num
         </span>
       </div>
       <div className="h-2.5 overflow-hidden rounded-full bg-muted">
-        <div className="h-full rounded-full bg-accent0" style={{ width: `${pct}%` }} />
+        <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

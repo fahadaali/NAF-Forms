@@ -54,11 +54,8 @@ body {
    الأخرى (القاعدة ٤: لا تُعد بناء ما هو موجود في السجلّ). */
 
 @layer components {
-  .card {
-    @apply rounded-xl border border-border bg-card text-card-foreground shadow-sm;
-  }
-
-  /* حُذف صنف .input المحلي: مصدر تنسيق الحقول صار مكوّن `input` من
+  /* حُذف صنف .card المحلي: مصدره صار مكوّن `card` من السجلّ.
+     حُذف صنف .input المحلي: مصدر تنسيق الحقول صار مكوّن `input` من
      السجلّ — `<Input>` لعناصر الإدخال، و`inputVariants()` لـ textarea
      و select إذ لا مكوّن مسجَّل لهما. */
   .label {

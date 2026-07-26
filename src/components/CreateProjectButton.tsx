@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
+import { Card } from "@/components/ui/card";
 
 export default function CreateProjectButton() {
   const router = useRouter();
@@ -38,8 +39,8 @@ export default function CreateProjectButton() {
           className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4"
           onClick={() => setOpen(false)}
         >
-          <div
-            className="card w-full max-w-md p-6"
+          <Card
+            className="w-full max-w-md p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="mb-4 text-lg font-bold">إنشاء مشروع</h3>
@@ -72,7 +73,7 @@ export default function CreateProjectButton() {
                 {busy ? "جارٍ…" : "إنشاء"}
               </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
     </>

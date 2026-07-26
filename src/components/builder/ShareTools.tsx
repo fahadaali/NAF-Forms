@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { inputVariants } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 
 export default function ShareTools({ url }: { url: string }) {
   const [qr, setQr] = useState("");
@@ -27,7 +28,7 @@ export default function ShareTools({ url }: { url: string }) {
 
   return (
     <div className="space-y-5">
-      <div className="card p-6 text-center">
+      <Card className="p-6 text-center">
         <h3 className="mb-3 font-bold">رمز QR</h3>
         {qr ? (
           <img src={qr} alt="QR" className="mx-auto rounded-xl border border-border" />
@@ -45,9 +46,9 @@ export default function ShareTools({ url }: { url: string }) {
             <Icon name="download" className="h-4 w-4" /> تنزيل الرمز
           </a>
         )}
-      </div>
+      </Card>
 
-      <div className="card p-6">
+      <Card className="p-6">
         <h3 className="mb-2 font-bold">كود التضمين (Embed)</h3>
         <p className="mb-2 text-sm text-muted-foreground">
           ألصق هذا الكود في موقعك لعرض النموذج داخله.
@@ -65,7 +66,7 @@ export default function ShareTools({ url }: { url: string }) {
             "نسخ الكود"
           )}
         </Button>
-      </div>
+      </Card>
     </div>
   );
 }

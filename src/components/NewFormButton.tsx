@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FORM_TYPE_LABELS } from "@/lib/field-types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 
 interface Template {
   id: string;
@@ -58,8 +59,8 @@ export default function NewFormButton({
           className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4"
           onClick={() => !busy && setOpen(false)}
         >
-          <div
-            className="card w-full max-w-2xl p-6"
+          <Card
+            className="w-full max-w-2xl p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="mb-4 text-lg font-bold">إنشاء نموذج</h3>
@@ -140,7 +141,7 @@ export default function NewFormButton({
                 ))}
               </div>
             )}
-          </div>
+          </Card>
         </div>
       )}
     </>

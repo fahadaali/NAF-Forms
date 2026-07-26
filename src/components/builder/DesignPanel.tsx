@@ -7,6 +7,7 @@ import { formatDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
+import { Card } from "@/components/ui/card";
 
 // ترويسة قسم بأيقونة منحنية
 function SectionHead({ icon, children }: { icon: string; children: React.ReactNode }) {
@@ -49,7 +50,7 @@ export default function DesignPanel({
   return (
     <div className="space-y-6">
       {/* الألوان */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="palette">الألوان</SectionHead>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Color label="اللون الأساسي" value={theme.primary} onChange={(v) => patch({ theme: { ...theme, primary: v } })} />
@@ -57,10 +58,10 @@ export default function DesignPanel({
           <Color label="لون النص" value={theme.text} onChange={(v) => patch({ theme: { ...theme, text: v } })} />
           <Color label="خلفية البطاقة" value={theme.cardBg} onChange={(v) => patch({ theme: { ...theme, cardBg: v } })} />
         </div>
-      </section>
+      </Card>
 
       {/* الغلاف والوسائط */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="image">الغلاف والوسائط</SectionHead>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -104,10 +105,10 @@ export default function DesignPanel({
             )}
           </div>
         </div>
-      </section>
+      </Card>
 
       {/* الروابط والملفات */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="link">روابط وملفات إضافية</SectionHead>
         <label className="label">روابط</label>
         <div className="space-y-2">
@@ -219,10 +220,10 @@ export default function DesignPanel({
             }}
           />
         </label>
-      </section>
+      </Card>
 
       {/* رسالة ما بعد الإرسال */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="check-circle">رسالة ما بعد الإرسال</SectionHead>
         <label className="label">العنوان</label>
         <Input
@@ -253,10 +254,10 @@ export default function DesignPanel({
             patch({ afterSubmit: { ...after, redirectUrl: e.target.value } })
           }
         />
-      </section>
+      </Card>
 
       {/* السلوك */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="gear">سلوك صفحة التقديم</SectionHead>
         <div className="space-y-2 text-sm">
           <Toggle
@@ -292,10 +293,10 @@ export default function DesignPanel({
             onChange={(v) => patch({ behavior: { ...behavior, collectEmail: v } })}
           />
         </div>
-      </section>
+      </Card>
 
       {/* الوصول والخصوصية */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="lock">الوصول والخصوصية</SectionHead>
         <p className="mb-3 text-sm text-muted-foreground">
           اترك الحقل فارغًا لجعل النموذج متاحًا للجميع، أو حدّد كلمة مرور لحمايته.
@@ -364,10 +365,10 @@ export default function DesignPanel({
             />
           </div>
         </div>
-      </section>
+      </Card>
 
       {/* الإشعارات */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="bell">إشعار بريد عند وصول رد</SectionHead>
         <p className="mb-3 text-sm text-muted-foreground">
           أدخل بريدًا لاستقبال إشعار عند كل رد جديد (يتطلب ضبط SMTP في الخادم).
@@ -423,21 +424,21 @@ export default function DesignPanel({
             />
           </div>
         )}
-      </section>
+      </Card>
 
       {/* التكاملات الخارجية */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="layers">التكاملات الخارجية</SectionHead>
         <IntegrationsPanel
           formId={formId}
           integrations={integrations}
           onChange={(next) => patch({ integrations: next })}
         />
-      </section>
+      </Card>
 
       {/* إعدادات الاختبار */}
       {formType === "EXAM" && (
-        <section className="card p-5">
+        <Card className="p-5">
           <SectionHead icon="edit">إعدادات الاختبار</SectionHead>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -559,7 +560,7 @@ export default function DesignPanel({
               onChange={(v) => patch({ exam: { ...exam, showAnswers: v } })}
             />
           </div>
-        </section>
+        </Card>
       )}
     </div>
   );

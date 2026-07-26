@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 
 interface U {
   id: string;
@@ -61,7 +62,7 @@ export default function UsersManager({
   return (
     <div className="space-y-6">
       {/* إضافة مستخدم */}
-      <div className="card p-5">
+      <Card className="p-5">
         <h3 className="mb-3 font-bold">إضافة مستخدم</h3>
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-[220px] flex-1">
@@ -89,10 +90,10 @@ export default function UsersManager({
           يُنشأ الحساب بكلمة المرور الافتراضية <b>1234</b>، ويُطلب من المستخدم
           تغييرها عند أول دخول.
         </p>
-      </div>
+      </Card>
 
       {/* قائمة المستخدمين */}
-      <div className="card divide-y divide-border">
+      <Card className="divide-y divide-border">
         {initial.map((u) => (
           <div key={u.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
             <div className="min-w-0">
@@ -134,7 +135,7 @@ export default function UsersManager({
             </div>
           </div>
         ))}
-      </div>
+      </Card>
     </div>
   );
 }

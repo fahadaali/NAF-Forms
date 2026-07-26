@@ -12,6 +12,7 @@ import { formatDateTime } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import CreateProjectButton from "@/components/CreateProjectButton";
 import { NafLogo } from "@/components/ui/naf-logo";
+import { Card } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -62,18 +63,15 @@ export default async function HomePage() {
             <CreateProjectButton />
           </div>
           {projects.length === 0 ? (
-            <div className="card grid place-items-center p-12 text-center text-muted-foreground">
+            <Card className="grid place-items-center p-12 text-center text-muted-foreground">
               <Icon name="folder" className="mb-2 h-10 w-10 text-muted-foreground" />
               لا توجد مشاريع بعد — أنشئ مشروعك الأول لتنظيم نماذجك.
-            </div>
+            </Card>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {projects.map((p) => (
-                <Link
-                  key={p.id}
-                  href={`/projects/${p.id}`}
-                  className="card group p-5 transition hover:shadow-md"
-                >
+                <Link key={p.id} href={`/projects/${p.id}`} className="group block">
+                  <Card className="p-5 transition hover:shadow-md">
                   <div className="mb-3 flex items-center gap-3">
                     <span
                       className="h-10 w-10 rounded-xl"
@@ -93,9 +91,10 @@ export default async function HomePage() {
                       {p.description}
                     </p>
                   )}
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    آخر تحديث: <bdi>{formatDateTime(p.updatedAt)}</bdi>
-                  </p>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      آخر تحديث: <bdi>{formatDateTime(p.updatedAt)}</bdi>
+                    </p>
+                  </Card>
                 </Link>
               ))}
             </div>
@@ -110,7 +109,7 @@ export default async function HomePage() {
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {templates.map((t) => (
-              <div key={t.id} className="card p-5">
+              <Card key={t.id} className="p-5">
                 <span className={`chip ${FORM_TYPE_CHIP[t.type]}`}>
                   {FORM_TYPE_LABELS[t.type]}
                 </span>
@@ -121,7 +120,7 @@ export default async function HomePage() {
                 <p className="mt-2 text-xs text-muted-foreground">
                   <bdi>{t._count.questions}</bdi> سؤال
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </section>

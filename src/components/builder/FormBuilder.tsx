@@ -14,6 +14,7 @@ import { bidi } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
+import { Card } from "@/components/ui/card";
 
 let tmpCounter = 0;
 
@@ -413,7 +414,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
           <div className="grid gap-6 lg:grid-cols-[1fr_260px]">
             <div className="space-y-4">
               {/* رأس النموذج */}
-              <div className="card border-t-4 border-t-primary p-5">
+              <Card className="border-t-4 border-t-primary p-5">
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   <span className="text-sm text-muted-foreground">نوع النموذج:</span>
                   {Object.entries(FORM_TYPE_LABELS).map(([k, v]) => (
@@ -442,12 +443,12 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                     mark();
                   }}
                 />
-              </div>
+              </Card>
 
               {questions.length === 0 && (
-                <div className="card grid place-items-center p-10 text-center text-muted-foreground">
+                <Card className="grid place-items-center p-10 text-center text-muted-foreground">
                   أضف أول عنصر من قائمة العناصر
-                </div>
+                </Card>
               )}
 
               <div className="space-y-5" onClick={() => setSelectedId(null)}>
@@ -498,7 +499,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
 
         {tab === "share" && (
           <div className="mx-auto max-w-xl space-y-5">
-            <div className="card p-6">
+            <Card className="p-6">
               <h3 className="mb-2 font-bold">حالة النموذج</h3>
               <p className="mb-4 text-sm text-muted-foreground">
                 لا يمكن استقبال الردود إلا بعد نشر النموذج.
@@ -523,8 +524,8 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                   <Icon name="lock" className="h-4 w-4" /> إغلاق
                 </Button>
               </div>
-            </div>
-            <div className="card p-6">
+            </Card>
+            <Card className="p-6">
               <h3 className="mb-2 font-bold">رابط التقديم</h3>
               <div className="flex gap-2">
                 <Input dir="ltr" readOnly value={publicUrl} />
@@ -580,7 +581,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                 فتح صفحة التقديم
                 <Icon name="external-link" className="h-4 w-4" />
               </Link>
-            </div>
+            </Card>
             <ShareTools url={publicUrl} />
           </div>
         )}
