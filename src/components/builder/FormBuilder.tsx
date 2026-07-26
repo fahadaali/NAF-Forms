@@ -570,10 +570,14 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
               </p>
               {slugMsg && (
                 <p
-                  className={`mt-1 text-sm ${
+                  className={`mt-1 flex items-center gap-1.5 text-sm ${
                     slugMsg.ok ? "text-success" : "text-destructive"
                   }`}
                 >
+                  <Icon
+                    name={slugMsg.ok ? "check-circle" : "alert"}
+                    className="h-4 w-4"
+                  />
                   {slugMsg.text}
                 </p>
               )}

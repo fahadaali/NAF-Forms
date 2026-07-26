@@ -75,7 +75,8 @@ export default async function FillPage({
   return (
     <>
       {form.status === "DRAFT" && (
-        <div className="bg-warning py-1.5 text-center text-sm font-medium text-warning-foreground">
+        <div className="flex items-center justify-center gap-2 bg-warning py-1.5 text-center text-sm font-medium text-warning-foreground">
+          <Icon name="alert" className="h-4 w-4" />
           وضع المعاينة — هذا النموذج لم يُنشر بعد، ولن تُسجَّل الردود
         </div>
       )}

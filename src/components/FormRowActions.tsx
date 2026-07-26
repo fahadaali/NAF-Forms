@@ -45,7 +45,11 @@ export default function FormRowActions({
 
   return (
     <div className="relative flex items-center gap-1.5">
-      {msg && <span className="text-xs font-medium text-success">{msg}</span>}
+      {msg && (
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
+          <Icon name="check-circle" className="h-4 w-4" /> {msg}
+        </span>
+      )}
       <button
         onClick={copyLink}
         className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"

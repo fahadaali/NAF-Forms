@@ -632,19 +632,19 @@ function IntegrationsPanel({
           </summary>
           <ol className="mt-2 list-decimal space-y-1 ps-5 text-xs text-muted-foreground">
             <li>
-              افتح جدول <bdi>Google Sheets</bdi> ثم: الإضافات، ثم{" "}
+              فتح جدول <bdi>Google Sheets</bdi>، ثم: الإضافات، ثم{" "}
               <bdi>Apps Script</bdi>.
             </li>
             <li>
-              الصق دالة تستقبل <bdi>POST</bdi> وتضيف صفًا، مثل:
+              لصق دالة تستقبل <bdi>POST</bdi> وتضيف صفًا، مثل:
               <code className="mt-1 block rounded-sm bg-muted p-2 text-xs" dir="ltr">
                 {`function doPost(e){const d=JSON.parse(e.postData.contents);const s=SpreadsheetApp.getActiveSheet();const f=d.fields||{};if(s.getLastRow()===0)s.appendRow(['submittedAt','email',...Object.keys(f)]);s.appendRow([d.submittedAt,d.email,...Object.values(f).map(v=>typeof v==='object'?JSON.stringify(v):v)]);return ContentService.createTextOutput('ok');}`}
               </code>
             </li>
             <li>
-              انشر: <bdi>Deploy</bdi>، ثم <bdi>New deployment</bdi>، ثم{" "}
-              <bdi>Web app</bdi>، ثم اضبط الوصول على «<bdi>Anyone</bdi>»، وانسخ رابط{" "}
-              <bdi>/exec</bdi> هنا.
+              النشر: <bdi>Deploy</bdi>، ثم <bdi>New deployment</bdi>، ثم{" "}
+              <bdi>Web app</bdi>، ثم ضبط الوصول على «<bdi>Anyone</bdi>»، ثم نسخ
+              رابط <bdi>/exec</bdi> هنا.
             </li>
           </ol>
         </details>
@@ -724,7 +724,11 @@ function IntegrationsPanel({
                 <span className="text-muted-foreground">{l.kind}</span>
                 <span className="text-muted-foreground">HTTP {l.status || "—"}</span>
                 <span className="text-muted-foreground">محاولات: {l.attempts}</span>
-                {l.error && <span className="text-destructive">{l.error}</span>}
+                {l.error && (
+                  <span className="inline-flex items-center gap-1 text-destructive">
+                    <Icon name="alert" className="h-4 w-4" /> {l.error}
+                  </span>
+                )}
                 <span className="ms-auto text-muted-foreground">
                   {formatDateTime(l.createdAt)}
                 </span>

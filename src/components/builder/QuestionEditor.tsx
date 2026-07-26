@@ -421,8 +421,8 @@ export default function QuestionEditor({
                   onChange={(v) => setCfg({ defaultValue: v })}
                 />
                 <p className="text-xs text-muted-foreground">
-                  أضف <bdi>?{cfg.paramName || "source"}=value</bdi> إلى رابط
-                  النموذج، فتُسجَّل القيمة مع الرد دون إظهارها.
+                  إضافة <bdi>?{cfg.paramName || "source"}=value</bdi> إلى رابط
+                  النموذج تُسجّل القيمة مع الرد دون إظهارها.
                 </p>
               </div>
             )}
@@ -448,7 +448,8 @@ export default function QuestionEditor({
             {/* إجابة صحيحة للاختبارات */}
             {formType === "EXAM" && def?.gradable && (
               <div className="rounded-xl bg-warning/10 p-3">
-                <label className="label text-warning">
+                <label className="label flex items-center gap-2 text-warning">
+                  <Icon name="check-circle" className="h-4 w-4" />
                   الإجابة الصحيحة (اختبار)
                 </label>
                 {(() => {

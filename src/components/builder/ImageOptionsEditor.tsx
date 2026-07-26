@@ -63,10 +63,10 @@ export default function ImageOptionsEditor({
               <button
                 type="button"
                 onClick={() => remove(i)}
-                className="text-xs text-destructive hover:underline"
+                className="inline-flex items-center gap-1 text-xs text-destructive hover:underline"
                 disabled={options.length <= 1}
               >
-                حذف
+                <Icon name="trash" className="h-4 w-4" /> حذف
               </button>
             </div>
           </div>

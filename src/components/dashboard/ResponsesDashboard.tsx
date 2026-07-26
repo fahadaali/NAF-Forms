@@ -209,7 +209,7 @@ export default function ResponsesDashboard({
       {total === 0 && (
         <Card className="grid place-items-center p-12 text-center text-muted-foreground">
           <Icon name="mail" className="mb-2 h-10 w-10 text-muted-foreground" />
-          لم يصل أي رد بعد. شارك رابط النموذج لبدء استقبال الردود.
+          لم يصل أي رد بعد. ابدأ بمشاركة رابط النموذج.
         </Card>
       )}
 

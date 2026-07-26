@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { NafLogo } from "@/components/ui/naf-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Icon } from "@/components/ui/Icon";
 
 function LoginForm() {
   const router = useRouter();
@@ -60,7 +61,11 @@ function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
         />
-        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+        {error && (
+          <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-destructive">
+            <Icon name="alert" className="h-4 w-4" /> {error}
+          </p>
+        )}
         <Button
           onClick={submit}
           disabled={busy || !email || !password}
