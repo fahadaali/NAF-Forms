@@ -293,26 +293,28 @@ export default function ResponsesDashboard({
                     {REVIEW_STATUS_LABELS[reviewOf(r.id).status]}
                   </span>
                   {reviewOf(r.id).rating > 0 && (
-                    <span className="text-xs text-warning">
-                      {"★".repeat(reviewOf(r.id).rating)}
+                    <span className="inline-flex items-center gap-0.5 text-warning">
+                      {Array.from({ length: reviewOf(r.id).rating }, (_, i) => (
+                        <Icon key={i} name="star" className="h-4 w-4" />
+                      ))}
                     </span>
                   )}
                 </span>
                 <div className="flex items-center gap-3">
                   {r.email && (
                     <span className="chip inline-flex items-center gap-1 bg-muted text-muted-foreground" dir="ltr">
-                      <Icon name="mail" className="h-3.5 w-3.5" /> {r.email}
+                      <Icon name="mail" className="h-4 w-4" /> {r.email}
                     </span>
                   )}
                   <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <Icon name="clock" className="h-3.5 w-3.5" /> {r.submittedAt}
+                    <Icon name="clock" className="h-4 w-4" /> {r.submittedAt}
                   </span>
                   <a
                     href={`/forms/${formId}/responses/${r.id}/print`}
                     target="_blank"
                     className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
                   >
-                    <Icon name="printer" className="h-3.5 w-3.5" /> طباعة
+                    <Icon name="printer" className="h-4 w-4" /> طباعة
                   </a>
                   <button
                     onClick={() => deleteResponse(r.id)}
@@ -323,7 +325,7 @@ export default function ResponsesDashboard({
                       "…"
                     ) : (
                       <>
-                        <Icon name="trash" className="h-3.5 w-3.5" /> حذف
+                        <Icon name="trash" className="h-4 w-4" /> حذف
                       </>
                     )}
                   </button>
@@ -362,7 +364,7 @@ export default function ResponsesDashboard({
                           target="_blank"
                           className="inline-flex items-center gap-1 text-primary underline"
                         >
-                          <Icon name="map-pin" className="h-3.5 w-3.5" /> {c.text}
+                          <Icon name="map-pin" className="h-4 w-4" /> {c.text}
                         </a>
                       ) : (
                         c.text || <span className="text-muted-foreground">—</span>
@@ -757,7 +759,7 @@ function ReviewBar({
           onClick={() => setOpenNotes((o) => !o)}
           className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
         >
-          <Icon name="edit" className="h-3.5 w-3.5" />
+          <Icon name="edit" className="h-4 w-4" />
           {openNotes ? "إخفاء الملاحظات" : "ملاحظات داخلية"}
         </button>
         {savedAt && <span className="text-xs text-success">حُفظ</span>}

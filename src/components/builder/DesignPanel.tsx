@@ -642,16 +642,20 @@ function IntegrationsPanel({
             كيف أجهّز الرابط؟
           </summary>
           <ol className="mt-2 list-decimal space-y-1 ps-5 text-xs text-muted-foreground">
-            <li>افتح جدول Google Sheets ثم: الإضافات ← Apps Script.</li>
             <li>
-              الصق دالة تستقبل <span dir="ltr">POST</span> وتضيف صفًا، مثل:
+              افتح جدول <bdi>Google Sheets</bdi> ثم: الإضافات، ثم{" "}
+              <bdi>Apps Script</bdi>.
+            </li>
+            <li>
+              الصق دالة تستقبل <bdi>POST</bdi> وتضيف صفًا، مثل:
               <code className="mt-1 block rounded-sm bg-muted p-2 text-xs" dir="ltr">
                 {`function doPost(e){const d=JSON.parse(e.postData.contents);const s=SpreadsheetApp.getActiveSheet();const f=d.fields||{};if(s.getLastRow()===0)s.appendRow(['submittedAt','email',...Object.keys(f)]);s.appendRow([d.submittedAt,d.email,...Object.values(f).map(v=>typeof v==='object'?JSON.stringify(v):v)]);return ContentService.createTextOutput('ok');}`}
               </code>
             </li>
             <li>
-              انشر: Deploy ← New deployment ← Web app ← الوصول لـ «Anyone»، وانسخ
-              رابط <span dir="ltr">/exec</span> هنا.
+              انشر: <bdi>Deploy</bdi>، ثم <bdi>New deployment</bdi>، ثم{" "}
+              <bdi>Web app</bdi>، ثم اضبط الوصول على «<bdi>Anyone</bdi>»، وانسخ رابط{" "}
+              <bdi>/exec</bdi> هنا.
             </li>
           </ol>
         </details>

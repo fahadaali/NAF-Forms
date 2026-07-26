@@ -374,17 +374,19 @@ export default function QuestionInput({
                 type="button"
                 onClick={() => move(i, -1)}
                 disabled={i === 0}
+                aria-label="نقل لأعلى"
                 className="rounded-sm px-2 text-muted-foreground hover:bg-muted disabled:opacity-30"
               >
-                ↑
+                <Icon name="chevron-up" className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={() => move(i, 1)}
                 disabled={i === ordered.length - 1}
+                aria-label="نقل لأسفل"
                 className="rounded-sm px-2 text-muted-foreground hover:bg-muted disabled:opacity-30"
               >
-                ↓
+                <Icon name="chevron-down" className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -409,7 +411,7 @@ export default function QuestionInput({
                 <img src={o.url} alt={o.label} className="h-28 w-full object-cover" />
               ) : (
                 <div className="grid h-28 w-full place-items-center bg-muted text-muted-foreground">
-                  <Icon name="image" className="h-8 w-8" />
+                  <Icon name="image" className="h-6 w-6" />
                 </div>
               )}
               <div className="truncate p-2 text-sm">{o.label}</div>
@@ -578,7 +580,7 @@ function SignaturePad({
       </div>
       {value && (
         <p className="mt-1 inline-flex items-center gap-1 text-xs text-success">
-          <Icon name="check" className="h-3.5 w-3.5" /> تم التوقيع
+          <Icon name="check" className="h-4 w-4" /> تم التوقيع
         </p>
       )}
     </div>
@@ -658,7 +660,7 @@ function FileField({
   return (
     <div>
       <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted px-6 py-8 text-center hover:border-primary hover:bg-accent">
-        <Icon name="paperclip" className="h-7 w-7 text-muted-foreground" />
+        <Icon name="paperclip" className="h-6 w-6 text-muted-foreground" />
         <span className="text-sm font-medium text-foreground">
           {busy
             ? "جارٍ الرفع…"
@@ -696,7 +698,7 @@ function FileField({
               className="flex items-center justify-between rounded-xl border border-success/30 bg-success/10 px-4 py-2.5 text-sm"
             >
               <span className="inline-flex items-center gap-1 truncate text-success">
-                <Icon name="check" className="h-3.5 w-3.5 shrink-0" /> {f.name}
+                <Icon name="check" className="h-4 w-4 shrink-0" /> {f.name}
               </span>
               <span className="flex shrink-0 items-center gap-3">
                 <a href={f.url} target="_blank" className="text-primary hover:underline">

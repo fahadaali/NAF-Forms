@@ -40,7 +40,7 @@ export default function ImageOptionsEditor({
               {o.url ? (
                 <img src={o.url} alt="" className="h-full w-full object-cover" />
               ) : (
-                <Icon name="image" className="h-7 w-7 text-muted-foreground" />
+                <Icon name="image" className="h-6 w-6 text-muted-foreground" />
               )}
             </div>
             <input

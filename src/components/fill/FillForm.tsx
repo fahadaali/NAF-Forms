@@ -546,7 +546,7 @@ export default function FillForm({
                       className="chip inline-flex items-center gap-1.5 border"
                       style={{ borderColor: accent, color: accent }}
                     >
-                      <Icon name="link" className="h-3.5 w-3.5" />
+                      <Icon name="link" className="h-4 w-4" />
                       {l.label || l.url}
                     </a>
                   ))}
@@ -625,7 +625,7 @@ export default function FillForm({
                 style={{ background: accent }}
               >
                 البدء
-                <Icon name="arrow-right" className="h-5 w-5 rotate-180" />
+                <Icon name="arrow-left" className="h-5 w-5" />
               </button>
               <p className="mt-3 text-center text-xs text-muted-foreground">
                 <bdi>
@@ -717,7 +717,7 @@ export default function FillForm({
                 className={`inline-flex items-center gap-1 font-bold ${remaining <= 30 ? "text-destructive" : ""}`}
                 dir="ltr"
               >
-                <Icon name="clock" className="h-3.5 w-3.5" />
+                <Icon name="clock" className="h-4 w-4" />
                 {String(Math.floor(remaining / 60)).padStart(2, "0")}:
                 {String(remaining % 60).padStart(2, "0")}
               </span>
@@ -802,7 +802,7 @@ export default function FillForm({
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5">
-                  التالي <Icon name="arrow-right" className="h-4 w-4 rotate-180" />
+                  التالي <Icon name="arrow-left" className="h-4 w-4" />
                 </span>
               )}
             </button>

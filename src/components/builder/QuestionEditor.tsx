@@ -64,7 +64,7 @@ export default function QuestionEditor({
         <div className="flex flex-1 items-center gap-2">
           <span className="h-px flex-1 border-t border-dashed border-border" />
           <span className="chip inline-flex items-center gap-1.5 bg-accent text-primary">
-            <Icon name="rows" className="h-3.5 w-3.5" />
+            <Icon name="rows" className="h-4 w-4" />
             فاصل بطاقة — بداية بطاقة جديدة
           </span>
           <span className="h-px flex-1 border-t border-dashed border-border" />
@@ -141,7 +141,7 @@ export default function QuestionEditor({
         {/* نوع العنصر */}
         <div className="mb-2 flex items-center gap-2">
           <span className="chip inline-flex items-center gap-1.5 bg-muted text-muted-foreground">
-            <Icon name={fieldIcon(q.type)} className="h-3.5 w-3.5" />
+            <Icon name={fieldIcon(q.type)} className="h-4 w-4" />
             {def?.label}
           </span>
           {!isLayout && (
@@ -227,7 +227,7 @@ export default function QuestionEditor({
             }}
             className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
           >
-            <Icon name="gear" className="h-3.5 w-3.5" />
+            <Icon name="gear" className="h-4 w-4" />
             {settingsOpen ? "إخفاء الخيارات" : "خيارات الحقل"}
           </button>
         )}
@@ -655,7 +655,7 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
       return (
         <div className={`${box} flex items-center justify-between`}>
           <span>— اختر —</span>
-          <span>▾</span>
+          <Icon name="chevron-down" className="h-4 w-4" />
         </div>
       );
     case "MULTIPLE_CHOICE":
@@ -706,8 +706,10 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
     }
     case "RATING":
       return (
-        <div className="text-2xl text-muted-foreground">
-          {"★".repeat(Number(cfg.max ?? 5))}
+        <div className="flex items-center gap-1 text-muted-foreground">
+          {Array.from({ length: Number(cfg.max ?? 5) }, (_, i) => (
+            <Icon key={i} name="star" className="h-5 w-5" />
+          ))}
         </div>
       );
     case "SLIDER":
@@ -742,7 +744,7 @@ function FieldPreview({ q }: { q: QuestionDTO }) {
                   <td className="px-2 py-1 text-start">{r}</td>
                   {cols.map((c) => (
                     <td key={c} className="px-2 py-1">
-                      <span className="inline-block h-3.5 w-3.5 rounded-full border border-border" />
+                      <span className="inline-block h-4 w-4 rounded-full border border-border" />
                     </td>
                   ))}
                 </tr>
@@ -882,9 +884,10 @@ function LogicEditor({
             )
           }
         />
+        <Icon name="branch" className="h-4 w-4" />
         {sectionMode
-          ? "🔀 إظهار هذا القسم (وكل أسئلته) بشرط"
-          : "🔀 إظهار هذا السؤال بشرط"}
+          ? "إظهار هذا القسم (وكل أسئلته) بشرط"
+          : "إظهار هذا السؤال بشرط"}
       </label>
       {enabled && (
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -983,7 +986,7 @@ function MediaUploadButton({
       )}
       {url && kind === "VIDEO" && (
         <p className="mt-1.5 inline-flex items-center gap-1 truncate text-xs text-success">
-          <Icon name="check" className="h-3.5 w-3.5" /> فيديو مرفق
+          <Icon name="check" className="h-4 w-4" /> فيديو مرفق
         </p>
       )}
     </div>

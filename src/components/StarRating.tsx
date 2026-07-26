@@ -1,18 +1,17 @@
 "use client";
 import { useState } from "react";
+import { Icon } from "@/components/ui/Icon";
 
 export default function StarRating({
   value,
   max = 5,
   onChange,
   readOnly = false,
-  size = 40,
 }: {
   value: number;
   max?: number;
   onChange?: (v: number) => void;
   readOnly?: boolean;
-  size?: number;
 }) {
   const [hover, setHover] = useState(0);
   const active = hover || value;
@@ -28,13 +27,12 @@ export default function StarRating({
             onMouseEnter={() => !readOnly && setHover(n)}
             onMouseLeave={() => !readOnly && setHover(0)}
             onClick={() => !readOnly && onChange?.(n === value ? 0 : n)}
-            className={`transition-transform ${readOnly ? "" : "hover:scale-110"}`}
-            style={{ fontSize: size, lineHeight: 1 }}
+            className={`transition-transform ${readOnly ? "" : "hover:scale-110"} ${
+              n <= active ? "text-warning" : "text-muted-foreground"
+            }`}
             aria-label={`${n} من ${max}`}
           >
-            <span className={n <= active ? "text-warning" : "text-muted-foreground"}>
-              ★
-            </span>
+            <Icon name="star" className="h-6 w-6" />
           </button>
         );
       })}
