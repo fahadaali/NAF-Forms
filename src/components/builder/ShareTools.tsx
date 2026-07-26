@@ -5,6 +5,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { inputVariants } from "@/components/ui/input";
 
 export default function ShareTools({ url }: { url: string }) {
   const [qr, setQr] = useState("");
@@ -51,7 +52,7 @@ export default function ShareTools({ url }: { url: string }) {
         <p className="mb-2 text-sm text-muted-foreground">
           ألصق هذا الكود في موقعك لعرض النموذج داخله.
         </p>
-        <textarea className="input h-24 font-mono text-xs" dir="ltr" readOnly value={embed} />
+        <textarea className={cn(inputVariants(), "h-auto py-2 h-24 font-mono text-xs")} dir="ltr" readOnly value={embed} />
         <Button variant="outline"
           className="mt-2 gap-1.5 text-sm"
           onClick={() => copy(embed, "embed")}

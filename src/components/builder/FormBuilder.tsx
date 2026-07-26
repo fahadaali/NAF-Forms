@@ -12,6 +12,8 @@ import DesignPanel from "./DesignPanel";
 import ShareTools from "./ShareTools";
 import { bidi } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input, inputVariants } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
 
 let tmpCounter = 0;
 
@@ -432,7 +434,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                   ))}
                 </div>
                 <textarea
-                  className="input"
+                  className={cn(inputVariants(), "h-auto py-2")}
                   placeholder="وصف النموذج (يظهر للمستفيد في البداية)"
                   value={description}
                   onChange={(e) => {
@@ -525,7 +527,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
             <div className="card p-6">
               <h3 className="mb-2 font-bold">رابط التقديم</h3>
               <div className="flex gap-2">
-                <input className="input" dir="ltr" readOnly value={publicUrl} />
+                <Input dir="ltr" readOnly value={publicUrl} />
                 <Button variant="outline"
                   onClick={() => navigator.clipboard.writeText(publicUrl)}
                 >
@@ -539,8 +541,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                 <span className="shrink-0 text-xs text-muted-foreground" dir="ltr">
                   /f/
                 </span>
-                <input
-                  className="input py-1.5"
+                <Input size="sm"
                   dir="ltr"
                   placeholder="my-form-name"
                   value={slugDraft}

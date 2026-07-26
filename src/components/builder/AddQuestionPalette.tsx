@@ -3,6 +3,7 @@ import { useState } from "react";
 import { FIELD_TYPES, FIELD_GROUPS } from "@/lib/field-types";
 import type { FieldTypeId } from "@/lib/field-types";
 import { Icon, fieldIcon } from "@/components/ui/Icon";
+import { Input } from "@/components/ui/input";
 
 export default function AddQuestionPalette({
   onAdd,
@@ -22,8 +23,8 @@ export default function AddQuestionPalette({
         <span className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground">
           <Icon name="search" className="h-4 w-4" />
         </span>
-        <input
-          className="input py-1.5 ps-9 text-sm"
+        <Input size="sm"
+          className="ps-9"
           aria-label="ابحث عن عنصر"
           placeholder="ابحث عن عنصر…"
           value={query}

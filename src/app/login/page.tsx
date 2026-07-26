@@ -3,6 +3,7 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { NafLogo } from "@/components/ui/naf-logo";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 function LoginForm() {
   const router = useRouter();
@@ -41,19 +42,19 @@ function LoginForm() {
         <NafLogo className="mx-auto mb-5 h-20 w-20" />
         <h1 className="text-xl font-bold">لوحة تحكم ناف</h1>
         <p className="mt-1 text-sm text-muted-foreground">سجّل الدخول بالبريد وكلمة المرور</p>
-        <input
+        <Input
           type="email"
           dir="ltr"
-          className="input mt-5 text-center"
+          className="mt-5 text-center"
           placeholder="name@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
           autoFocus
         />
-        <input
+        <Input
           type="password"
-          className="input mt-3 text-center"
+          className="mt-3 text-center"
           placeholder="كلمة المرور"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

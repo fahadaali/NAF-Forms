@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-lea
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Icon } from "@/components/ui/Icon";
+import { Input } from "@/components/ui/input";
 
 // إصلاح أيقونة العلامة الافتراضية في Leaflet مع الحزم
 const icon = L.icon({
@@ -116,10 +117,10 @@ export default function MapPicker({
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className="label">خط العرض (Lat)</label>
-          <input
+          <Input size="sm"
             dir="ltr"
             inputMode="decimal"
-            className="input py-1.5 text-start"
+            className="text-start"
             placeholder="24.7136"
             value={latText}
             onChange={(e) => setLatText(e.target.value)}
@@ -128,10 +129,10 @@ export default function MapPicker({
         </div>
         <div>
           <label className="label">خط الطول (Lng)</label>
-          <input
+          <Input size="sm"
             dir="ltr"
             inputMode="decimal"
-            className="input py-1.5 text-start"
+            className="text-start"
             placeholder="46.6753"
             value={lngText}
             onChange={(e) => setLngText(e.target.value)}

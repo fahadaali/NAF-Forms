@@ -5,6 +5,8 @@ import { youtubeEmbed } from "@/lib/utils";
 import { Icon } from "@/components/ui/Icon";
 import { formatDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input, inputVariants } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
 
 // ترويسة قسم بأيقونة منحنية
 function SectionHead({ icon, children }: { icon: string; children: React.ReactNode }) {
@@ -87,8 +89,7 @@ export default function DesignPanel({
           </div>
           <div className="sm:col-span-2">
             <label className="label">رابط مقطع يوتيوب (يُعرض داخل صفحة التقديم)</label>
-            <input
-              className="input"
+            <Input
               dir="ltr"
               placeholder="https://youtube.com/watch?v=..."
               value={cover.youtubeUrl || ""}
@@ -112,8 +113,7 @@ export default function DesignPanel({
         <div className="space-y-2">
           {(content.links || []).map((l, i) => (
             <div key={i} className="flex gap-2">
-              <input
-                className="input py-1.5"
+              <Input size="sm"
                 placeholder="عنوان الرابط"
                 value={l.label}
                 onChange={(e) => {
@@ -122,8 +122,7 @@ export default function DesignPanel({
                   patch({ content: { ...content, links } });
                 }}
               />
-              <input
-                className="input py-1.5"
+              <Input size="sm"
                 dir="ltr"
                 placeholder="https://..."
                 value={l.url}
@@ -226,14 +225,14 @@ export default function DesignPanel({
       <section className="card p-5">
         <SectionHead icon="check-circle">رسالة ما بعد الإرسال</SectionHead>
         <label className="label">العنوان</label>
-        <input
-          className="input mb-3"
+        <Input
+          className="mb-3"
           value={after.title || ""}
           onChange={(e) => patch({ afterSubmit: { ...after, title: e.target.value } })}
         />
         <label className="label">الرسالة</label>
         <textarea
-          className="input mb-3"
+          className={cn(inputVariants(), "h-auto py-2 mb-3")}
           value={after.message || ""}
           onChange={(e) => patch({ afterSubmit: { ...after, message: e.target.value } })}
         />
@@ -246,8 +245,7 @@ export default function DesignPanel({
           إظهار الدرجة بعد التسليم (للاختبارات)
         </label>
         <label className="label mt-4">رابط إعادة التوجيه بعد الإرسال (اختياري)</label>
-        <input
-          className="input"
+        <Input
           dir="ltr"
           placeholder="https://..."
           value={after.redirectUrl || ""}
@@ -303,8 +301,7 @@ export default function DesignPanel({
           اترك الحقل فارغًا لجعل النموذج متاحًا للجميع، أو حدّد كلمة مرور لحمايته.
         </p>
         <label className="label">كلمة مرور النموذج</label>
-        <input
-          className="input"
+        <Input
           dir="ltr"
           placeholder="بدون كلمة مرور"
           value={settings.access?.password || ""}
@@ -336,10 +333,9 @@ export default function DesignPanel({
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label">حد أقصى لعدد الردود</label>
-            <input
+            <Input
               type="number"
               min={0}
-              className="input"
               placeholder="بلا حد"
               value={settings.limits?.maxResponses ?? ""}
               onChange={(e) =>
@@ -354,9 +350,8 @@ export default function DesignPanel({
           </div>
           <div>
             <label className="label">تاريخ الإغلاق التلقائي</label>
-            <input
+            <Input
               type="datetime-local"
-              className="input"
               value={settings.limits?.closeAt || ""}
               onChange={(e) =>
                 patch({
@@ -378,8 +373,7 @@ export default function DesignPanel({
           أدخل بريدًا لاستقبال إشعار عند كل رد جديد (يتطلب ضبط SMTP في الخادم).
         </p>
         <label className="label">بريد الإشعارات</label>
-        <input
-          className="input"
+        <Input
           dir="ltr"
           placeholder="notify@example.com"
           value={settings.notify?.email || ""}
@@ -389,8 +383,7 @@ export default function DesignPanel({
         />
 
         <label className="label mt-4">رابط Webhook (اختياري)</label>
-        <input
-          className="input"
+        <Input
           dir="ltr"
           placeholder="https://example.com/webhook"
           value={settings.notify?.webhookUrl || ""}
@@ -413,8 +406,7 @@ export default function DesignPanel({
         </div>
         {settings.notify?.confirmToRespondent && (
           <div className="mt-3 space-y-2">
-            <input
-              className="input"
+            <Input
               placeholder="عنوان رسالة التأكيد"
               value={settings.notify?.confirmSubject || ""}
               onChange={(e) =>
@@ -422,7 +414,7 @@ export default function DesignPanel({
               }
             />
             <textarea
-              className="input"
+              className={cn(inputVariants(), "h-auto py-2")}
               placeholder="نص رسالة التأكيد"
               value={settings.notify?.confirmMessage || ""}
               onChange={(e) =>
@@ -450,10 +442,9 @@ export default function DesignPanel({
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="label">مدة الاختبار (دقائق)</label>
-              <input
+              <Input
                 type="number"
                 min={0}
-                className="input"
                 placeholder="بلا حد"
                 value={exam.timeLimitMin ?? ""}
                 onChange={(e) =>
@@ -468,10 +459,9 @@ export default function DesignPanel({
             </div>
             <div>
               <label className="label">درجة النجاح</label>
-              <input
+              <Input
                 type="number"
                 min={0}
-                className="input"
                 placeholder="بدون"
                 value={exam.passScore ?? ""}
                 onChange={(e) =>
@@ -488,10 +478,9 @@ export default function DesignPanel({
               <label className="label">
                 عدد الأسئلة المعروضة (بنك أسئلة عشوائي)
               </label>
-              <input
+              <Input
                 type="number"
                 min={0}
-                className="input"
                 placeholder="كل الأسئلة"
                 value={exam.questionCount ?? ""}
                 onChange={(e) =>
@@ -511,10 +500,9 @@ export default function DesignPanel({
             </div>
             <div>
               <label className="label">أقصى عدد محاولات لكل بريد</label>
-              <input
+              <Input
                 type="number"
                 min={0}
-                className="input"
                 placeholder="بلا حد"
                 value={exam.maxAttempts ?? ""}
                 onChange={(e) =>
@@ -547,8 +535,7 @@ export default function DesignPanel({
             {exam.certificate && (
               <div className="mt-2">
                 <label className="label">عنوان الشهادة</label>
-                <input
-                  className="input"
+                <Input
                   placeholder="شهادة إتمام"
                   value={exam.certificateTitle || ""}
                   onChange={(e) =>
@@ -631,8 +618,7 @@ function IntegrationsPanel({
       {/* Google Sheets */}
       <div>
         <label className="label">مزامنة Google Sheets — رابط Apps Script</label>
-        <input
-          className="input"
+        <Input
           dir="ltr"
           placeholder="https://script.google.com/macros/s/.../exec"
           value={integrations.sheetsUrl || ""}
@@ -683,7 +669,7 @@ function IntegrationsPanel({
           <div className="mt-3 space-y-2">
             <label className="label">رمز الوصول (سرّي)</label>
             <div className="flex gap-2">
-              <input className="input py-1.5 text-xs" dir="ltr" readOnly value={integrations.apiToken || ""} />
+              <Input size="sm" dir="ltr" readOnly value={integrations.apiToken || ""} />
               <Button variant="outline" size="sm"
                 className="shrink-0"
                 onClick={() =>
@@ -760,7 +746,7 @@ function Color({ label, value, onChange }: { label: string; value?: string; onCh
           value={value || "#000000"}
           onChange={(e) => onChange(e.target.value)}
         />
-        <input className="input py-1.5" dir="ltr" value={value || ""} onChange={(e) => onChange(e.target.value)} />
+        <Input size="sm" dir="ltr" value={value || ""} onChange={(e) => onChange(e.target.value)} />
       </div>
     </div>
   );

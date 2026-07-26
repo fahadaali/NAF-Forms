@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input, inputVariants } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
 
 export default function CreateProjectButton() {
   const router = useRouter();
@@ -42,8 +44,8 @@ export default function CreateProjectButton() {
           >
             <h3 className="mb-4 text-lg font-bold">إنشاء مشروع</h3>
             <label className="label">اسم المشروع</label>
-            <input
-              className="input mb-3"
+            <Input
+              className="mb-3"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="مثال: التوظيف 2026"
@@ -51,7 +53,7 @@ export default function CreateProjectButton() {
             />
             <label className="label">وصف مختصر</label>
             <textarea
-              className="input mb-3"
+              className={cn(inputVariants(), "h-auto py-2 mb-3")}
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
             />

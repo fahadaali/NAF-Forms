@@ -1,5 +1,6 @@
 "use client";
 import { Icon } from "@/components/ui/Icon";
+import { Input } from "@/components/ui/input";
 
 export default function OptionsEditor({
   options,
@@ -25,8 +26,7 @@ export default function OptionsEditor({
         {options.map((o, i) => (
           <div key={i} className="flex items-center gap-2">
             <span className="text-muted-foreground">•</span>
-            <input
-              className="input py-1.5"
+            <Input size="sm"
               value={o}
               onChange={(e) => set(i, e.target.value)}
             />

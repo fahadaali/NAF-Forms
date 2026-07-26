@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { NafLogo } from "@/components/ui/naf-logo";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
@@ -42,17 +43,17 @@ export default function ChangePasswordPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           هذا أول دخول لك — اختر كلمة مرور خاصة بك للمرات القادمة.
         </p>
-        <input
+        <Input
           type="password"
-          className="input mt-5 text-center"
+          className="mt-5 text-center"
           placeholder="كلمة المرور الجديدة"
           value={pw}
           onChange={(e) => setPw(e.target.value)}
           autoFocus
         />
-        <input
+        <Input
           type="password"
-          className="input mt-3 text-center"
+          className="mt-3 text-center"
           placeholder="تأكيد كلمة المرور"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}

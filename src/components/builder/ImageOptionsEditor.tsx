@@ -1,5 +1,6 @@
 "use client";
 import { Icon } from "@/components/ui/Icon";
+import { Input } from "@/components/ui/input";
 
 interface ImgOption {
   label: string;
@@ -43,8 +44,8 @@ export default function ImageOptionsEditor({
                 <Icon name="image" className="h-6 w-6 text-muted-foreground" />
               )}
             </div>
-            <input
-              className="input mb-2 py-1.5"
+            <Input size="sm"
+              className="mb-2"
               placeholder="التسمية"
               value={o.label}
               onChange={(e) => set(i, { label: e.target.value })}

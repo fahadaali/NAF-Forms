@@ -58,15 +58,9 @@ body {
     @apply rounded-xl border border-border bg-card text-card-foreground shadow-sm;
   }
 
-  .input {
-    @apply w-full rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-foreground outline-none transition;
-  }
-  .input::placeholder {
-    @apply text-muted-foreground opacity-70;
-  }
-  .input:focus {
-    @apply border-primary ring-[3px] ring-ring/30;
-  }
+  /* حُذف صنف .input المحلي: مصدر تنسيق الحقول صار مكوّن `input` من
+     السجلّ — `<Input>` لعناصر الإدخال، و`inputVariants()` لـ textarea
+     و select إذ لا مكوّن مسجَّل لهما. */
   .label {
     @apply mb-1.5 block text-sm font-semibold text-foreground;
   }

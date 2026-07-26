@@ -9,6 +9,8 @@ import {
 } from "@/lib/review";
 import { bidi } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { Input, inputVariants } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
 
 export interface QuestionStat {
   id: string;
@@ -220,8 +222,8 @@ export default function ResponsesDashboard({
             <span className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               <Icon name="search" className="h-4 w-4" />
             </span>
-            <input
-              className="input ps-9"
+            <Input
+              className="ps-9"
               aria-label="بحث في الردود"
               placeholder="بحث في الردود…"
               value={query}
@@ -230,9 +232,9 @@ export default function ResponsesDashboard({
           </div>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-muted-foreground">من</span>
-            <input type="date" className="input py-1.5" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Input size="sm" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
             <span className="text-muted-foreground">إلى</span>
-            <input type="date" className="input py-1.5" value={to} onChange={(e) => setTo(e.target.value)} />
+            <Input size="sm" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
             {(from || to || query || statusFilter) && (
               <button
                 className="text-primary hover:underline"
@@ -679,7 +681,7 @@ function CrossHead({
         </label>
         <select
           id="crosstab-a"
-          className="input py-1 text-xs"
+          className={cn(inputVariants(), "py-1 text-xs")}
           value={aId}
           onChange={(e) => setAId(e.target.value)}
         >
@@ -695,7 +697,7 @@ function CrossHead({
         </label>
         <select
           id="crosstab-b"
-          className="input py-1 text-xs"
+          className={cn(inputVariants(), "py-1 text-xs")}
           value={bId}
           onChange={(e) => setBId(e.target.value)}
         >
@@ -728,7 +730,7 @@ function ReviewBar({
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">الحالة</span>
           <select
-            className="input py-1 text-sm"
+            className={cn(inputVariants(), "py-1 text-sm")}
             value={review.status}
             onChange={(e) => onChange({ status: e.target.value })}
           >
@@ -768,7 +770,7 @@ function ReviewBar({
 
       {openNotes && (
         <textarea
-          className="input mt-2 text-sm"
+          className={cn(inputVariants(), "h-auto py-2 mt-2 text-sm")}
           rows={3}
           placeholder="ملاحظات داخلية (لا تظهر للمستفيد)"
           value={notes}

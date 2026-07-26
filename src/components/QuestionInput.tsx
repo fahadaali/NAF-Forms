@@ -5,6 +5,8 @@ import StarRating from "./StarRating";
 import { Icon } from "@/components/ui/Icon";
 import type { QuestionDTO } from "@/lib/types";
 import { bidi } from "@/lib/utils";
+import { Input, inputVariants } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
 
 const MapPicker = dynamic(() => import("./MapPicker"), {
   ssr: false,
@@ -46,7 +48,7 @@ export default function QuestionInput({
     case "PARAGRAPH":
       return (
         <textarea
-          className="input min-h-32 resize-y"
+          className={cn(inputVariants(), "h-auto py-2 min-h-32 resize-y")}
           placeholder={cfg.placeholder || "اكتب إجابتك هنا…"}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
@@ -57,11 +59,11 @@ export default function QuestionInput({
       // نص + لوحة أرقام: نلتقط الإدخال غير الرقمي لنُظهر رسالة خطأ واضحة
       // بدل أن يتجاهله المتصفح بصمت (type=number).
       return (
-        <input
+        <Input
           type="text"
           dir="ltr"
           inputMode="decimal"
-          className="input text-start"
+          className="text-start"
           placeholder={cfg.placeholder || "أدخل رقمًا"}
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
@@ -70,11 +72,11 @@ export default function QuestionInput({
 
     case "PHONE":
       return (
-        <input
+        <Input
           type="tel"
           dir="ltr"
           inputMode="tel"
-          className="input text-start"
+          className="text-start"
           placeholder={cfg.placeholder || "05xxxxxxxx"}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
@@ -83,10 +85,10 @@ export default function QuestionInput({
 
     case "EMAIL":
       return (
-        <input
+        <Input
           type="email"
           dir="ltr"
-          className="input text-start"
+          className="text-start"
           placeholder={cfg.placeholder || "name@example.com"}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
@@ -95,9 +97,8 @@ export default function QuestionInput({
 
     case "DATE":
       return (
-        <input
+        <Input
           type="date"
-          className="input"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
         />
@@ -109,7 +110,7 @@ export default function QuestionInput({
       if (question.type === "DROPDOWN") {
         return (
           <select
-            className="input"
+            className={inputVariants()}
             value={value || ""}
             onChange={(e) => onChange(e.target.value)}
           >
@@ -162,9 +163,9 @@ export default function QuestionInput({
                 onChange={() => onChange("")}
               />
               <span className="text-sm">أخرى:</span>
-              <input
+              <Input size="sm"
                 type="text"
-                className="input flex-1 py-1.5"
+                className="flex-1"
                 value={isOther}
                 onChange={(e) => onChange(e.target.value)}
               />
@@ -314,9 +315,8 @@ export default function QuestionInput({
       return (
         <div className="grid gap-3 sm:grid-cols-2">
           {fields.map((f) => (
-            <input
+            <Input
               key={f}
-              className="input"
               placeholder={f}
               value={obj[f] || ""}
               onChange={(e) => onChange({ ...obj, [f]: e.target.value })}
@@ -338,9 +338,8 @@ export default function QuestionInput({
 
     case "TIME":
       return (
-        <input
+        <Input
           type="time"
-          className="input"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
         />
@@ -463,9 +462,8 @@ export default function QuestionInput({
     case "SHORT_TEXT":
     default:
       return (
-        <input
+        <Input
           type="text"
-          className="input"
           placeholder={cfg.placeholder || "اكتب إجابتك هنا…"}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}

@@ -6,6 +6,7 @@ import OptionsEditor from "./OptionsEditor";
 import ImageOptionsEditor from "./ImageOptionsEditor";
 import { Icon, IconTip, fieldIcon } from "@/components/ui/Icon";
 import { bidi } from "@/lib/utils";
+import { Input, inputVariants } from "@/components/ui/input";
 
 export default function QuestionEditor({
   q,
@@ -480,7 +481,7 @@ export default function QuestionEditor({
                     </div>
                   ) : opts.length ? (
                     <select
-                      className="input"
+                      className={inputVariants()}
                       value={cfg.correctAnswer || ""}
                       onChange={(e) => setCfg({ correctAnswer: e.target.value })}
                     >
@@ -492,8 +493,7 @@ export default function QuestionEditor({
                       ))}
                     </select>
                   ) : (
-                    <input
-                      className="input"
+                    <Input
                       placeholder="الإجابة الصحيحة"
                       value={cfg.correctAnswer || ""}
                       onChange={(e) => setCfg({ correctAnswer: e.target.value })}
@@ -587,11 +587,11 @@ function QuotasEditor({
           {labels.map((label: string) => (
             <div key={label} className="flex items-center gap-2">
               <span className="flex-1 truncate text-sm">{label}</span>
-              <input
+              <Input size="sm"
                 type="number"
                 min={0}
                 placeholder="بلا حدّ"
-                className="input w-28 py-1.5"
+                className="w-28"
                 value={quotas[label] ?? ""}
                 onChange={(e) => {
                   const next = { ...quotas };
@@ -892,7 +892,7 @@ function LogicEditor({
       {enabled && (
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
           <select
-            className="input py-1.5"
+            className={inputVariants({ size: "sm" })}
             value={logic.whenQuestionId}
             onChange={(e) => onChange({ ...logic, whenQuestionId: e.target.value })}
           >
@@ -903,7 +903,7 @@ function LogicEditor({
             ))}
           </select>
           <select
-            className="input py-1.5"
+            className={inputVariants({ size: "sm" })}
             value={logic.operator}
             onChange={(e) => onChange({ ...logic, operator: e.target.value })}
           >
@@ -911,8 +911,7 @@ function LogicEditor({
             <option value="neq">لا يساوي</option>
             <option value="contains">يتضمّن</option>
           </select>
-          <input
-            className="input py-1.5"
+          <Input size="sm"
             placeholder="القيمة"
             value={logic.value || ""}
             onChange={(e) => onChange({ ...logic, value: e.target.value })}
@@ -1005,9 +1004,8 @@ function NumField({
   return (
     <div>
       <label className="label">{label}</label>
-      <input
+      <Input size="sm"
         type="number"
-        className="input py-1.5"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
       />
@@ -1027,8 +1025,7 @@ function TextField({
   return (
     <div>
       <label className="label">{label}</label>
-      <input
-        className="input py-1.5"
+      <Input size="sm"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

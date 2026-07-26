@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input, inputVariants } from "@/components/ui/input";
 
 interface U {
   id: string;
@@ -65,8 +66,7 @@ export default function UsersManager({
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-[220px] flex-1">
             <label className="label">البريد الإلكتروني</label>
-            <input
-              className="input"
+            <Input
               dir="ltr"
               placeholder="name@example.com"
               value={email}
@@ -75,7 +75,7 @@ export default function UsersManager({
           </div>
           <div>
             <label className="label">الدور</label>
-            <select className="input" value={role} onChange={(e) => setRole(e.target.value)}>
+            <select className={inputVariants()} value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="member">عضو</option>
               <option value="admin">مسؤول</option>
             </select>
@@ -110,7 +110,7 @@ export default function UsersManager({
             </div>
             <div className="flex items-center gap-2">
               <select
-                className="input py-1.5 text-sm"
+                className={inputVariants({ size: "sm" })}
                 value={u.role}
                 onChange={(e) => patch(u.id, { role: e.target.value })}
                 disabled={u.id === meId}

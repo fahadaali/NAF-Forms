@@ -10,6 +10,7 @@ import {
   validateAnswer,
 } from "@/lib/utils";
 import type { FormDTO } from "@/lib/types";
+import { Input } from "@/components/ui/input";
 
 type Phase = "intro" | "question" | "done";
 
@@ -373,9 +374,9 @@ export default function FillForm({
           <p className="mt-2 text-sm text-muted-foreground">
             هذا النموذج محمي بكلمة مرور. أدخلها للمتابعة.
           </p>
-          <input
+          <Input
             type="password"
-            className="input mt-5 text-center"
+            className="mt-5 text-center"
             placeholder="كلمة المرور"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -584,10 +585,10 @@ export default function FillForm({
                   <label className="label">
                     بريدك الإلكتروني <span className="text-destructive">*</span>
                   </label>
-                  <input
+                  <Input
                     type="email"
                     dir="ltr"
-                    className="input text-start"
+                    className="text-start"
                     placeholder="name@example.com"
                     value={email}
                     onChange={(e) => {
@@ -765,12 +766,12 @@ export default function FillForm({
                   <p className="text-xs text-muted-foreground">
                     احفظ هذا الرابط لمتابعة التعبئة لاحقًا (نُسخ تلقائيًا):
                   </p>
-                  <input
+                  <Input size="sm"
                     readOnly
                     dir="ltr"
                     value={resumeUrl}
                     onFocus={(e) => e.currentTarget.select()}
-                    className="input mt-1 py-1.5 text-xs"
+                    className="mt-1"
                   />
                 </div>
               )}

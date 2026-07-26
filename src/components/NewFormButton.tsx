@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FORM_TYPE_LABELS } from "@/lib/field-types";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface Template {
   id: string;
@@ -84,8 +85,8 @@ export default function NewFormButton({
             {tab === "blank" ? (
               <div>
                 <label className="label">عنوان النموذج</label>
-                <input
-                  className="input mb-4"
+                <Input
+                  className="mb-4"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="مثال: استبيان رضا الموظفين"

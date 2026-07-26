@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { Button } from "@/components/ui/button";
+import { Input, inputVariants } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
 
 export default function ProjectSettings({
   project,
@@ -59,14 +61,14 @@ export default function ProjectSettings({
           >
             <h3 className="mb-4 text-lg font-bold">إعدادات المشروع</h3>
             <label className="label">اسم المشروع</label>
-            <input
-              className="input mb-3"
+            <Input
+              className="mb-3"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
             <label className="label">الوصف</label>
             <textarea
-              className="input mb-3"
+              className={cn(inputVariants(), "h-auto py-2 mb-3")}
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
             />
