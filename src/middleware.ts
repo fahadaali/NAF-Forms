@@ -29,7 +29,7 @@ export async function middleware(req: NextRequest) {
 
   if (!session) {
     if (pathname.startsWith("/api/"))
-      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+      return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 401 });
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);

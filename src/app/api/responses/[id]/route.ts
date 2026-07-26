@@ -12,7 +12,7 @@ export async function DELETE(
   if (!response)
     return NextResponse.json({ error: "الرد غير موجود" }, { status: 404 });
   if (!(await authorizeForm(response.formId)))
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
 
   await deleteResponse(id);
   return NextResponse.json({ ok: true });

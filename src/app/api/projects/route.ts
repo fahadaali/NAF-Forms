@@ -5,7 +5,7 @@ import { currentSession } from "@/lib/session";
 export async function POST(req: Request) {
   const session = await currentSession();
   if (!session)
-    return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 401 });
 
   const body = await req.json();
   const project = await createProject({

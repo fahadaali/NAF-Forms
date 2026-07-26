@@ -8,7 +8,7 @@ export async function PATCH(
 ) {
   const id = (await params).id;
   if (!(await authorizeProject(id)))
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
 
   const body = await req.json();
   const project = await updateProject(id, {
@@ -25,7 +25,7 @@ export async function DELETE(
 ) {
   const id = (await params).id;
   if (!(await authorizeProject(id)))
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
   await deleteProject(id);
   return NextResponse.json({ ok: true });
 }

@@ -447,7 +447,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
 
               {questions.length === 0 && (
                 <Card className="grid place-items-center p-10 text-center text-muted-foreground">
-                  أضف أول عنصر من قائمة العناصر
+                  ابدأ بإضافة أول عنصر من قائمة العناصر
                 </Card>
               )}
 

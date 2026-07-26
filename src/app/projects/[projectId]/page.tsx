@@ -114,7 +114,7 @@ export default async function ProjectPage({
                     href={`/forms/${f.id}/edit`}
                     className={buttonVariants({ variant: "outline", size: "sm" })}
                   >
-                    <Icon name="edit" className="h-4 w-4" /> تحرير
+                    <Icon name="edit" className="h-4 w-4" /> تعديل
                   </Link>
                   <FormRowActions formId={f.id} slug={f.slug} />
                 </div>

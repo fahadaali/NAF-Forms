@@ -51,7 +51,7 @@ export default async function CertificatePage({
             {meta.email || "المستفيد"}
           </p>
           <p className="mt-4 text-muted-foreground">
-            قد أتمّ بنجاح «<span className="font-semibold">{form.title}</span>»
+            قد أتمّ «<span className="font-semibold">{form.title}</span>»
           </p>
 
           {total > 0 && (

@@ -25,8 +25,8 @@ export default function AddQuestionPalette({
         </span>
         <Input size="sm"
           className="ps-9"
-          aria-label="ابحث عن عنصر"
-          placeholder="ابحث عن عنصر…"
+          aria-label="بحث عن عنصر"
+          placeholder="بحث عن عنصر…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />

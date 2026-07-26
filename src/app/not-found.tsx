@@ -15,7 +15,7 @@ export default function NotFound() {
           تعذّر العثور على ما تبحث عنه — ربما حُذف النموذج أو المشروع.
         </p>
         <Link href="/" className={cn(buttonVariants(), "mt-6")}>
-          العودة للرئيسية
+          رجوع للرئيسية
         </Link>
       </div>
     </div>

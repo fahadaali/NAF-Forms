@@ -93,14 +93,31 @@ export function isHiddenField(type: string): boolean {
   return HIDDEN_FIELD_TYPES.includes(type as FieldTypeId);
 }
 
-const AR_DATE = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
-  dateStyle: "medium",
-  timeStyle: "short",
+/**
+ * التاريخ والوقت بالصيغة المعتمدة في naf-terms §٥:
+ * ميلادي `2026/07/26`، ووقت بنظام ٢٤ ساعة `14:30`، وأرقام غربية دائمًا.
+ *
+ * الصيغة السابقة كانت `ar-SA-u-ca-gregory` بـ dateStyle/timeStyle، فأنتجت
+ * أرقامًا عربية-هندية (٢٠٢٦/٠٧/٢٦) ونظام ١٢ ساعة بعلامة ص/م — وكلاهما
+ * مخالف. الوسم `-u-nu-latn` يفرض الأرقام الغربية، و`hourCycle: "h23"`
+ * يفرض نظام ٢٤ ساعة بصرف النظر عن تفضيل اللغة.
+ */
+const AR_DATE = new Intl.DateTimeFormat("en-GB-u-ca-gregory", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
 });
 
 export function formatDateTime(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
-  return AR_DATE.format(date);
+  // نُجمّع من الأجزاء بدل الاعتماد على ترتيب اللغة: أي لغة تفرض ترتيبها
+  // (ar-SA تعطي يوم/شهر/سنة مع محارف اتجاه مدسوسة)، والمطلوب سنة/شهر/يوم.
+  const part: Record<string, string> = {};
+  for (const p of AR_DATE.formatToParts(date)) part[p.type] = p.value;
+  return `${part.year}/${part.month}/${part.day} ${part.hour}:${part.minute}`;
 }
 
 /**
@@ -193,7 +210,7 @@ export function validateAnswer(
   const empty = isEmptyAnswer(value);
   if (empty) {
     if (type === "CONSENT" && required) return "يجب الموافقة للمتابعة";
-    return required ? "هذا الحقل إلزامي" : null;
+    return required ? "هذا الحقل مطلوب" : null;
   }
   switch (type) {
     case "NUMBER": {
@@ -210,12 +227,12 @@ export function validateAnswer(
     case "EMAIL":
       return EMAIL_RE.test(String(value).trim())
         ? null
-        : "البريد الإلكتروني غير صالح (مثال: name@example.com)";
+        : "أدخل بريدًا إلكترونيًا صحيحًا";
     case "PHONE": {
       const digits = String(value).replace(/[\s()-]/g, "");
       return PHONE_RE.test(digits)
         ? null
-        : "رقم الجوال غير صالح (مثال: 05xxxxxxxx)";
+        : "أدخل رقم جوال صحيحًا (مثال: 05xxxxxxxx)";
     }
     case "CONSENT":
       return value === true || !required ? null : "يجب الموافقة للمتابعة";

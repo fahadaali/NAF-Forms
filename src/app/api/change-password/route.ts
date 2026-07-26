@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   // currentSession يتحقق أيضًا من إصدار الجلسة (فالجلسات المُبطلة لا تُقبل)
   const session = await currentSession();
   if (!session)
-    return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 401 });
 
   const { newPassword } = await req.json();
   const pw = String(newPassword || "");

@@ -263,7 +263,7 @@ export default async function ResponsesPage({
             href={`/forms/${form.id}/edit`}
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
-            <Icon name="edit" className="h-4 w-4" /> تحرير النموذج
+            <Icon name="edit" className="h-4 w-4" /> تعديل النموذج
           </Link>
         </div>
 

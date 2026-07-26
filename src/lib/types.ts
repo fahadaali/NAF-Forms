@@ -103,7 +103,7 @@ export const DEFAULT_SETTINGS: FormSettings = {
   cover: {},
   content: { links: [], files: [] },
   afterSubmit: {
-    title: "تم استلام ردك بنجاح 🎉",
+    title: "تم استلام ردك",
     message: "شكرًا لك على وقتك. تم تسجيل إجابتك.",
     showScore: false,
   },

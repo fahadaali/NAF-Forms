@@ -251,7 +251,7 @@ export async function POST(
       to: email,
       subject: settings.notify.confirmSubject || `تأكيد استلام ردك — ${form.title}`,
       html: `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif">
-        <p>${settings.notify.confirmMessage || "شكرًا لك، تم استلام ردك بنجاح."}</p>
+        <p>${settings.notify.confirmMessage || "تم استلام ردك."}</p>
       </div>`,
     }).catch(() => {});
   }

@@ -600,7 +600,7 @@ function IntegrationsPanel({
     const okAll = (d.results || []).every((r: any) => r.ok);
     setMsg(
       okAll
-        ? "تم الإرسال بنجاح"
+        ? "تم الإرسال"
         : `فشل بعض الوجهات: ${(d.results || [])
             .filter((r: any) => !r.ok)
             .map((r: any) => `${r.kind} (${r.error || r.status})`)

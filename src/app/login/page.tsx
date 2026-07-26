@@ -66,7 +66,7 @@ function LoginForm() {
           disabled={busy || !email || !password}
           className="mt-4 w-full disabled:opacity-50"
         >
-          {busy ? "جارٍ الدخول…" : "دخول"}
+          {busy ? "جارٍ الدخول…" : "تسجيل الدخول"}
         </Button>
       </div>
     </div>

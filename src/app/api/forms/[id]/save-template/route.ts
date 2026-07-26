@@ -13,7 +13,7 @@ export async function POST(
 ) {
   const auth = await authorizeForm((await params).id);
   if (!auth)
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
   const src = auth.form;
 
   // التأكد من وجود مشروع القوالب

@@ -616,7 +616,7 @@ export default function FillForm({
                     behavior.collectEmail &&
                     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
                   ) {
-                    setEmailError("يرجى إدخال بريد إلكتروني صحيح");
+                    setEmailError("أدخل بريدًا إلكترونيًا صحيحًا");
                     return;
                   }
                   setPhase("question");
@@ -781,7 +781,7 @@ export default function FillForm({
               {resumeUrl && (
                 <div className="mt-2">
                   <p className="text-xs text-muted-foreground">
-                    احفظ هذا الرابط لمتابعة التعبئة لاحقًا (نُسخ تلقائيًا):
+                    هذا الرابط يتيح متابعة التعبئة لاحقًا (نُسخ تلقائيًا):
                   </p>
                   <Input size="sm"
                     readOnly

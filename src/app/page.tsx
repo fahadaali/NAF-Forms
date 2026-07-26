@@ -65,7 +65,7 @@ export default async function HomePage() {
           {projects.length === 0 ? (
             <Card className="grid place-items-center p-12 text-center text-muted-foreground">
               <Icon name="folder" className="mb-2 h-10 w-10 text-muted-foreground" />
-              لا توجد مشاريع بعد — أنشئ مشروعك الأول لتنظيم نماذجك.
+              لم تُنشئ أي مشروع بعد. ابدأ بإنشاء أول مشروع لتنظيم نماذجك.
             </Card>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
