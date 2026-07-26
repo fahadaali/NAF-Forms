@@ -1,12 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap");
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ثيم ناف وخطّه من سجلّ التصميم — fahadaali/naf-ui#v1.1.1
+   لا تُعدَّل هذه الملفات محليًا؛ تُحدَّث من السجلّ فقط. */
+@import "./naf-theme.css";
+@import "./naf-font.css";
+
+/* مؤقّت: يُبقي أصناف الثيم المحلي (naf-* و brand-*) تعمل حتى دفعة الألوان.
+   يُحذف مع `tailwind.config.ts` في الدفعة التالية. */
+@config "../../tailwind.config.ts";
 
 /* ===== نظام الألوان (فاتح افتراضي، داكن عبر .dark) ===== */
 :root {
-  --font-cairo: "Cairo";
-
   --bg: #f4f5f1;
   --bg-accent: 180 167 143; /* taupe rgb للتوهّج */
   --surface: #ffffff;
@@ -42,7 +44,7 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: var(--font-cairo), Tahoma, Arial, sans-serif;
+  font-family: var(--font-sans);
   background: var(--bg);
   color: var(--text);
   transition: background 0.3s ease, color 0.3s ease;
@@ -60,10 +62,13 @@ body::before {
     radial-gradient(50rem 40rem at 0% 0%, rgba(85, 102, 166, 0.08), transparent 55%);
 }
 
+/* أساس الزر مُعرَّف كأداة (`@utility`) لا كصنف عادي، لأن Tailwind 4
+   لا يسمح بـ `@apply` لصنف غير مسجَّل كأداة. */
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-[0.97];
+}
+
 @layer components {
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-[0.97];
-  }
   .btn-primary {
     @apply btn text-white;
     background: linear-gradient(135deg, var(--primary-2), var(--primary));
