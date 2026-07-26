@@ -172,7 +172,7 @@ export default function ResponsesDashboard({
         {formType === "EXAM" ? (
           <StatCard icon="target" label="متوسط الدرجات" value={examAvg || "—"} />
         ) : (
-          <StatCard icon="list" label="عدد الأسئلة" value={formatNumber(stats.length)} />
+          <StatCard icon="list-checks" label="عدد الأسئلة" value={formatNumber(stats.length)} />
         )}
       </div>
 
@@ -682,7 +682,7 @@ function CrossHead({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <h3 className="flex items-center gap-2 font-bold">
-        <Icon name="grid" className="h-5 w-5 text-primary" /> جدول تقاطعي
+        <Icon name="table" className="h-5 w-5 text-primary" /> جدول تقاطعي
       </h3>
       <div className="ms-auto flex flex-wrap items-center gap-2">
         <label className="sr-only" htmlFor="crosstab-a">
@@ -802,7 +802,7 @@ function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
     return (
       <Card className="p-5 text-sm text-muted-foreground">
         <h3 className="mb-1 flex items-center gap-2 font-bold text-foreground">
-          <Icon name="target" className="h-5 w-5 text-primary" /> تحليلات الإكمال
+          <Icon name="gauge" className="h-5 w-5 text-primary" /> تحليلات الإكمال
         </h3>
         لم تُسجَّل محاولات تعبئة بعد. تُحتسب من لحظة ضغط «البدء» في النماذج
         المنشورة.
@@ -821,7 +821,7 @@ function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
   return (
     <Card className="p-5">
       <h3 className="mb-4 flex items-center gap-2 font-bold">
-        <Icon name="target" className="h-5 w-5 text-primary" /> تحليلات الإكمال
+        <Icon name="gauge" className="h-5 w-5 text-primary" /> تحليلات الإكمال
       </h3>
       <div className="grid gap-4 sm:grid-cols-4">
         <Metric label="بدأوا التعبئة" value={formatNumber(funnel.started)} />

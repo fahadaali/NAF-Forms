@@ -74,7 +74,7 @@ export default function FormRowActions({
               onClick={saveTemplate}
               className="flex w-full items-center gap-2 px-4 py-2 text-start hover:bg-muted"
             >
-              <Icon name="star" className="h-4 w-4" /> حفظ كقالب
+              <Icon name="template" className="h-4 w-4" /> حفظ كقالب
             </button>
             <button
               onClick={remove}

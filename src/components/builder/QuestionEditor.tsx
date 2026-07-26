@@ -65,7 +65,7 @@ export default function QuestionEditor({
         <div className="flex flex-1 items-center gap-2">
           <span className="h-px flex-1 border-t border-dashed border-border" />
           <span className="chip inline-flex items-center gap-1.5 bg-accent text-primary">
-            <Icon name="rows" className="h-4 w-4" />
+            <Icon name="page-break" className="h-4 w-4" />
             فاصل بطاقة — بداية بطاقة جديدة
           </span>
           <span className="h-px flex-1 border-t border-dashed border-border" />
@@ -103,7 +103,7 @@ export default function QuestionEditor({
         {!isLayout && (
           <ToolBtn
             label={q.required ? "إلزامي (اضغط لجعله اختياري)" : "اجعله إلزاميًا"}
-            icon="star"
+            icon="asterisk"
             onClick={() => onChange({ required: !q.required })}
             className={q.required ? "text-destructive" : "text-muted-foreground"}
           />

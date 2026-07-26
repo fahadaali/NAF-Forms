@@ -428,7 +428,7 @@ export default function DesignPanel({
 
       {/* التكاملات الخارجية */}
       <Card className="p-5">
-        <SectionHead icon="layers">التكاملات الخارجية</SectionHead>
+        <SectionHead icon="plug">التكاملات الخارجية</SectionHead>
         <IntegrationsPanel
           formId={formId}
           integrations={integrations}

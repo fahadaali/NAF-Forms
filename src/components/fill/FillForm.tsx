@@ -499,7 +499,7 @@ export default function FillForm({
                 className="mt-6 inline-flex items-center gap-2 rounded-xl px-6 py-3 font-bold text-white shadow-lg"
                 style={{ background: accent }}
               >
-                <Icon name="badge-check" className="h-5 w-5" /> استلام الشهادة
+                <Icon name="certificate" className="h-5 w-5" /> استلام الشهادة
               </a>
             )}
 

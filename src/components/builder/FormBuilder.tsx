@@ -392,9 +392,9 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
         <div className="mx-auto flex max-w-6xl gap-1 px-4">
           {(
             [
-              ["build", "الأسئلة", "layers"],
+              ["build", "الأسئلة", "clipboard-list"],
               ["design", "التخصيص", "palette"],
-              ["share", "النشر والمشاركة", "rocket"],
+              ["share", "النشر والمشاركة", "share"],
             ] as const
           ).map(([k, label, icon]) => (
             <button

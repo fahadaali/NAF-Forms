@@ -21,7 +21,7 @@ import {
   ChevronDown,
   CircleCheck,
   CircleX,
-  UserCog,
+  Users,
   ArrowRight,
   ArrowLeft,
   LogOut,
@@ -31,14 +31,17 @@ import {
   Eye,
   EyeOff,
   Star,
+  Asterisk,
   GripVertical,
   ChartColumn,
+  Gauge,
   Folder,
   Link as LinkIcon,
   Film,
   Image as ImageIcon,
-  PenTool,
-  BadgeCheck,
+  Signature,
+  ClipboardCheck,
+  Award,
   MapPin,
   // §٣ منخفضة الثقة — لا مقابل في naf-icons.md، مطبَّقة مؤقتًا وتحتاج تسجيلًا
   Type,
@@ -50,15 +53,19 @@ import {
   Ruler,
   SlidersHorizontal,
   Grid3x3,
+  Table,
   ListOrdered,
+  ListChecks,
   Heading,
-  Rows3,
+  SeparatorHorizontal,
   MapPinHouse,
   Target,
   TrendingUp,
-  Layers,
+  ClipboardList,
+  Plug,
+  LayoutTemplate,
   Palette,
-  Rocket,
+  Share2,
   Undo2,
   Redo2,
   ChevronUp,
@@ -116,27 +123,34 @@ const ICONS: Record<string, LucideIcon> = {
   // ===== كيانات وأدوات =====
   gear: Settings,
   bell: Bell,
-  users: UserCog,
+  users: Users, // قائمة مستخدمين، لا مستخدم واحد بإعدادات
   mail: Mail,
   eye: Eye,
   "eye-off": EyeOff,
-  star: Star,
+  star: Star, // نجمة تقييم فقط
+  asterisk: Asterisk, // علامة الحقل الإلزامي — شكل النجمة * نفسه
+  template: LayoutTemplate, // حفظ كقالب
   grip: GripVertical,
   chart: ChartColumn,
+  gauge: Gauge, // نسبة/معدّل — تحليلات الإكمال
   folder: Folder,
   link: LinkIcon,
   film: Film,
   image: ImageIcon,
-  pen: PenTool,
-  "badge-check": BadgeCheck,
+  pen: Signature, // خطّ يد لا قلم متجهات: الحقل توقيع مكتوب
+  // ليست BadgeCheck: شكلها دائرة بعلامة صح، فتلتبس بـ CircleCheck («نشر»)
+  // في شاشة البنّاء نفسها. لوح بعلامة صح = إقرار على مستند، شكل مميّز.
+  consent: ClipboardCheck,
+  certificate: Award, // شهادة إتمام — وسام لا علامة صح
   "map-pin": MapPin,
   paperclip: Paperclip,
   calendar: Calendar,
   target: Target,
   "trend-up": TrendingUp,
-  layers: Layers,
+  "clipboard-list": ClipboardList, // تبويب الأسئلة — نموذج لا طبقات
+  plug: Plug, // التكاملات الخارجية
   palette: Palette,
-  rocket: Rocket,
+  share: Share2, // النشر والمشاركة
   branch: GitBranch,
   sun: Sun,
   moon: Moon,
@@ -150,10 +164,12 @@ const ICONS: Record<string, LucideIcon> = {
   checkbox: SquareCheck,
   scale: Ruler, // ليست Scale: المسجَّلة تعني «جلسة قضائية» — تعارض معنى
   slider: SlidersHorizontal,
-  grid: Grid3x3,
-  list: ListOrdered,
+  grid: Grid3x3, // حقل الشبكة: مصفوفة اختيارات
+  table: Table, // جدول بيانات — الجدول التقاطعي
+  list: ListOrdered, // حقل الترتيب
+  "list-checks": ListChecks, // عدد أسئلة النموذج
   heading: Heading,
-  rows: Rows3,
+  "page-break": SeparatorHorizontal, // فاصل بطاقة: خطّ فاصل لا صفوف
   home: MapPinHouse, // ليست House: المسجَّلة تعني «الرئيسية» — معنى مختلف
 };
 
@@ -219,12 +235,12 @@ const FIELD_ICON: Record<string, string> = {
   RANKING: "list",
   IMAGE_CHOICE: "image",
   SIGNATURE: "pen",
-  CONSENT: "badge-check",
+  CONSENT: "consent",
   HIDDEN: "eye-off",
   SECTION: "heading",
   IMAGE: "image",
   VIDEO: "film",
-  PAGE_BREAK: "rows",
+  PAGE_BREAK: "page-break",
 };
 
 export function fieldIcon(type: string): string {
