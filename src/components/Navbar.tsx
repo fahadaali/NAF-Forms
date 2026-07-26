@@ -4,6 +4,7 @@ import ThemeToggle from "./ThemeToggle";
 import { currentSession } from "@/lib/session";
 import { getUserById } from "@/lib/repo";
 import { Icon } from "@/components/ui/Icon";
+import { NafLogo } from "@/components/ui/naf-logo";
 
 export default async function Navbar({
   crumbs = [],
@@ -18,11 +19,7 @@ export default async function Navbar({
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2.5">
         <div className="flex items-center gap-2 text-sm">
           <Link href="/" className="flex items-center gap-2.5 font-bold">
-            <img
-              src="/naf-logo.jpg"
-              alt="ناف"
-              className="h-9 w-9 rounded-xl object-cover ring-1 ring-border"
-            />
+            <NafLogo variant="mark" className="h-9 w-9" />
             <span className="gradient-text text-base">استبانات ناف</span>
           </Link>
           {crumbs.map((c, i) => (

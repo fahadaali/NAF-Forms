@@ -465,15 +465,15 @@ function StatBlock({ q }: { q: QuestionStat }) {
   );
 }
 
+// لوحة التصنيف من السجلّ: خمسة رموز فقط، تتبع الوضعين الفاتح والداكن.
+// كانت ثماني قيم hex حرفية من عائلات لونية مختلفة (القاعدة ١).
+// ما زاد على خمسة تصنيفات يعيد استخدام اللوحة بالدور.
 const PIE_COLORS = [
-  "#5566a6",
-  "#22c55e",
-  "#f59e0b",
-  "#ef4444",
-  "#8b5cf6",
-  "#06b6d4",
-  "#ec4899",
-  "#84cc16",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
 ];
 
 function Donut({ data }: { data: { label: string; count: number }[] }) {

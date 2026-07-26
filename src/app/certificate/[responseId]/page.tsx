@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getResponseWithAnswers, getFormWithQuestions } from "@/lib/repo";
 import { parseSettings, safeParse, formatDateTime } from "@/lib/utils";
 import PrintButton from "@/components/PrintButton";
+import { NafLogo } from "@/components/ui/naf-logo";
 
 export const dynamic = "force-dynamic";
 
@@ -41,11 +42,7 @@ export default async function CertificatePage({
           className="relative overflow-hidden rounded-xl bg-card p-12 text-center shadow-xl print:rounded-none print:shadow-none"
           style={{ borderTop: `8px solid ${accent}` }}
         >
-          <img
-            src="/naf-logo.jpg"
-            alt="ناف"
-            className="mx-auto mb-6 h-20 w-20 rounded-xl object-cover"
-          />
+          <NafLogo className="mx-auto mb-6 h-20 w-20" />
           <h1 className="text-3xl font-bold" style={{ color: accent }}>
             {title}
           </h1>

@@ -11,6 +11,7 @@ import { Icon } from "@/components/ui/Icon";
 import { formatDateTime } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import CreateProjectButton from "@/components/CreateProjectButton";
+import { NafLogo } from "@/components/ui/naf-logo";
 
 export const dynamic = "force-dynamic";
 
@@ -50,11 +51,7 @@ export default async function HomePage() {
                 <Stat n={responseCount} label="رد" />
               </div>
             </div>
-            <img
-              src="/naf-logo.jpg"
-              alt="ناف"
-              className="hidden h-32 w-32 animate-floaty rounded-xl object-cover shadow-lg ring-1 ring-border md:block"
-            />
+            <NafLogo className="hidden h-32 w-32 animate-floaty md:block" />
           </div>
         </section>
 
