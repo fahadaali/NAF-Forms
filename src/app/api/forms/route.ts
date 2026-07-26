@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   // لا يُنشأ نموذج إلا داخل مشروع يملكه المستخدم (أو للمسؤول)
   const auth = await authorizeProject(projectId);
   if (!auth)
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
   const ownerId = auth.session.uid;
 
   const title = body.title?.trim() || "نموذج بدون عنوان";

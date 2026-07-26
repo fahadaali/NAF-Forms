@@ -12,7 +12,7 @@ export async function GET(
 ) {
   const formId = (await params).id;
   if (!(await authorizeForm(formId)))
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
 
   const deliveries = await listDeliveries(formId, 50);
   return NextResponse.json({ ok: true, deliveries });
@@ -25,7 +25,7 @@ export async function POST(
   const formId = (await params).id;
   const auth = await authorizeForm(formId);
   if (!auth)
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
 
   const settings = parseSettings(auth.form.settings);
   const targets: { kind: "webhook" | "sheets"; url: string }[] = [];

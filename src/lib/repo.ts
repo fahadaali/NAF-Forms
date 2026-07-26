@@ -3,6 +3,7 @@
 // حتى تبقى مواضع الاستدعاء في التطبيق كما هي تقريبًا.
 import { nanoid } from "nanoid";
 import { getDb, type Db } from "./db";
+import { NAF_PRIMARY } from "./brand";
 
 const now = () => new Date().toISOString();
 
@@ -240,7 +241,7 @@ export async function createProject(data: {
       id,
       data.name,
       data.description ?? "",
-      data.color ?? "#1c59f5",
+      data.color ?? NAF_PRIMARY,
       data.ownerId ?? "",
       ts,
       ts,
@@ -297,7 +298,7 @@ export async function ensureProject(data: {
   const ts = now();
   await db.run(
     `INSERT INTO "Project" ("id","name","description","color","createdAt","updatedAt") VALUES (?,?,?,?,?,?)`,
-    [data.id, data.name, data.description ?? "", data.color ?? "#1c59f5", ts, ts]
+    [data.id, data.name, data.description ?? "", data.color ?? NAF_PRIMARY, ts, ts]
   );
 }
 

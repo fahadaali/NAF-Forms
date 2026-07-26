@@ -45,10 +45,14 @@ export default function FormRowActions({
 
   return (
     <div className="relative flex items-center gap-1.5">
-      {msg && <span className="text-xs font-medium text-green-600">{msg}</span>}
+      {msg && (
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
+          <Icon name="check-circle" className="h-4 w-4" /> {msg}
+        </span>
+      )}
       <button
         onClick={copyLink}
-        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
+        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
         title="نسخ رابط التقديم"
       >
         <Icon name={copied ? "check" : "link"} className="h-4 w-4" />
@@ -56,29 +60,29 @@ export default function FormRowActions({
       </button>
       <button
         onClick={() => setMenu((m) => !m)}
-        className="rounded-lg px-2 py-1.5 text-slate-600 hover:bg-slate-100"
+        className="rounded-lg px-2 py-1.5 text-muted-foreground hover:bg-muted"
       >
         <Icon name="more" className="h-4 w-4" />
       </button>
       {menu && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setMenu(false)} />
-          <div className="absolute left-0 top-9 z-20 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 text-sm shadow-lg">
+          <div className="absolute end-0 top-9 z-20 w-44 overflow-hidden rounded-xl border border-border bg-card py-1 text-sm shadow-lg">
             <button
               onClick={duplicate}
-              className="flex w-full items-center gap-2 px-4 py-2 text-right hover:bg-slate-50"
+              className="flex w-full items-center gap-2 px-4 py-2 text-start hover:bg-muted"
             >
               <Icon name="copy" className="h-4 w-4" /> إنشاء نسخة
             </button>
             <button
               onClick={saveTemplate}
-              className="flex w-full items-center gap-2 px-4 py-2 text-right hover:bg-slate-50"
+              className="flex w-full items-center gap-2 px-4 py-2 text-start hover:bg-muted"
             >
-              <Icon name="star" className="h-4 w-4" /> حفظ كقالب
+              <Icon name="template" className="h-4 w-4" /> حفظ كقالب
             </button>
             <button
               onClick={remove}
-              className="flex w-full items-center gap-2 px-4 py-2 text-right text-red-600 hover:bg-red-50"
+              className="flex w-full items-center gap-2 px-4 py-2 text-start text-destructive hover:bg-destructive/10"
             >
               <Icon name="trash" className="h-4 w-4" /> حذف
             </button>

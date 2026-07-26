@@ -2,6 +2,11 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Icon } from "@/components/ui/Icon";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
+import { inputVariants } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 
 export default function ShareTools({ url }: { url: string }) {
   const [qr, setQr] = useState("");
@@ -23,12 +28,12 @@ export default function ShareTools({ url }: { url: string }) {
 
   return (
     <div className="space-y-5">
-      <div className="card p-6 text-center">
+      <Card className="p-6 text-center">
         <h3 className="mb-3 font-bold">رمز QR</h3>
         {qr ? (
-          <img src={qr} alt="QR" className="mx-auto rounded-xl border border-slate-200" />
+          <img src={qr} alt="QR" className="mx-auto rounded-xl border border-border" />
         ) : (
-          <div className="mx-auto grid h-[220px] w-[220px] place-items-center text-slate-300">
+          <div className="mx-auto grid h-[220px] w-[220px] place-items-center text-muted-foreground">
             جارٍ التوليد…
           </div>
         )}
@@ -36,21 +41,21 @@ export default function ShareTools({ url }: { url: string }) {
           <a
             href={qr}
             download="naf-form-qr.png"
-            className="btn-ghost mt-4 inline-flex items-center gap-1.5 text-sm"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-4")}
           >
             <Icon name="download" className="h-4 w-4" /> تنزيل الرمز
           </a>
         )}
-      </div>
+      </Card>
 
-      <div className="card p-6">
+      <Card className="p-6">
         <h3 className="mb-2 font-bold">كود التضمين (Embed)</h3>
-        <p className="mb-2 text-sm text-slate-500">
+        <p className="mb-2 text-sm text-muted-foreground">
           ألصق هذا الكود في موقعك لعرض النموذج داخله.
         </p>
-        <textarea className="input h-24 font-mono text-xs" dir="ltr" readOnly value={embed} />
-        <button
-          className="btn-ghost mt-2 inline-flex items-center gap-1.5 text-sm"
+        <textarea className={cn(inputVariants(), "h-auto py-2 h-24 font-mono text-xs")} dir="ltr" readOnly value={embed} />
+        <Button variant="outline"
+          className="mt-2 gap-1.5 text-sm"
           onClick={() => copy(embed, "embed")}
         >
           {copied === "embed" ? (
@@ -60,8 +65,8 @@ export default function ShareTools({ url }: { url: string }) {
           ) : (
             "نسخ الكود"
           )}
-        </button>
-      </div>
+        </Button>
+      </Card>
     </div>
   );
 }

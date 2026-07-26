@@ -14,6 +14,9 @@ import Navbar from "@/components/Navbar";
 import NewFormButton from "@/components/NewFormButton";
 import FormRowActions from "@/components/FormRowActions";
 import ProjectSettings from "@/components/ProjectSettings";
+import { buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { formatNumber } from "@/lib/naf-format";
 
 export const dynamic = "force-dynamic";
 
@@ -38,13 +41,13 @@ export default async function ProjectPage({
         <div className="mb-6 flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <span
-              className="h-12 w-12 rounded-2xl"
+              className="h-12 w-12 rounded-xl"
               style={{ background: project.color }}
             />
             <div>
-              <h1 className="text-2xl font-extrabold">{project.name}</h1>
+              <h1 className="text-2xl font-bold">{project.name}</h1>
               {project.description && (
-                <p className="text-sm text-slate-500">{project.description}</p>
+                <p className="text-sm text-muted-foreground">{project.description}</p>
               )}
             </div>
           </div>
@@ -62,12 +65,12 @@ export default async function ProjectPage({
         </div>
 
         {project.forms.length === 0 ? (
-          <div className="card grid place-items-center p-12 text-center text-slate-500">
-            <Icon name="edit" className="mb-2 h-10 w-10 text-slate-300" />
+          <Card className="grid place-items-center p-12 text-center text-muted-foreground">
+            <Icon name="edit" className="mb-2 h-10 w-10 text-muted-foreground" />
             لا توجد نماذج في هذا المشروع بعد.
-          </div>
+          </Card>
         ) : (
-          <div className="card divide-y divide-slate-100">
+          <Card className="divide-y divide-border">
             {project.forms.map((f) => (
               <div
                 key={f.id}
@@ -77,7 +80,7 @@ export default async function ProjectPage({
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/forms/${f.id}/edit`}
-                      className="truncate font-bold hover:text-naf-700"
+                      className="truncate font-bold hover:text-primary"
                     >
                       {f.title}
                     </Link>
@@ -88,36 +91,37 @@ export default async function ProjectPage({
                       {FORM_TYPE_LABELS[f.type]}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-400">
-                    {f._count.questions} سؤال · {f._count.responses} رد · آخر
-                    تحديث {formatDateTime(f.updatedAt)}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    <bdi>{formatNumber(f._count.questions)}</bdi> سؤال ·{" "}
+                    <bdi>{formatNumber(f._count.responses)}</bdi> رد · آخر تحديث{" "}
+                    <bdi>{formatDateTime(f.updatedAt)}</bdi>
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/forms/${f.id}/responses`}
-                    className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-xs"
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
                   >
                     <Icon name="chart" className="h-4 w-4" /> الردود
                   </Link>
                   <Link
                     href={`/f/${f.slug}`}
                     target="_blank"
-                    className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-xs"
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
                   >
                     <Icon name="eye" className="h-4 w-4" /> معاينة
                   </Link>
                   <Link
                     href={`/forms/${f.id}/edit`}
-                    className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-xs"
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
                   >
-                    <Icon name="edit" className="h-4 w-4" /> تحرير
+                    <Icon name="edit" className="h-4 w-4" /> تعديل
                   </Link>
                   <FormRowActions formId={f.id} slug={f.slug} />
                 </div>
               </div>
             ))}
-          </div>
+          </Card>
         )}
       </main>
     </div>

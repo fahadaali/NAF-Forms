@@ -1,6 +1,10 @@
 "use client";
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { NafLogo } from "@/components/ui/naf-logo";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Icon } from "@/components/ui/Icon";
 
 function LoginForm() {
   const router = useRouter();
@@ -31,45 +35,44 @@ function LoginForm() {
   }
 
   return (
-    <div
-      className="relative grid min-h-screen place-items-center px-4"
-      style={{ background: "linear-gradient(135deg, #2a3149, #1c2338)" }}
-    >
+    // صفحة داكنة مقصودة: نُطاق `dark` يجعلها تستهلك رموز الوضع الداكن
+    // بدل تدرّج بقيم حرفية (القاعدة ١).
+    <div className="dark relative grid min-h-screen place-items-center bg-background px-4 text-foreground">
       <div className="grid-bg pointer-events-none absolute inset-0 opacity-20" />
-      <div className="glass relative w-full max-w-sm rounded-2xl p-8 text-center">
-        <img
-          src="/naf-logo.jpg"
-          alt="ناف"
-          className="mx-auto mb-5 h-20 w-20 rounded-2xl object-cover shadow-glow ring-1 ring-brand-taupe/40"
-        />
-        <h1 className="text-xl font-extrabold">لوحة تحكم ناف</h1>
-        <p className="mt-1 text-sm text-slate-500">سجّل الدخول بالبريد وكلمة المرور</p>
-        <input
+      <div className="glass relative w-full max-w-sm rounded-xl p-8 text-center">
+        <NafLogo className="mx-auto mb-5 h-20 w-20" />
+        <h1 className="text-xl font-bold">لوحة تحكم ناف</h1>
+        <p className="mt-1 text-sm text-muted-foreground">سجّل الدخول بالبريد وكلمة المرور</p>
+        <Input
           type="email"
           dir="ltr"
-          className="input mt-5 text-center"
+          className="mt-5 text-center"
           placeholder="name@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
           autoFocus
         />
-        <input
+        <Input
           type="password"
-          className="input mt-3 text-center"
+          className="mt-3 text-center"
           placeholder="كلمة المرور"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
         />
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-        <button
+        {error && (
+          <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-destructive">
+            <Icon name="alert" className="h-4 w-4" /> {error}
+          </p>
+        )}
+        <Button
           onClick={submit}
           disabled={busy || !email || !password}
-          className="btn-primary mt-4 w-full disabled:opacity-50"
+          className="mt-4 w-full disabled:opacity-50"
         >
-          {busy ? "جارٍ الدخول…" : "دخول"}
-        </button>
+          {busy ? "جارٍ الدخول…" : "تسجيل الدخول"}
+        </Button>
       </div>
     </div>
   );

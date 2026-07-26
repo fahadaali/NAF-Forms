@@ -10,6 +10,12 @@ import AddQuestionPalette from "./AddQuestionPalette";
 import { Icon, IconTip } from "@/components/ui/Icon";
 import DesignPanel from "./DesignPanel";
 import ShareTools from "./ShareTools";
+import { bidi } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input, inputVariants } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
+import { Card } from "@/components/ui/card";
+import { formatTime } from "@/lib/naf-format";
 
 let tmpCounter = 0;
 
@@ -143,7 +149,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
     if (nextStatus) setStatus(nextStatus);
     setSaving(false);
     setDirty(false);
-    setSavedAt(new Date().toLocaleTimeString("ar-SA"));
+    setSavedAt(formatTime(new Date()));
     router.refresh();
   }
   saveRef.current = save;
@@ -295,19 +301,23 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
       : `/f/${slug}`;
 
   return (
-    <div>
+    // overflow-x-clip: تلميحات أزرار شريط أدوات السؤال معروضة بـ opacity-0
+    // فتشغل مساحة تخطيط، والتلميح الأقرب لحدّ الشاشة يزيد عرض التمرير ١٣
+    // بكسل على عرض ٣٧٥. `clip` لا يُنشئ حاوية تمرير فيبقى sticky يعمل،
+    // بخلاف `hidden`.
+    <div className="overflow-x-clip">
       {/* الشريط العلوي */}
-      <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+      <div className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
           <Link
             href="/"
-            className="flex items-center gap-1.5 font-extrabold text-naf-700"
+            className="flex items-center gap-1.5 font-bold text-primary"
           >
             <Icon name="arrow-right" className="h-4 w-4" />
             ناف
           </Link>
           <input
-            className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-lg font-bold hover:border-slate-200 focus:border-naf-400 focus:outline-none"
+            className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-lg font-bold hover:border-border focus:border-primary focus:outline-none"
             value={title}
             onChange={(e) => {
               setTitle(e.target.value);
@@ -320,7 +330,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
               onClick={undo}
               disabled={!canUndo}
               aria-label="تراجع"
-              className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+              className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
             >
               <Icon name="undo" className="h-4 w-4" />
             </button>
@@ -330,13 +340,13 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
               onClick={redo}
               disabled={!canRedo}
               aria-label="إعادة"
-              className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+              className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
             >
               <Icon name="redo" className="h-4 w-4" />
             </button>
           </IconTip>
 
-          <span className="text-xs text-slate-400" aria-live="polite">
+          <span className="text-xs text-muted-foreground" aria-live="polite">
             {saving
               ? "جارٍ الحفظ…"
               : dirty
@@ -344,7 +354,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                 ? "سيُحفظ تلقائيًا…"
                 : "تغييرات غير محفوظة"
               : savedAt
-              ? `حُفظ ${savedAt}`
+              ? `حُفظ ${bidi(savedAt)}`
               : ""}
           </span>
           <IconTip label={autoSave ? "إيقاف الحفظ التلقائي" : "تفعيل الحفظ التلقائي"}>
@@ -352,40 +362,40 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
               onClick={() => setAutoSave((v) => !v)}
               aria-pressed={autoSave}
               aria-label="الحفظ التلقائي"
-              className={`rounded-lg p-1.5 hover:bg-slate-100 ${
-                autoSave ? "text-naf-600" : "text-slate-400"
+              className={`rounded-lg p-1.5 hover:bg-muted ${
+                autoSave ? "text-primary" : "text-muted-foreground"
               }`}
             >
               <Icon name="refresh" className="h-4 w-4" />
             </button>
           </IconTip>
-          <button
+          <Button variant="outline" size="sm"
             onClick={openResponses}
-            className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm"
+            className="gap-1.5"
           >
             <Icon name="chart" className="h-4 w-4" /> الردود
-          </button>
-          <button
+          </Button>
+          <Button variant="outline" size="sm"
             onClick={openPreview}
-            className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm"
+            className="gap-1.5"
           >
             <Icon name="eye" className="h-4 w-4" /> معاينة
-          </button>
-          <button
-            className="btn-primary inline-flex items-center gap-1.5 py-1.5 text-sm"
+          </Button>
+          <Button size="sm"
+            className="gap-1.5"
             disabled={saving}
             onClick={() => save()}
           >
             <Icon name="save" className="h-4 w-4" /> حفظ
-          </button>
+          </Button>
         </div>
         {/* التبويبات */}
         <div className="mx-auto flex max-w-6xl gap-1 px-4">
           {(
             [
-              ["build", "الأسئلة", "layers"],
+              ["build", "الأسئلة", "clipboard-list"],
               ["design", "التخصيص", "palette"],
-              ["share", "النشر والمشاركة", "rocket"],
+              ["share", "النشر والمشاركة", "share"],
             ] as const
           ).map(([k, label, icon]) => (
             <button
@@ -393,8 +403,8 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
               onClick={() => setTab(k)}
               className={`inline-flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium ${
                 tab === k
-                  ? "border-naf-600 text-naf-700"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               <Icon name={icon} className="h-4 w-4" />
@@ -409,9 +419,9 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
           <div className="grid gap-6 lg:grid-cols-[1fr_260px]">
             <div className="space-y-4">
               {/* رأس النموذج */}
-              <div className="card border-t-4 border-t-naf-500 p-5">
+              <Card className="border-t-4 border-t-primary p-5">
                 <div className="mb-3 flex flex-wrap items-center gap-2">
-                  <span className="text-sm text-slate-500">نوع النموذج:</span>
+                  <span className="text-sm text-muted-foreground">نوع النموذج:</span>
                   {Object.entries(FORM_TYPE_LABELS).map(([k, v]) => (
                     <button
                       key={k}
@@ -421,8 +431,8 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                       }}
                       className={`chip ${
                         type === k
-                          ? "bg-naf-600 text-white"
-                          : "bg-slate-100 text-slate-600"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
                       }`}
                     >
                       {v}
@@ -430,7 +440,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                   ))}
                 </div>
                 <textarea
-                  className="input"
+                  className={cn(inputVariants(), "h-auto py-2")}
                   placeholder="وصف النموذج (يظهر للمستفيد في البداية)"
                   value={description}
                   onChange={(e) => {
@@ -438,12 +448,12 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                     mark();
                   }}
                 />
-              </div>
+              </Card>
 
               {questions.length === 0 && (
-                <div className="card grid place-items-center p-10 text-center text-slate-400">
-                  أضف أول عنصر من قائمة العناصر
-                </div>
+                <Card className="grid place-items-center p-10 text-center text-muted-foreground">
+                  ابدأ بإضافة أول عنصر من قائمة العناصر
+                </Card>
               )}
 
               <div className="space-y-5" onClick={() => setSelectedId(null)}>
@@ -494,52 +504,50 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
 
         {tab === "share" && (
           <div className="mx-auto max-w-xl space-y-5">
-            <div className="card p-6">
+            <Card className="p-6">
               <h3 className="mb-2 font-bold">حالة النموذج</h3>
-              <p className="mb-4 text-sm text-slate-500">
+              <p className="mb-4 text-sm text-muted-foreground">
                 لا يمكن استقبال الردود إلا بعد نشر النموذج.
               </p>
               <div className="flex gap-2">
-                <button
-                  className={`inline-flex items-center gap-1.5 ${status === "PUBLISHED" ? "btn-primary" : "btn-ghost"}`}
+                <Button
+                  variant={status === "PUBLISHED" ? "default" : "outline"}
                   onClick={() => save("PUBLISHED")}
                 >
                   <Icon name="check-circle" className="h-4 w-4" /> نشر
-                </button>
-                <button
-                  className={`inline-flex items-center gap-1.5 ${status === "DRAFT" ? "btn-primary" : "btn-ghost"}`}
+                </Button>
+                <Button
+                  variant={status === "DRAFT" ? "default" : "outline"}
                   onClick={() => save("DRAFT")}
                 >
                   <Icon name="edit" className="h-4 w-4" /> مسودة
-                </button>
-                <button
-                  className={`inline-flex items-center gap-1.5 ${status === "CLOSED" ? "btn-danger" : "btn-ghost"}`}
+                </Button>
+                <Button
+                  variant={status === "CLOSED" ? "destructive" : "outline"}
                   onClick={() => save("CLOSED")}
                 >
                   <Icon name="lock" className="h-4 w-4" /> إغلاق
-                </button>
+                </Button>
               </div>
-            </div>
-            <div className="card p-6">
+            </Card>
+            <Card className="p-6">
               <h3 className="mb-2 font-bold">رابط التقديم</h3>
               <div className="flex gap-2">
-                <input className="input" dir="ltr" readOnly value={publicUrl} />
-                <button
-                  className="btn-ghost"
+                <Input dir="ltr" readOnly value={publicUrl} />
+                <Button variant="outline"
                   onClick={() => navigator.clipboard.writeText(publicUrl)}
                 >
                   نسخ
-                </button>
+                </Button>
               </div>
 
               {/* تخصيص الرابط */}
               <label className="label mt-4">تخصيص الرابط</label>
               <div className="flex items-center gap-2">
-                <span className="shrink-0 text-xs text-slate-400" dir="ltr">
+                <span className="shrink-0 text-xs text-muted-foreground" dir="ltr">
                   /f/
                 </span>
-                <input
-                  className="input py-1.5"
+                <Input size="sm"
                   dir="ltr"
                   placeholder="my-form-name"
                   value={slugDraft}
@@ -548,24 +556,28 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
                     setSlugMsg(null);
                   }}
                 />
-                <button
-                  className="btn-ghost shrink-0 py-1.5 text-sm"
+                <Button variant="outline" size="sm"
+                  className="shrink-0"
                   disabled={savingSlug || !slugDraft.trim() || slugDraft === slug}
                   onClick={saveSlug}
                 >
                   {savingSlug ? "جارٍ…" : "تحديث"}
-                </button>
+                </Button>
               </div>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 حروف إنجليزية وأرقام وشرطات فقط. تغيير الرابط يُبطل الروابط
                 المنشورة سابقًا.
               </p>
               {slugMsg && (
                 <p
-                  className={`mt-1 text-sm ${
-                    slugMsg.ok ? "text-green-600" : "text-red-600"
+                  className={`mt-1 flex items-center gap-1.5 text-sm ${
+                    slugMsg.ok ? "text-success" : "text-destructive"
                   }`}
                 >
+                  <Icon
+                    name={slugMsg.ok ? "check-circle" : "alert"}
+                    className="h-4 w-4"
+                  />
                   {slugMsg.text}
                 </p>
               )}
@@ -573,12 +585,12 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
               <Link
                 href={`/f/${slug}`}
                 target="_blank"
-                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-naf-600 hover:underline"
+                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
               >
                 فتح صفحة التقديم
                 <Icon name="external-link" className="h-4 w-4" />
               </Link>
-            </div>
+            </Card>
             <ShareTools url={publicUrl} />
           </div>
         )}

@@ -1,13 +1,11 @@
 "use client";
 import { Icon } from "@/components/ui/Icon";
+import { Button } from "@/components/ui/button";
 
 export default function PrintButton() {
   return (
-    <button
-      onClick={() => window.print()}
-      className="btn-primary mb-6 inline-flex items-center gap-1.5 print:hidden"
-    >
+    <Button onClick={() => window.print()} className="mb-6 print:hidden">
       <Icon name="printer" className="h-4 w-4" /> طباعة / حفظ PDF
-    </button>
+    </Button>
   );
 }

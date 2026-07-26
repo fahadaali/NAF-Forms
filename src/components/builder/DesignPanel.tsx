@@ -4,12 +4,17 @@ import type { FormSettings } from "@/lib/types";
 import { youtubeEmbed } from "@/lib/utils";
 import { Icon } from "@/components/ui/Icon";
 import { formatDateTime } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input, inputVariants } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
+import { Card } from "@/components/ui/card";
+import { NAF_FOREGROUND } from "@/lib/brand";
 
 // ترويسة قسم بأيقونة منحنية
 function SectionHead({ icon, children }: { icon: string; children: React.ReactNode }) {
   return (
     <h3 className="mb-4 flex items-center gap-2 font-bold">
-      <Icon name={icon} className="h-5 w-5 text-naf-600" />
+      <Icon name={icon} className="h-5 w-5 text-primary" />
       {children}
     </h3>
   );
@@ -46,7 +51,7 @@ export default function DesignPanel({
   return (
     <div className="space-y-6">
       {/* الألوان */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="palette">الألوان</SectionHead>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Color label="اللون الأساسي" value={theme.primary} onChange={(v) => patch({ theme: { ...theme, primary: v } })} />
@@ -54,10 +59,10 @@ export default function DesignPanel({
           <Color label="لون النص" value={theme.text} onChange={(v) => patch({ theme: { ...theme, text: v } })} />
           <Color label="خلفية البطاقة" value={theme.cardBg} onChange={(v) => patch({ theme: { ...theme, cardBg: v } })} />
         </div>
-      </section>
+      </Card>
 
       {/* الغلاف والوسائط */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="image">الغلاف والوسائط</SectionHead>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -86,8 +91,7 @@ export default function DesignPanel({
           </div>
           <div className="sm:col-span-2">
             <label className="label">رابط مقطع يوتيوب (يُعرض داخل صفحة التقديم)</label>
-            <input
-              className="input"
+            <Input
               dir="ltr"
               placeholder="https://youtube.com/watch?v=..."
               value={cover.youtubeUrl || ""}
@@ -102,17 +106,16 @@ export default function DesignPanel({
             )}
           </div>
         </div>
-      </section>
+      </Card>
 
       {/* الروابط والملفات */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="link">روابط وملفات إضافية</SectionHead>
         <label className="label">روابط</label>
         <div className="space-y-2">
           {(content.links || []).map((l, i) => (
             <div key={i} className="flex gap-2">
-              <input
-                className="input py-1.5"
+              <Input size="sm"
                 placeholder="عنوان الرابط"
                 value={l.label}
                 onChange={(e) => {
@@ -121,8 +124,7 @@ export default function DesignPanel({
                   patch({ content: { ...content, links } });
                 }}
               />
-              <input
-                className="input py-1.5"
+              <Input size="sm"
                 dir="ltr"
                 placeholder="https://..."
                 value={l.url}
@@ -133,7 +135,7 @@ export default function DesignPanel({
                 }}
               />
               <button
-                className="px-2 text-red-500"
+                className="px-2 text-destructive"
                 onClick={() =>
                   patch({
                     content: {
@@ -149,7 +151,7 @@ export default function DesignPanel({
           ))}
         </div>
         <button
-          className="mt-2 text-sm font-medium text-naf-600 hover:underline"
+          className="mt-2 text-sm font-medium text-primary hover:underline"
           onClick={() =>
             patch({
               content: {
@@ -165,7 +167,7 @@ export default function DesignPanel({
         <label className="label mt-5">ملفات للعرض/التنزيل داخل الصفحة</label>
         <div className="space-y-2">
           {(content.files || []).map((f, i) => (
-            <div key={i} className="flex items-center gap-2 rounded-lg border border-slate-200 p-2 text-sm">
+            <div key={i} className="flex items-center gap-2 rounded-lg border border-border p-2 text-sm">
               <span className="flex-1 inline-flex items-center gap-1.5 truncate"><Icon name="paperclip" className="h-4 w-4 shrink-0" /> {f.name}</span>
               <label className="flex items-center gap-1 text-xs">
                 <input
@@ -180,7 +182,7 @@ export default function DesignPanel({
                 يمكن تنزيله
               </label>
               <button
-                className="px-2 text-red-500"
+                className="px-2 text-destructive"
                 onClick={() =>
                   patch({
                     content: {
@@ -195,7 +197,7 @@ export default function DesignPanel({
             </div>
           ))}
         </div>
-        <label className="mt-2 inline-block cursor-pointer text-sm font-medium text-naf-600 hover:underline">
+        <label className="mt-2 inline-block cursor-pointer text-sm font-medium text-primary hover:underline">
           + رفع ملف
           <input
             type="file"
@@ -219,20 +221,20 @@ export default function DesignPanel({
             }}
           />
         </label>
-      </section>
+      </Card>
 
       {/* رسالة ما بعد الإرسال */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="check-circle">رسالة ما بعد الإرسال</SectionHead>
         <label className="label">العنوان</label>
-        <input
-          className="input mb-3"
+        <Input
+          className="mb-3"
           value={after.title || ""}
           onChange={(e) => patch({ afterSubmit: { ...after, title: e.target.value } })}
         />
         <label className="label">الرسالة</label>
         <textarea
-          className="input mb-3"
+          className={cn(inputVariants(), "h-auto py-2 mb-3")}
           value={after.message || ""}
           onChange={(e) => patch({ afterSubmit: { ...after, message: e.target.value } })}
         />
@@ -245,8 +247,7 @@ export default function DesignPanel({
           إظهار الدرجة بعد التسليم (للاختبارات)
         </label>
         <label className="label mt-4">رابط إعادة التوجيه بعد الإرسال (اختياري)</label>
-        <input
-          className="input"
+        <Input
           dir="ltr"
           placeholder="https://..."
           value={after.redirectUrl || ""}
@@ -254,10 +255,10 @@ export default function DesignPanel({
             patch({ afterSubmit: { ...after, redirectUrl: e.target.value } })
           }
         />
-      </section>
+      </Card>
 
       {/* السلوك */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="gear">سلوك صفحة التقديم</SectionHead>
         <div className="space-y-2 text-sm">
           <Toggle
@@ -293,17 +294,16 @@ export default function DesignPanel({
             onChange={(v) => patch({ behavior: { ...behavior, collectEmail: v } })}
           />
         </div>
-      </section>
+      </Card>
 
       {/* الوصول والخصوصية */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="lock">الوصول والخصوصية</SectionHead>
-        <p className="mb-3 text-sm text-slate-500">
+        <p className="mb-3 text-sm text-muted-foreground">
           اترك الحقل فارغًا لجعل النموذج متاحًا للجميع، أو حدّد كلمة مرور لحمايته.
         </p>
         <label className="label">كلمة مرور النموذج</label>
-        <input
-          className="input"
+        <Input
           dir="ltr"
           placeholder="بدون كلمة مرور"
           value={settings.access?.password || ""}
@@ -326,7 +326,7 @@ export default function DesignPanel({
             }
           />
           {settings.access?.oneResponsePerEmail && (
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               يتطلب جمع بريد المستفيد (مُفعّل تلقائيًا).
             </p>
           )}
@@ -335,10 +335,9 @@ export default function DesignPanel({
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label">حد أقصى لعدد الردود</label>
-            <input
+            <Input
               type="number"
               min={0}
-              className="input"
               placeholder="بلا حد"
               value={settings.limits?.maxResponses ?? ""}
               onChange={(e) =>
@@ -353,9 +352,8 @@ export default function DesignPanel({
           </div>
           <div>
             <label className="label">تاريخ الإغلاق التلقائي</label>
-            <input
+            <Input
               type="datetime-local"
-              className="input"
               value={settings.limits?.closeAt || ""}
               onChange={(e) =>
                 patch({
@@ -368,17 +366,16 @@ export default function DesignPanel({
             />
           </div>
         </div>
-      </section>
+      </Card>
 
       {/* الإشعارات */}
-      <section className="card p-5">
+      <Card className="p-5">
         <SectionHead icon="bell">إشعار بريد عند وصول رد</SectionHead>
-        <p className="mb-3 text-sm text-slate-500">
+        <p className="mb-3 text-sm text-muted-foreground">
           أدخل بريدًا لاستقبال إشعار عند كل رد جديد (يتطلب ضبط SMTP في الخادم).
         </p>
         <label className="label">بريد الإشعارات</label>
-        <input
-          className="input"
+        <Input
           dir="ltr"
           placeholder="notify@example.com"
           value={settings.notify?.email || ""}
@@ -388,8 +385,7 @@ export default function DesignPanel({
         />
 
         <label className="label mt-4">رابط Webhook (اختياري)</label>
-        <input
-          className="input"
+        <Input
           dir="ltr"
           placeholder="https://example.com/webhook"
           value={settings.notify?.webhookUrl || ""}
@@ -397,7 +393,7 @@ export default function DesignPanel({
             patch({ notify: { ...settings.notify, webhookUrl: e.target.value } })
           }
         />
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-muted-foreground">
           يُرسل بيانات كل رد إلى هذا الرابط (يعمل مع Slack/Zapier وغيرها).
         </p>
 
@@ -412,8 +408,7 @@ export default function DesignPanel({
         </div>
         {settings.notify?.confirmToRespondent && (
           <div className="mt-3 space-y-2">
-            <input
-              className="input"
+            <Input
               placeholder="عنوان رسالة التأكيد"
               value={settings.notify?.confirmSubject || ""}
               onChange={(e) =>
@@ -421,7 +416,7 @@ export default function DesignPanel({
               }
             />
             <textarea
-              className="input"
+              className={cn(inputVariants(), "h-auto py-2")}
               placeholder="نص رسالة التأكيد"
               value={settings.notify?.confirmMessage || ""}
               onChange={(e) =>
@@ -430,29 +425,28 @@ export default function DesignPanel({
             />
           </div>
         )}
-      </section>
+      </Card>
 
       {/* التكاملات الخارجية */}
-      <section className="card p-5">
-        <SectionHead icon="layers">التكاملات الخارجية</SectionHead>
+      <Card className="p-5">
+        <SectionHead icon="plug">التكاملات الخارجية</SectionHead>
         <IntegrationsPanel
           formId={formId}
           integrations={integrations}
           onChange={(next) => patch({ integrations: next })}
         />
-      </section>
+      </Card>
 
       {/* إعدادات الاختبار */}
       {formType === "EXAM" && (
-        <section className="card p-5">
+        <Card className="p-5">
           <SectionHead icon="edit">إعدادات الاختبار</SectionHead>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="label">مدة الاختبار (دقائق)</label>
-              <input
+              <Input
                 type="number"
                 min={0}
-                className="input"
                 placeholder="بلا حد"
                 value={exam.timeLimitMin ?? ""}
                 onChange={(e) =>
@@ -467,10 +461,9 @@ export default function DesignPanel({
             </div>
             <div>
               <label className="label">درجة النجاح</label>
-              <input
+              <Input
                 type="number"
                 min={0}
-                className="input"
                 placeholder="بدون"
                 value={exam.passScore ?? ""}
                 onChange={(e) =>
@@ -487,10 +480,9 @@ export default function DesignPanel({
               <label className="label">
                 عدد الأسئلة المعروضة (بنك أسئلة عشوائي)
               </label>
-              <input
+              <Input
                 type="number"
                 min={0}
-                className="input"
                 placeholder="كل الأسئلة"
                 value={exam.questionCount ?? ""}
                 onChange={(e) =>
@@ -504,16 +496,15 @@ export default function DesignPanel({
                   })
                 }
               />
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 يُختار هذا العدد عشوائيًا من أسئلة الاختبار لكل مستفيد.
               </p>
             </div>
             <div>
               <label className="label">أقصى عدد محاولات لكل بريد</label>
-              <input
+              <Input
                 type="number"
                 min={0}
-                className="input"
                 placeholder="بلا حد"
                 value={exam.maxAttempts ?? ""}
                 onChange={(e) =>
@@ -525,14 +516,14 @@ export default function DesignPanel({
                   })
                 }
               />
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 يتطلّب تفعيل «طلب بريد المستفيد قبل البدء».
               </p>
             </div>
           </div>
 
           {/* الشهادة */}
-          <div className="mt-4 border-t border-slate-100 pt-4">
+          <div className="mt-4 border-t border-border pt-4">
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
@@ -546,8 +537,7 @@ export default function DesignPanel({
             {exam.certificate && (
               <div className="mt-2">
                 <label className="label">عنوان الشهادة</label>
-                <input
-                  className="input"
+                <Input
                   placeholder="شهادة إتمام"
                   value={exam.certificateTitle || ""}
                   onChange={(e) =>
@@ -571,7 +561,7 @@ export default function DesignPanel({
               onChange={(v) => patch({ exam: { ...exam, showAnswers: v } })}
             />
           </div>
-        </section>
+        </Card>
       )}
     </div>
   );
@@ -611,7 +601,7 @@ function IntegrationsPanel({
     const okAll = (d.results || []).every((r: any) => r.ok);
     setMsg(
       okAll
-        ? "تم الإرسال بنجاح"
+        ? "تم الإرسال"
         : `فشل بعض الوجهات: ${(d.results || [])
             .filter((r: any) => !r.ok)
             .map((r: any) => `${r.kind} (${r.error || r.status})`)
@@ -630,35 +620,38 @@ function IntegrationsPanel({
       {/* Google Sheets */}
       <div>
         <label className="label">مزامنة Google Sheets — رابط Apps Script</label>
-        <input
-          className="input"
+        <Input
           dir="ltr"
           placeholder="https://script.google.com/macros/s/.../exec"
           value={integrations.sheetsUrl || ""}
           onChange={(e) => onChange({ ...integrations, sheetsUrl: e.target.value })}
         />
         <details className="mt-2">
-          <summary className="cursor-pointer text-xs font-medium text-naf-600">
+          <summary className="cursor-pointer text-xs font-medium text-primary">
             كيف أجهّز الرابط؟
           </summary>
-          <ol className="mt-2 list-decimal space-y-1 pr-5 text-xs leading-relaxed text-slate-500">
-            <li>افتح جدول Google Sheets ثم: الإضافات ← Apps Script.</li>
+          <ol className="mt-2 list-decimal space-y-1 ps-5 text-xs text-muted-foreground">
             <li>
-              الصق دالة تستقبل <span dir="ltr">POST</span> وتضيف صفًا، مثل:
-              <code className="mt-1 block rounded bg-slate-100 p-2 text-[11px]" dir="ltr">
+              فتح جدول <bdi>Google Sheets</bdi>، ثم: الإضافات، ثم{" "}
+              <bdi>Apps Script</bdi>.
+            </li>
+            <li>
+              لصق دالة تستقبل <bdi>POST</bdi> وتضيف صفًا، مثل:
+              <code className="mt-1 block rounded-sm bg-muted p-2 text-xs" dir="ltr">
                 {`function doPost(e){const d=JSON.parse(e.postData.contents);const s=SpreadsheetApp.getActiveSheet();const f=d.fields||{};if(s.getLastRow()===0)s.appendRow(['submittedAt','email',...Object.keys(f)]);s.appendRow([d.submittedAt,d.email,...Object.values(f).map(v=>typeof v==='object'?JSON.stringify(v):v)]);return ContentService.createTextOutput('ok');}`}
               </code>
             </li>
             <li>
-              انشر: Deploy ← New deployment ← Web app ← الوصول لـ «Anyone»، وانسخ
-              رابط <span dir="ltr">/exec</span> هنا.
+              النشر: <bdi>Deploy</bdi>، ثم <bdi>New deployment</bdi>، ثم{" "}
+              <bdi>Web app</bdi>، ثم ضبط الوصول على «<bdi>Anyone</bdi>»، ثم نسخ
+              رابط <bdi>/exec</bdi> هنا.
             </li>
           </ol>
         </details>
       </div>
 
       {/* واجهة برمجية للقراءة */}
-      <div className="border-t border-slate-100 pt-4">
+      <div className="border-t border-border pt-4">
         <Toggle
           label="تفعيل واجهة برمجية لقراءة الردود (JSON)"
           checked={!!integrations.apiEnabled}
@@ -678,9 +671,9 @@ function IntegrationsPanel({
           <div className="mt-3 space-y-2">
             <label className="label">رمز الوصول (سرّي)</label>
             <div className="flex gap-2">
-              <input className="input py-1.5 text-xs" dir="ltr" readOnly value={integrations.apiToken || ""} />
-              <button
-                className="btn-ghost shrink-0 py-1.5 text-xs"
+              <Input size="sm" dir="ltr" readOnly value={integrations.apiToken || ""} />
+              <Button variant="outline" size="sm"
+                className="shrink-0"
                 onClick={() =>
                   onChange({
                     ...integrations,
@@ -689,50 +682,54 @@ function IntegrationsPanel({
                 }
               >
                 تدوير
-              </button>
+              </Button>
             </div>
-            <p className="text-xs text-slate-500">الاستخدام:</p>
-            <code className="block overflow-x-auto rounded bg-slate-100 p-2 text-[11px]" dir="ltr">
+            <p className="text-xs text-muted-foreground">الاستخدام:</p>
+            <code className="block overflow-x-auto rounded-sm bg-muted p-2 text-xs" dir="ltr">
               curl -H &quot;Authorization: Bearer {integrations.apiToken || "TOKEN"}&quot; {apiUrl}
             </code>
-            <p className="text-xs text-slate-400">
-              تدعم <span dir="ltr">?limit=</span> و<span dir="ltr">?since=</span>{" "}
-              (تاريخ ISO). الرمز سرّي ولا يُرسل لصفحة التعبئة.
+            <p className="text-xs text-muted-foreground">
+              تدعم <bdi>?limit=</bdi> و<bdi>?since=</bdi> (تاريخ <bdi>ISO</bdi>).
+              الرمز سرّي ولا يُرسل لصفحة التعبئة.
             </p>
           </div>
         )}
       </div>
 
       {/* سجل التسليم */}
-      <div className="border-t border-slate-100 pt-4">
+      <div className="border-t border-border pt-4">
         <div className="flex flex-wrap items-center gap-2">
-          <button className="btn-ghost py-1.5 text-sm" disabled={busy} onClick={loadLogs}>
+          <Button variant="outline" size="sm" disabled={busy} onClick={loadLogs}>
             سجل التسليم
-          </button>
-          <button className="btn-ghost py-1.5 text-sm" disabled={busy} onClick={resend}>
+          </Button>
+          <Button variant="outline" size="sm" disabled={busy} onClick={resend}>
             إعادة إرسال آخر رد (اختبار)
-          </button>
-          {busy && <span className="text-xs text-slate-400">جارٍ…</span>}
-          {msg && <span className="text-xs text-slate-600">{msg}</span>}
+          </Button>
+          {busy && <span className="text-xs text-muted-foreground">جارٍ…</span>}
+          {msg && <span className="text-xs text-muted-foreground">{msg}</span>}
         </div>
         {logs && (
           <div className="mt-3 space-y-1.5">
             {logs.length === 0 && (
-              <p className="text-xs text-slate-400">لا توجد عمليات تسليم بعد.</p>
+              <p className="text-xs text-muted-foreground">لا توجد عمليات تسليم بعد.</p>
             )}
             {logs.map((l) => (
               <div
                 key={l.id}
-                className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 p-2 text-xs"
+                className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-2 text-xs"
               >
-                <span className={`chip ${l.ok ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                <span className={`chip ${l.ok ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}`}>
                   {l.ok ? "نجح" : "فشل"}
                 </span>
-                <span className="text-slate-500">{l.kind}</span>
-                <span className="text-slate-400">HTTP {l.status || "—"}</span>
-                <span className="text-slate-400">محاولات: {l.attempts}</span>
-                {l.error && <span className="text-red-600">{l.error}</span>}
-                <span className="ms-auto text-slate-400">
+                <span className="text-muted-foreground">{l.kind}</span>
+                <span className="text-muted-foreground">HTTP {l.status || "—"}</span>
+                <span className="text-muted-foreground">محاولات: {l.attempts}</span>
+                {l.error && (
+                  <span className="inline-flex items-center gap-1 text-destructive">
+                    <Icon name="alert" className="h-4 w-4" /> {l.error}
+                  </span>
+                )}
+                <span className="ms-auto text-muted-foreground">
                   {formatDateTime(l.createdAt)}
                 </span>
               </div>
@@ -751,11 +748,11 @@ function Color({ label, value, onChange }: { label: string; value?: string; onCh
       <div className="flex items-center gap-2">
         <input
           type="color"
-          className="h-9 w-12 cursor-pointer rounded"
-          value={value || "#000000"}
+          className="h-9 w-12 cursor-pointer rounded-sm"
+          value={value || NAF_FOREGROUND}
           onChange={(e) => onChange(e.target.value)}
         />
-        <input className="input py-1.5" dir="ltr" value={value || ""} onChange={(e) => onChange(e.target.value)} />
+        <Input size="sm" dir="ltr" value={value || ""} onChange={(e) => onChange(e.target.value)} />
       </div>
     </div>
   );
@@ -763,7 +760,7 @@ function Color({ label, value, onChange }: { label: string; value?: string; onCh
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
+    <label className="flex cursor-pointer items-center justify-between rounded-lg border border-border px-3 py-2">
       <span>{label}</span>
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
     </label>

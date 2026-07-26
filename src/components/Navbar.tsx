@@ -4,6 +4,7 @@ import ThemeToggle from "./ThemeToggle";
 import { currentSession } from "@/lib/session";
 import { getUserById } from "@/lib/repo";
 import { Icon } from "@/components/ui/Icon";
+import { NafLogo } from "@/components/ui/naf-logo";
 
 export default async function Navbar({
   crumbs = [],
@@ -15,41 +16,44 @@ export default async function Navbar({
 
   return (
     <header className="glass sticky top-0 z-20">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2.5">
-        <div className="flex items-center gap-2 text-sm">
-          <Link href="/" className="flex items-center gap-2.5 font-extrabold">
-            <img
-              src="/naf-logo.jpg"
-              alt="ناف"
-              className="h-9 w-9 rounded-xl object-cover ring-1 ring-brand-taupe/40"
-            />
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-2.5">
+        {/* min-w-0 على الحاضن وtruncate على كل فتاتة: مسار طويل يُقصَّر
+            بدل أن يدفع الشريط فيتجاوز عرض الشاشة (فحص ٣٧٥ بكسل). */}
+        <div className="flex min-w-0 items-center gap-2 text-sm">
+          <Link href="/" className="flex shrink-0 items-center gap-2.5 font-bold">
+            <NafLogo variant="mark" className="h-9 w-9" />
             <span className="gradient-text text-base">استبانات ناف</span>
           </Link>
           {crumbs.map((c, i) => (
-            <span key={i} className="flex items-center gap-2 text-slate-400">
+            <span key={i} className="flex min-w-0 items-center gap-2 text-muted-foreground">
               <span className="opacity-50">/</span>
               {c.href ? (
-                <Link href={c.href} className="text-slate-600 hover:text-naf-600">
+                <Link
+                  href={c.href}
+                  className="truncate text-muted-foreground hover:text-primary"
+                >
                   {c.label}
                 </Link>
               ) : (
-                <span className="text-slate-700">{c.label}</span>
+                <span className="truncate text-foreground">{c.label}</span>
               )}
             </span>
           ))}
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5">
           {me?.role === "admin" && (
             <Link
               href="/users"
-              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
+              aria-label="المستخدمون"
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
             >
-              <Icon name="users" className="h-4 w-4" /> المستخدمون
+              <Icon name="users" className="h-4 w-4" />
+              <span className="hidden sm:inline">المستخدمون</span>
             </Link>
           )}
           {me && (
-            <span className="hidden text-xs text-slate-400 sm:inline" dir="ltr">
-              {me.email}
+            <span className="hidden text-xs text-muted-foreground sm:inline">
+              <bdi>{me.email}</bdi>
             </span>
           )}
           <ThemeToggle />

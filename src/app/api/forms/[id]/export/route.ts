@@ -22,7 +22,7 @@ export async function GET(
 
   const formId = (await params).id;
   if (!(await authorizeForm(formId)))
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
 
   const [form, reviews] = await Promise.all([
     getFormWithResponses(formId),

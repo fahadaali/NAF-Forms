@@ -6,7 +6,7 @@ import { hashPassword, DEFAULT_PASSWORD } from "@/lib/auth";
 // قائمة المستخدمين (مسؤول فقط)
 export async function GET() {
   if (!(await requireAdmin()))
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
   const users = await listUsers();
   return NextResponse.json(
     users.map((u) => ({
@@ -22,11 +22,11 @@ export async function GET() {
 // إضافة مستخدم بكلمة المرور الافتراضية 1234 (مسؤول فقط)
 export async function POST(req: Request) {
   if (!(await requireAdmin()))
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
   const { email, role } = await req.json();
   const clean = String(email || "").trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean))
-    return NextResponse.json({ error: "بريد غير صالح" }, { status: 400 });
+    return NextResponse.json({ error: "أدخل بريدًا إلكترونيًا صحيحًا" }, { status: 400 });
   const exists = await getUserByEmail(clean);
   if (exists)
     return NextResponse.json({ error: "البريد مستخدم مسبقًا" }, { status: 409 });

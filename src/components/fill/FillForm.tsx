@@ -10,6 +10,9 @@ import {
   validateAnswer,
 } from "@/lib/utils";
 import type { FormDTO } from "@/lib/types";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { NAF_PRIMARY } from "@/lib/brand";
 
 type Phase = "intro" | "question" | "done";
 
@@ -187,7 +190,11 @@ export default function FillForm({
     color: theme.text,
     minHeight: "100vh",
   };
-  const accent = theme.primary || "#44528a";
+  // لون التمييز يأتي من إعدادات النموذج نفسه (اختيار المستخدم، مخزَّن في D1)،
+  // فسطح التعبئة لا يتبع الوضعين الفاتح/الداكن. لذلك يبقى `text-white` هنا بدل
+  // `text-primary-foreground`: الرمز ينقلب مع الوضع والخلفية لا تنقلب.
+  // ربط هذا السطح بالسجلّ موقوف على قرار الألوان المخزَّنة (audit/mapping.md §٥).
+  const accent = theme.primary || NAF_PRIMARY;
 
   // تحقق من بطاقة كاملة (قد تضم عدة أسئلة)
   function validateStep(stepQs: typeof questions): boolean {
@@ -359,26 +366,30 @@ export default function FillForm({
     return (
       <div style={pageStyle} className="grid place-items-center px-4">
         <div
-          className="w-full max-w-sm rounded-3xl p-8 text-center shadow-xl"
+          className="w-full max-w-sm rounded-xl p-8 text-center shadow-xl"
           style={{ background: theme.cardBg }}
         >
-          <div className="mb-3 flex justify-center text-slate-400">
+          <div className="mb-3 flex justify-center text-muted-foreground">
             <Icon name="lock" className="h-12 w-12" />
           </div>
-          <h1 className="text-xl font-extrabold">{form.title}</h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <h1 className="text-xl font-bold">{form.title}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             هذا النموذج محمي بكلمة مرور. أدخلها للمتابعة.
           </p>
-          <input
+          <Input
             type="password"
-            className="input mt-5 text-center"
+            className="mt-5 text-center"
             placeholder="كلمة المرور"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && unlock()}
             autoFocus
           />
-          {pwError && <p className="mt-2 text-sm text-red-600">{pwError}</p>}
+          {pwError && (
+            <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-destructive">
+              <Icon name="alert" className="h-4 w-4" /> {pwError}
+            </p>
+          )}
           <button
             onClick={unlock}
             disabled={checking || !password}
@@ -398,21 +409,21 @@ export default function FillForm({
     return (
       <div style={pageStyle} className="grid place-items-center px-4">
         <div
-          className="w-full max-w-lg rounded-3xl p-10 text-center shadow-xl"
+          className="w-full max-w-lg rounded-xl p-10 text-center shadow-xl"
           style={{ background: theme.cardBg }}
         >
-          <div className="mb-4 flex justify-center text-green-500">
+          <div className="mb-4 flex justify-center text-success">
             <Icon name="check-circle" className="h-16 w-16" />
           </div>
-          <h1 className="text-2xl font-extrabold">{after.title}</h1>
-          <p className="mt-3 text-slate-500">{after.message}</p>
+          <h1 className="text-2xl font-bold">{after.title}</h1>
+          <p className="mt-3 text-muted-foreground">{after.message}</p>
           {after.showScore && result?.total ? (
             <div
-              className="mx-auto mt-6 inline-block rounded-2xl px-8 py-4 text-white"
+              className="mx-auto mt-6 inline-block rounded-xl px-8 py-4 text-white"
               style={{ background: accent }}
             >
               <div className="text-sm opacity-90">درجتك</div>
-              <div className="text-3xl font-extrabold">
+              <div className="text-3xl font-bold">
                 {result.score} / {result.total}
               </div>
             </div>
@@ -422,8 +433,8 @@ export default function FillForm({
             <div
               className={`mx-auto mt-4 inline-block rounded-full px-6 py-2 text-sm font-bold ${
                 result.passed
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
+                  ? "bg-success/15 text-success"
+                  : "bg-destructive/15 text-destructive"
               }`}
             >
               <span className="inline-flex items-center gap-1">
@@ -437,33 +448,40 @@ export default function FillForm({
           )}
 
           {result?.review && result.review.length > 0 && (
-            <div className="mt-6 space-y-2 text-right">
+            <div className="mt-6 space-y-2 text-start">
               <h3 className="font-bold">مراجعة الإجابات</h3>
               {result.review.map((r: any, i: number) => (
                 <div
                   key={i}
                   className={`rounded-xl border p-3 text-sm ${
                     r.correct
-                      ? "border-green-200 bg-green-50"
-                      : "border-red-200 bg-red-50"
+                      ? "border-success/30 bg-success/10"
+                      : "border-destructive/30 bg-destructive/10"
                   }`}
                 >
                   <div className="flex items-center gap-1.5 font-semibold">
                     <Icon
                       name={r.correct ? "check-circle" : "x-circle"}
-                      className={`h-4 w-4 ${r.correct ? "text-green-600" : "text-red-600"}`}
+                      className={`h-4 w-4 ${r.correct ? "text-success" : "text-destructive"}`}
                     />
                     {r.label}
                   </div>
                   {!r.correct && (
-                    <div className="mt-1 text-xs text-slate-600">
-                      إجابتك: {String(Array.isArray(r.your) ? r.your.join("، ") : r.your) || "—"}
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      إجابتك:{" "}
+                      <bdi>
+                        {String(
+                          Array.isArray(r.your) ? r.your.join("، ") : r.your
+                        ) || "—"}
+                      </bdi>
                       {" · "}الصحيحة:{" "}
-                      {String(
-                        Array.isArray(r.correctAnswer)
-                          ? r.correctAnswer.join("، ")
-                          : r.correctAnswer
-                      )}
+                      <bdi>
+                        {String(
+                          Array.isArray(r.correctAnswer)
+                            ? r.correctAnswer.join("، ")
+                            : r.correctAnswer
+                        )}
+                      </bdi>
                     </div>
                   )}
                 </div>
@@ -482,7 +500,7 @@ export default function FillForm({
                 className="mt-6 inline-flex items-center gap-2 rounded-xl px-6 py-3 font-bold text-white shadow-lg"
                 style={{ background: accent }}
               >
-                <Icon name="badge-check" className="h-5 w-5" /> استلام الشهادة
+                <Icon name="certificate" className="h-5 w-5" /> استلام الشهادة
               </a>
             )}
 
@@ -508,7 +526,7 @@ export default function FillForm({
     return (
       <div style={pageStyle} className="px-4 py-10">
         <div className="mx-auto max-w-2xl">
-          <div className="overflow-hidden rounded-3xl shadow-xl" style={{ background: theme.cardBg }}>
+          <div className="overflow-hidden rounded-xl shadow-xl" style={{ background: theme.cardBg }}>
             {cover.imageUrl && (
               <img src={cover.imageUrl} alt="" className="h-48 w-full object-cover" />
             )}
@@ -516,9 +534,9 @@ export default function FillForm({
               {cover.logoUrl && (
                 <img src={cover.logoUrl} alt="" className="mb-4 h-14 object-contain" />
               )}
-              <h1 className="text-3xl font-extrabold">{form.title}</h1>
+              <h1 className="text-3xl font-bold">{form.title}</h1>
               {form.description && (
-                <p className="mt-3 whitespace-pre-line text-slate-500">{form.description}</p>
+                <p className="mt-3 whitespace-pre-line text-muted-foreground">{form.description}</p>
               )}
 
               {embed && (
@@ -535,7 +553,7 @@ export default function FillForm({
                       className="chip inline-flex items-center gap-1.5 border"
                       style={{ borderColor: accent, color: accent }}
                     >
-                      <Icon name="link" className="h-3.5 w-3.5" />
+                      <Icon name="link" className="h-4 w-4" />
                       {l.label || l.url}
                     </a>
                   ))}
@@ -547,7 +565,7 @@ export default function FillForm({
                   {content.files.map((f, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-2.5 text-sm"
+                      className="flex items-center justify-between rounded-xl border border-border px-4 py-2.5 text-sm"
                     >
                       <span className="inline-flex items-center gap-1.5 truncate">
                         <Icon name="paperclip" className="h-4 w-4 shrink-0" />
@@ -569,14 +587,14 @@ export default function FillForm({
               )}
 
               {behavior.collectEmail && (
-                <div className="mt-6 text-right">
+                <div className="mt-6 text-start">
                   <label className="label">
-                    بريدك الإلكتروني <span className="text-red-500">*</span>
+                    بريدك الإلكتروني <span className="text-destructive">*</span>
                   </label>
-                  <input
+                  <Input
                     type="email"
                     dir="ltr"
-                    className="input text-right"
+                    className="text-start"
                     placeholder="name@example.com"
                     value={email}
                     onChange={(e) => {
@@ -585,7 +603,9 @@ export default function FillForm({
                     }}
                   />
                   {emailError && (
-                    <p className="mt-1 text-sm text-red-600">{emailError}</p>
+                    <p className="mt-1 flex items-center gap-1.5 text-sm text-destructive">
+                      <Icon name="alert" className="h-4 w-4" /> {emailError}
+                    </p>
                   )}
                 </div>
               )}
@@ -597,7 +617,7 @@ export default function FillForm({
                     behavior.collectEmail &&
                     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
                   ) {
-                    setEmailError("يرجى إدخال بريد إلكتروني صحيح");
+                    setEmailError("أدخل بريدًا إلكترونيًا صحيحًا");
                     return;
                   }
                   setPhase("question");
@@ -614,11 +634,13 @@ export default function FillForm({
                 style={{ background: accent }}
               >
                 البدء
-                <Icon name="arrow-right" className="h-5 w-5 rotate-180" />
+                <Icon name="arrow-left" className="h-5 w-5" />
               </button>
-              <p className="mt-3 text-center text-xs text-slate-400">
-                {questions.filter((q) => isInputQuestion(q.type)).length} سؤال ·
-                اضغط Enter للانتقال
+              <p className="mt-3 text-center text-xs text-muted-foreground">
+                <bdi>
+                  {questions.filter((q) => isInputQuestion(q.type)).length}
+                </bdi>{" "}
+                سؤال · اضغط <bdi>Enter</bdi> للانتقال
               </p>
             </div>
           </div>
@@ -632,15 +654,20 @@ export default function FillForm({
     return (
       <div style={pageStyle} className="px-4 py-10">
         <div className="mx-auto max-w-2xl space-y-4">
-          <h1 className="text-2xl font-extrabold">{form.title}</h1>
+          <h1 className="text-2xl font-bold">{form.title}</h1>
           {questions
             .filter((q) => q.type !== "PAGE_BREAK")
             .map((q, i) => (
-              <div key={q.id} className="rounded-2xl p-6 shadow-sm" style={{ background: theme.cardBg }}>
+              <div key={q.id} className="rounded-xl p-6 shadow-sm" style={{ background: theme.cardBg }}>
                 <QuestionCard q={q} value={answers[q.id]} onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))} accent={accent} index={i} />
               </div>
             ))}
-          {error && <p className="text-center font-medium text-red-600">{error}</p>}
+          {error && (
+            <Alert variant="destructive">
+              <Icon name="alert" className="h-5 w-5" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <button
             onClick={submit}
             disabled={submitting}
@@ -680,7 +707,8 @@ export default function FillForm({
         autoComplete="off"
         value={hp}
         onChange={(e) => setHp(e.target.value)}
-        style={{ position: "absolute", left: "-9999px", opacity: 0 }}
+        // خاصية منطقية: القاعدة ٢ تمنع `left` في CSS الصِرف كما تمنع `left-*`
+        style={{ position: "absolute", insetInlineStart: "-9999px", opacity: 0 }}
         aria-hidden
       />
       {behavior.showProgress !== false && (
@@ -695,16 +723,16 @@ export default function FillForm({
           >
             <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: accent }} />
           </div>
-          <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
+          <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>
-              {safeStep + 1} من {steps.length}
+              <bdi>{safeStep + 1}</bdi> من <bdi>{steps.length}</bdi>
             </span>
             {timeLimit && remaining !== null && (
               <span
-                className={`inline-flex items-center gap-1 font-bold ${remaining <= 30 ? "text-red-500" : ""}`}
+                className={`inline-flex items-center gap-1 font-bold ${remaining <= 30 ? "text-destructive" : ""}`}
                 dir="ltr"
               >
-                <Icon name="clock" className="h-3.5 w-3.5" />
+                <Icon name="clock" className="h-4 w-4" />
                 {String(Math.floor(remaining / 60)).padStart(2, "0")}:
                 {String(remaining % 60).padStart(2, "0")}
               </span>
@@ -714,8 +742,8 @@ export default function FillForm({
       )}
 
       <div className="flex flex-1 items-center justify-center py-6">
-        <div key={safeStep} className={`w-full max-w-2xl rounded-3xl p-8 shadow-xl ${anim}`} style={{ background: theme.cardBg }}>
-          <div className={multi ? "space-y-8 divide-y divide-slate-100" : ""}>
+        <div key={safeStep} className={`w-full max-w-2xl rounded-xl p-8 shadow-xl ${anim}`} style={{ background: theme.cardBg }}>
+          <div className={multi ? "space-y-8 divide-y divide-border" : ""}>
             {currentStep.map((q, i) => (
               <div key={q.id} className={multi && i > 0 ? "pt-6" : ""}>
                 <QuestionCard
@@ -733,7 +761,12 @@ export default function FillForm({
               </div>
             ))}
           </div>
-          {error && <p className="mt-4 font-medium text-red-600">{error}</p>}
+          {error && (
+            <Alert variant="destructive" className="mt-4">
+              <Icon name="alert" className="h-5 w-5" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
           {/* حفظ ومتابعة لاحقًا */}
           {behavior.allowSaveResume && (
@@ -749,15 +782,15 @@ export default function FillForm({
               </button>
               {resumeUrl && (
                 <div className="mt-2">
-                  <p className="text-xs text-slate-500">
-                    احفظ هذا الرابط لمتابعة التعبئة لاحقًا (نُسخ تلقائيًا):
+                  <p className="text-xs text-muted-foreground">
+                    هذا الرابط يتيح متابعة التعبئة لاحقًا (نُسخ تلقائيًا):
                   </p>
-                  <input
+                  <Input size="sm"
                     readOnly
                     dir="ltr"
                     value={resumeUrl}
                     onFocus={(e) => e.currentTarget.select()}
-                    className="input mt-1 py-1.5 text-xs"
+                    className="mt-1"
                   />
                 </div>
               )}
@@ -768,7 +801,7 @@ export default function FillForm({
             {behavior.allowBack !== false ? (
               <button
                 onClick={goBack}
-                className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-500 hover:bg-black/5"
+                className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-black/5"
               >
                 <Icon name="arrow-right" className="h-4 w-4" /> السابق
               </button>
@@ -789,7 +822,7 @@ export default function FillForm({
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5">
-                  التالي <Icon name="arrow-right" className="h-4 w-4 rotate-180" />
+                  التالي <Icon name="arrow-left" className="h-4 w-4" />
                 </span>
               )}
             </button>
@@ -819,12 +852,12 @@ function QuestionCard({
     return (
       <div>
         {q.label && (
-          <h2 className="text-2xl font-extrabold" style={{ color: accent }}>
+          <h2 className="text-2xl font-bold" style={{ color: accent }}>
             {q.label}
           </h2>
         )}
         {q.description && (
-          <p className="mt-2 whitespace-pre-line text-slate-600">{q.description}</p>
+          <p className="mt-2 whitespace-pre-line text-muted-foreground">{q.description}</p>
         )}
       </div>
     );
@@ -839,18 +872,18 @@ function QuestionCard({
           <img
             src={url}
             alt={q.config?.caption || ""}
-            className="mx-auto max-h-[420px] w-full rounded-2xl object-contain"
+            className="mx-auto max-h-[420px] w-full rounded-xl object-contain"
           />
         ) : (
-          <div className="grid h-48 place-items-center rounded-2xl bg-slate-100 text-slate-400">
+          <div className="grid h-48 place-items-center rounded-xl bg-muted text-muted-foreground">
             <Icon name="image" className="h-10 w-10" />
           </div>
         )}
         {q.config?.caption && (
-          <p className="mt-3 text-center text-sm text-slate-500">{q.config.caption}</p>
+          <p className="mt-3 text-center text-sm text-muted-foreground">{q.config.caption}</p>
         )}
         {q.description && (
-          <p className="mt-2 whitespace-pre-line text-slate-600">{q.description}</p>
+          <p className="mt-2 whitespace-pre-line text-muted-foreground">{q.description}</p>
         )}
       </div>
     );
@@ -863,19 +896,19 @@ function QuestionCard({
       <div>
         {q.label && <h2 className="mb-3 text-xl font-bold">{q.label}</h2>}
         {embed ? (
-          <iframe className="aspect-video w-full rounded-2xl" src={embed} allowFullScreen />
+          <iframe className="aspect-video w-full rounded-xl" src={embed} allowFullScreen />
         ) : fileUrl ? (
-          <video src={fileUrl} controls className="w-full rounded-2xl" />
+          <video src={fileUrl} controls className="w-full rounded-xl" />
         ) : (
-          <div className="grid h-48 place-items-center rounded-2xl bg-slate-100 text-slate-400">
+          <div className="grid h-48 place-items-center rounded-xl bg-muted text-muted-foreground">
             <Icon name="film" className="h-10 w-10" />
           </div>
         )}
         {q.config?.caption && (
-          <p className="mt-3 text-center text-sm text-slate-500">{q.config.caption}</p>
+          <p className="mt-3 text-center text-sm text-muted-foreground">{q.config.caption}</p>
         )}
         {q.description && (
-          <p className="mt-2 whitespace-pre-line text-slate-600">{q.description}</p>
+          <p className="mt-2 whitespace-pre-line text-muted-foreground">{q.description}</p>
         )}
       </div>
     );
@@ -884,13 +917,13 @@ function QuestionCard({
   return (
     <div>
       <div className="mb-1 text-sm font-medium" style={{ color: accent }}>
-        سؤال {index + 1}
+        سؤال <bdi>{index + 1}</bdi>
       </div>
-      <h2 className="text-xl font-bold leading-relaxed">
+      <h2 className="text-xl font-bold">
         {q.label}
-        {q.required && <span className="mr-1 text-red-500">*</span>}
+        {q.required && <span className="ms-1 text-destructive">*</span>}
       </h2>
-      {q.description && <p className="mt-1.5 text-sm text-slate-500">{q.description}</p>}
+      {q.description && <p className="mt-1.5 text-sm text-muted-foreground">{q.description}</p>}
       <div className="mt-5">
         <QuestionInput
           question={q}

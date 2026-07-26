@@ -24,15 +24,15 @@ export default async function FillPage({
 
   if (form.status === "CLOSED" || timeUp || full) {
     return (
-      <div className="grid min-h-screen place-items-center bg-slate-50 px-4 text-center">
+      <div className="grid min-h-screen place-items-center bg-muted px-4 text-center">
         <div>
-          <div className="mb-3 flex justify-center text-slate-300">
+          <div className="mb-3 flex justify-center text-muted-foreground">
             <Icon name="lock" className="h-14 w-14" />
           </div>
           <h1 className="text-xl font-bold">
             {full ? "اكتمل العدد الأقصى للردود" : timeUp ? "انتهى وقت استقبال الردود" : "هذا النموذج مغلق حاليًا"}
           </h1>
-          <p className="mt-2 text-slate-500">لم يعد بالإمكان استقبال ردود جديدة.</p>
+          <p className="mt-2 text-muted-foreground">لم يعد بالإمكان استقبال ردود جديدة.</p>
         </div>
       </div>
     );
@@ -75,7 +75,8 @@ export default async function FillPage({
   return (
     <>
       {form.status === "DRAFT" && (
-        <div className="bg-amber-400 py-1.5 text-center text-sm font-medium text-amber-950">
+        <div className="flex items-center justify-center gap-2 bg-warning py-1.5 text-center text-sm font-medium text-warning-foreground">
+          <Icon name="alert" className="h-4 w-4" />
           وضع المعاينة — هذا النموذج لم يُنشر بعد، ولن تُسجَّل الردود
         </div>
       )}

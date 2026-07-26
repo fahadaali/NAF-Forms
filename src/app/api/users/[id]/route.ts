@@ -10,7 +10,7 @@ export async function PATCH(
 ) {
   const admin = await requireAdmin();
   if (!admin)
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
   const body = await req.json();
 
   const data: any = {};
@@ -39,7 +39,7 @@ export async function DELETE(
 ) {
   const admin = await requireAdmin();
   if (!admin)
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
   if (admin.uid === (await params).id)
     return NextResponse.json(
       { error: "لا يمكنك حذف حسابك" },

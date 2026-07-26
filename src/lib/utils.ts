@@ -1,4 +1,5 @@
 import { DEFAULT_SETTINGS, type FormSettings } from "./types";
+import { formatDate, formatTime } from "./naf-format";
 import {
   NON_INPUT_TYPES,
   HIDDEN_FIELD_TYPES,
@@ -93,14 +94,30 @@ export function isHiddenField(type: string): boolean {
   return HIDDEN_FIELD_TYPES.includes(type as FieldTypeId);
 }
 
-const AR_DATE = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
-
+/**
+ * التاريخ والوقت من مكتبة التنسيق المشتركة `naf-format` في السجلّ.
+ * لا تنسيق داخلي: القاعدة ٨ تُلزم بأن يمرّ كل رقم وتاريخ من هناك.
+ *
+ * الصيغة السابقة كانت `ar-SA-u-ca-gregory` بـ dateStyle/timeStyle، فأنتجت
+ * أرقامًا عربية-هندية (٢٠٢٦/٠٧/٢٦) ونظام ١٢ ساعة بعلامة ص/م — وكلاهما
+ * مخالف لـ naf-terms §٥.
+ */
 export function formatDateTime(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  return AR_DATE.format(date);
+  return `${formatDate(d)} ${formatTime(d)}`;
+}
+
+/**
+ * عزل ثنائي الاتجاه لقيمة داخل نص عربي — مكافئ `<bdi>` في النصوص الصِرفة.
+ *
+ * القاعدة ٢ تُلزم بعزل كل رقم وتاريخ واسم ملف ومقطع لاتيني داخل نص عربي.
+ * في JSX نستخدم `<bdi>`، لكن بعض النصوص تُبنى كسلاسل (رسائل خطأ، قيم تُمرَّر
+ * كـ prop) فلا تقبل عنصرًا. هنا نستخدم محرفَي العزل من Unicode نفسهما اللذين
+ * يستخدمهما `<bdi>` داخليًا: FSI (U+2068) و PDI (U+2069).
+ *
+ * غير مرئيين، ولا يظهران في النسخ ولا في التصدير كنصّ مقروء.
+ */
+export function bidi(v: string | number): string {
+  return `⁨${v}⁩`;
 }
 
 // تمثيل الإجابة كنص لأغراض العرض/التصدير
@@ -179,7 +196,7 @@ export function validateAnswer(
   const empty = isEmptyAnswer(value);
   if (empty) {
     if (type === "CONSENT" && required) return "يجب الموافقة للمتابعة";
-    return required ? "هذا الحقل إلزامي" : null;
+    return required ? "هذا الحقل مطلوب" : null;
   }
   switch (type) {
     case "NUMBER": {
@@ -188,20 +205,20 @@ export function validateAnswer(
       if (raw === "" || Number.isNaN(n))
         return "هذه القيمة ليست رقمًا صحيحًا";
       if (config?.min != null && config.min !== "" && n < Number(config.min))
-        return `القيمة يجب ألا تقل عن ${config.min}`;
+        return `القيمة يجب ألا تقل عن ${bidi(config.min)}`;
       if (config?.max != null && config.max !== "" && n > Number(config.max))
-        return `القيمة يجب ألا تزيد عن ${config.max}`;
+        return `القيمة يجب ألا تزيد عن ${bidi(config.max)}`;
       return null;
     }
     case "EMAIL":
       return EMAIL_RE.test(String(value).trim())
         ? null
-        : "البريد الإلكتروني غير صالح (مثال: name@example.com)";
+        : "أدخل بريدًا إلكترونيًا صحيحًا";
     case "PHONE": {
       const digits = String(value).replace(/[\s()-]/g, "");
       return PHONE_RE.test(digits)
         ? null
-        : "رقم الجوال غير صالح (مثال: 05xxxxxxxx)";
+        : "أدخل رقم جوال صحيحًا (مثال: 05xxxxxxxx)";
     }
     case "CONSENT":
       return value === true || !required ? null : "يجب الموافقة للمتابعة";

@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FORM_TYPE_LABELS } from "@/lib/field-types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 
 interface Template {
   id: string;
@@ -48,23 +51,23 @@ export default function NewFormButton({
 
   return (
     <>
-      <button className="btn-primary" onClick={() => setOpen(true)}>
+      <Button onClick={() => setOpen(true)}>
         + نموذج جديد
-      </button>
+      </Button>
       {open && (
         <div
           className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4"
           onClick={() => !busy && setOpen(false)}
         >
-          <div
-            className="card w-full max-w-2xl p-6"
+          <Card
+            className="w-full max-w-2xl p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="mb-4 text-lg font-bold">إنشاء نموذج</h3>
-            <div className="mb-5 flex gap-2 rounded-xl bg-slate-100 p-1 text-sm">
+            <div className="mb-5 flex gap-2 rounded-xl bg-muted p-1 text-sm">
               <button
                 className={`flex-1 rounded-lg py-2 font-medium ${
-                  tab === "blank" ? "bg-white shadow-sm" : "text-slate-500"
+                  tab === "blank" ? "bg-card shadow-sm" : "text-muted-foreground"
                 }`}
                 onClick={() => setTab("blank")}
               >
@@ -72,7 +75,7 @@ export default function NewFormButton({
               </button>
               <button
                 className={`flex-1 rounded-lg py-2 font-medium ${
-                  tab === "template" ? "bg-white shadow-sm" : "text-slate-500"
+                  tab === "template" ? "bg-card shadow-sm" : "text-muted-foreground"
                 }`}
                 onClick={() => setTab("template")}
               >
@@ -83,8 +86,8 @@ export default function NewFormButton({
             {tab === "blank" ? (
               <div>
                 <label className="label">عنوان النموذج</label>
-                <input
-                  className="input mb-4"
+                <Input
+                  className="mb-4"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="مثال: استبيان رضا الموظفين"
@@ -98,8 +101,8 @@ export default function NewFormButton({
                       onClick={() => setType(k)}
                       className={`rounded-xl border px-3 py-3 text-sm font-medium ${
                         type === k
-                          ? "border-naf-500 bg-naf-50 text-naf-700"
-                          : "border-slate-200"
+                          ? "border-primary bg-accent text-primary"
+                          : "border-border"
                       }`}
                     >
                       {v}
@@ -107,16 +110,15 @@ export default function NewFormButton({
                   ))}
                 </div>
                 <div className="flex justify-end gap-2">
-                  <button className="btn-ghost" onClick={() => setOpen(false)}>
+                  <Button variant="outline" onClick={() => setOpen(false)}>
                     إلغاء
-                  </button>
-                  <button
-                    className="btn-primary"
+                  </Button>
+                  <Button
                     disabled={busy}
                     onClick={createBlank}
                   >
                     {busy ? "جارٍ…" : "إنشاء وبدء البناء"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (
@@ -126,20 +128,20 @@ export default function NewFormButton({
                     key={t.id}
                     disabled={busy}
                     onClick={() => createFromTemplate(t.id)}
-                    className="rounded-xl border border-slate-200 p-4 text-right transition hover:border-naf-400 hover:bg-naf-50 disabled:opacity-50"
+                    className="rounded-xl border border-border p-4 text-start transition hover:border-primary hover:bg-accent disabled:opacity-50"
                   >
-                    <span className="chip bg-slate-100 text-slate-600">
+                    <span className="chip bg-muted text-muted-foreground">
                       {FORM_TYPE_LABELS[t.type]}
                     </span>
                     <h4 className="mt-2 font-bold">{t.title}</h4>
-                    <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                       {t.description}
                     </p>
                   </button>
                 ))}
               </div>
             )}
-          </div>
+          </Card>
         </div>
       )}
     </>

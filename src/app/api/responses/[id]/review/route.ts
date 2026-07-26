@@ -13,7 +13,7 @@ export async function PATCH(
   if (!response)
     return NextResponse.json({ error: "الرد غير موجود" }, { status: 404 });
   if (!(await authorizeForm(response.formId)))
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
 
   const body = await req.json().catch(() => ({}));
   const data: { status?: string; rating?: number; notes?: string } = {};

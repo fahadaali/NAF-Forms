@@ -10,6 +10,8 @@ import ResponsesDashboard, {
   type QuestionStat,
   type ResponseRow,
 } from "@/components/dashboard/ResponsesDashboard";
+import { buttonVariants } from "@/components/ui/button";
+import { formatDate } from "@/lib/naf-format";
 
 export const dynamic = "force-dynamic";
 
@@ -196,11 +198,10 @@ export default async function ResponsesPage({
     };
   });
 
-  // توزيع الردود حسب اليوم (آخر النتائج)
-  const dayFmt = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
-    day: "numeric",
-    month: "numeric",
-  });
+  // توزيع الردود حسب اليوم (آخر النتائج).
+  // `ar-SA` كانت تُنتج أرقامًا عربية-هندية على محور الرسم البياني، و naf-terms
+  // §٥ تفرض الأرقام الغربية. نشتقّ اليوم/الشهر من التاريخ المعتمد نفسه.
+  const dayFmt = { format: (d: Date) => formatDate(d).slice(5) }; // MM/DD
   const byDay = new Map<string, number>();
   // ترتيب تصاعدي زمنيًا للعرض
   const ordered = [...form.responses].sort(
@@ -253,16 +254,16 @@ export default async function ResponsesPage({
       <main className="mx-auto max-w-5xl px-4 py-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-extrabold">ردود: {form.title}</h1>
+            <h1 className="text-2xl font-bold">ردود: {form.title}</h1>
             <span className={`chip mt-1 ${FORM_TYPE_CHIP[form.type]}`}>
               {FORM_TYPE_LABELS[form.type]}
             </span>
           </div>
           <Link
             href={`/forms/${form.id}/edit`}
-            className="btn-ghost inline-flex items-center gap-1.5 text-sm"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
           >
-            <Icon name="edit" className="h-4 w-4" /> تحرير النموذج
+            <Icon name="edit" className="h-4 w-4" /> تعديل النموذج
           </Link>
         </div>
 

@@ -1,4 +1,5 @@
 import type { FieldTypeId } from "./field-types";
+import { NAF_PRIMARY, NAF_BACKGROUND, NAF_FOREGROUND, NAF_CARD } from "./brand";
 
 // إعدادات صفحة التقديم (customization) المخزّنة في Form.settings
 export interface FormSettings {
@@ -95,15 +96,15 @@ export interface FormDTO {
 
 export const DEFAULT_SETTINGS: FormSettings = {
   theme: {
-    primary: "#44528a",
-    background: "#f4f5f1",
-    text: "#262b3d",
-    cardBg: "#ffffff",
+    primary: NAF_PRIMARY,
+    background: NAF_BACKGROUND,
+    text: NAF_FOREGROUND,
+    cardBg: NAF_CARD,
   },
   cover: {},
   content: { links: [], files: [] },
   afterSubmit: {
-    title: "تم استلام ردك بنجاح 🎉",
+    title: "تم استلام ردك",
     message: "شكرًا لك على وقتك. تم تسجيل إجابتك.",
     showScore: false,
   },

@@ -1,37 +1,39 @@
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap");
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ثيم ناف وخطّه من سجلّ التصميم — fahadaali/naf-ui#v1.1.1
+   لا تُعدَّل هذه الملفات محليًا؛ تُحدَّث من السجلّ فقط. */
+@import "./naf-theme.css";
+@import "./naf-font.css";
 
-/* ===== نظام الألوان (فاتح افتراضي، داكن عبر .dark) ===== */
-:root {
-  --font-cairo: "Cairo";
+/* الاستكشاف التلقائي في Tailwind 4 يمسح كل ملفات المستودع، ومنها تقارير
+   `audit/` وقواعد `CLAUDE.md` — فتُولَّد أدوات لأصناف مذكورة كنصّ لا كاستخدام.
+   نستثنيها ليعبّر ملف CSS عن الواجهة وحدها. */
+@source not "../../audit";
+@source not "../../*.md";
 
-  --bg: #f4f5f1;
-  --bg-accent: 180 167 143; /* taupe rgb للتوهّج */
-  --surface: #ffffff;
-  --surface-2: #f7f8f4;
-  --border: #e6e4db;
-  --text: #262b3d;
-  --muted: #6f7486;
-  --primary: #44528a;
-  --primary-2: #5566a6;
-  --accent: #a1906f; /* بيج أعمق للتباين على الفاتح */
-  --ring: rgba(85, 102, 166, 0.28);
-}
+/* الحركات المستخدمة في المنصة — بقيت هنا بعد حذف الثيم المحلي.
+   ليست قرارات لون أو مسافة، فلا مقابل لها في السجلّ. */
+@theme {
+  --animate-card-in: card-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-floaty: floaty 6s ease-in-out infinite;
 
-:root.dark {
-  --bg: #161b2b;
-  --bg-accent: 180 167 143;
-  --surface: #222a42;
-  --surface-2: #1c2338;
-  --border: #333c58;
-  --text: #e9f1ec;
-  --muted: #9aa3ba;
-  --primary: #6474b4;
-  --primary-2: #7d8cc7;
-  --accent: #c2b49a;
-  --ring: rgba(125, 140, 199, 0.35);
+  @keyframes card-in {
+    0% {
+      opacity: 0;
+      transform: translateY(24px) scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  @keyframes floaty {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
 }
 
 * {
@@ -42,123 +44,53 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: var(--font-cairo), Tahoma, Arial, sans-serif;
-  background: var(--bg);
-  color: var(--text);
+  font-family: var(--font-sans);
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* خلفية النظام: توهّج ناعم بلون الهوية */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(60rem 40rem at 85% -10%, rgba(var(--bg-accent), 0.1), transparent 60%),
-    radial-gradient(50rem 40rem at 0% 0%, rgba(85, 102, 166, 0.08), transparent 55%);
-}
+/* حُذفت هنا أصناف الأزرار المحلية (btn و btn-primary و btn-ghost و
+   btn-danger). مصدر تنسيق الأزرار الوحيد صار مكوّن `button` من السجلّ:
+   `<Button>` للعناصر الزرّية، و`buttonVariants()` للروابط والوسوم
+   الأخرى (القاعدة ٤: لا تُعد بناء ما هو موجود في السجلّ). */
 
 @layer components {
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-[0.97];
-  }
-  .btn-primary {
-    @apply btn text-white;
-    background: linear-gradient(135deg, var(--primary-2), var(--primary));
-    box-shadow: 0 8px 22px -10px rgba(68, 82, 138, 0.6),
-      inset 0 1px 0 rgba(255, 255, 255, 0.14);
-  }
-  .btn-primary:hover {
-    filter: brightness(1.07);
-    transform: translateY(-1px);
-    box-shadow: 0 12px 26px -10px rgba(68, 82, 138, 0.7),
-      0 0 0 1px rgba(180, 167, 143, 0.25);
-  }
-  .btn-ghost {
-    @apply btn;
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover {
-    background: var(--surface-2);
-    border-color: var(--accent);
-  }
-  .btn-danger {
-    @apply btn;
-    background: rgba(207, 107, 107, 0.12);
-    color: #cf6b6b;
-    border: 1px solid rgba(207, 107, 107, 0.3);
-  }
-  .btn-danger:hover {
-    background: rgba(207, 107, 107, 0.2);
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 1rem;
-    box-shadow: 0 1px 2px rgba(16, 20, 34, 0.05),
-      0 12px 32px -20px rgba(16, 20, 34, 0.35);
-  }
-
-  .input {
-    @apply w-full rounded-xl px-4 py-2.5 text-sm outline-none transition;
-    background: var(--surface-2);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-  .input::placeholder {
-    color: var(--muted);
-    opacity: 0.7;
-  }
-  .input:focus {
-    border-color: var(--primary-2);
-    box-shadow: 0 0 0 3px var(--ring);
-  }
+  /* حُذف صنف .card المحلي: مصدره صار مكوّن `card` من السجلّ.
+     حُذف صنف .input المحلي: مصدر تنسيق الحقول صار مكوّن `input` من
+     السجلّ — `<Input>` لعناصر الإدخال، و`inputVariants()` لـ textarea
+     و select إذ لا مكوّن مسجَّل لهما. */
   .label {
-    @apply block text-sm font-semibold mb-1.5;
-    color: var(--text);
+    @apply mb-1.5 block text-sm font-semibold text-foreground;
   }
   .chip {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
   }
-  /* تمييز أنواع النماذج وحالاتها بألوان متناغمة */
+  /* تمييز أنواع النماذج وحالاتها — من لوحة التصنيف في السجلّ (chart-*) */
   .chip-survey {
-    background: rgba(85, 102, 166, 0.14);
-    color: #5566a6;
+    @apply bg-chart-2/15 text-chart-2;
   }
   .chip-exam {
-    background: rgba(139, 124, 200, 0.16);
-    color: #8b7cc8;
+    @apply bg-chart-4/15 text-chart-4;
   }
   .chip-job {
-    background: rgba(79, 163, 160, 0.16);
-    color: #4fa3a0;
+    @apply bg-chart-3/15 text-chart-3;
   }
   .chip-draft {
-    background: color-mix(in oklab, var(--muted) 18%, transparent);
-    color: var(--muted);
+    @apply bg-muted text-muted-foreground;
   }
   .chip-published {
-    background: rgba(63, 157, 120, 0.16);
-    color: #3f9d78;
+    @apply bg-success/15 text-success;
   }
   .chip-closed {
-    background: rgba(207, 107, 107, 0.16);
-    color: #cf6b6b;
+    @apply bg-destructive/15 text-destructive;
   }
 
-  /* لمسات react-bits */
   .glass {
-    background: color-mix(in oklab, var(--surface) 78%, transparent);
+    @apply border border-border;
+    background: color-mix(in oklab, var(--card) 78%, transparent);
     backdrop-filter: blur(12px) saturate(1.2);
-    border: 1px solid var(--border);
   }
   .gradient-text {
-    background: linear-gradient(120deg, var(--text), var(--accent) 60%, var(--primary-2));
+    background: linear-gradient(120deg, var(--foreground), var(--primary) 60%, var(--accent-foreground));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -168,11 +100,8 @@ body::before {
       linear-gradient(var(--border) 1px, transparent 1px),
       linear-gradient(90deg, var(--border) 1px, transparent 1px);
     background-size: 34px 34px;
-    -webkit-mask-image: radial-gradient(70% 60% at 50% 0%, #000 30%, transparent 75%);
-    mask-image: radial-gradient(70% 60% at 50% 0%, #000 30%, transparent 75%);
-  }
-  .ring-accent {
-    box-shadow: 0 0 0 1px var(--border), 0 0 30px -10px rgba(var(--bg-accent), 0.5);
+    -webkit-mask-image: radial-gradient(70% 60% at 50% 0%, currentColor 30%, transparent 75%);
+    mask-image: radial-gradient(70% 60% at 50% 0%, currentColor 30%, transparent 75%);
   }
 }
 
@@ -186,45 +115,15 @@ body::before {
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+  background: var(--muted-foreground);
 }
 
 .leaflet-container {
   z-index: 0;
 }
 
-/* ===== مواءمة أدوات Tailwind الثابتة مع الثيم (لوحة التحكم) ===== */
-.dark .bg-white {
-  background: var(--surface) !important;
-}
-.dark .bg-slate-50,
-.dark .bg-slate-100,
-.dark .bg-naf-50 {
-  background: var(--surface-2) !important;
-}
-.dark .text-slate-900,
-.dark .text-slate-800,
-.dark .text-slate-700 {
-  color: var(--text) !important;
-}
-.dark .text-slate-600,
-.dark .text-slate-500,
-.dark .text-slate-400 {
-  color: var(--muted) !important;
-}
-.dark .border-slate-200,
-.dark .border-slate-300,
-.dark .border-slate-100,
-.dark .border-slate-200\/70 {
-  border-color: var(--border) !important;
-}
-.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
-  border-color: var(--border) !important;
-}
-.dark .text-naf-700,
-.dark .text-naf-600 {
-  color: var(--primary-2) !important;
-}
+/* حُذفت هنا ١٧ قاعدة `.dark … !important` كانت تُصلح أصناف slate الثابتة
+   بالقوة. لم تعد لازمة: الأصناف صارت رموزًا دلالية تتبع الوضعين تلقائيًا. */
 
 /* ===== إمكانية الوصول (a11y) ===== */
 /* نص للقارئات الشاشية فقط */
@@ -248,7 +147,7 @@ select:focus-visible,
 textarea:focus-visible,
 summary:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--primary-2, #6b7bc7);
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
   border-radius: 0.5rem;
 }

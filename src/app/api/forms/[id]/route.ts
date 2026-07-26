@@ -21,7 +21,7 @@ export async function PATCH(
   const formId = (await params).id;
 
   if (!(await authorizeForm(formId)))
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
 
   const data: any = {};
 
@@ -88,7 +88,7 @@ export async function DELETE(
 ) {
   const formId = (await params).id;
   if (!(await authorizeForm(formId)))
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 403 });
   await deleteForm(formId);
   return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,11 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input, inputVariants } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Icon } from "@/components/ui/Icon";
 
 interface U {
   id: string;
@@ -59,13 +64,12 @@ export default function UsersManager({
   return (
     <div className="space-y-6">
       {/* إضافة مستخدم */}
-      <div className="card p-5">
+      <Card className="p-5">
         <h3 className="mb-3 font-bold">إضافة مستخدم</h3>
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-[220px] flex-1">
             <label className="label">البريد الإلكتروني</label>
-            <input
-              className="input"
+            <Input
               dir="ltr"
               placeholder="name@example.com"
               value={email}
@@ -74,24 +78,29 @@ export default function UsersManager({
           </div>
           <div>
             <label className="label">الدور</label>
-            <select className="input" value={role} onChange={(e) => setRole(e.target.value)}>
+            <select className={inputVariants()} value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="member">عضو</option>
               <option value="admin">مسؤول</option>
             </select>
           </div>
-          <button className="btn-primary" disabled={busy || !email} onClick={add}>
+          <Button disabled={busy || !email} onClick={add}>
             + إضافة
-          </button>
+          </Button>
         </div>
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-        <p className="mt-2 text-xs text-slate-400">
+        {error && (
+          <Alert variant="destructive" className="mt-2">
+            <Icon name="alert" className="h-5 w-5" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        <p className="mt-2 text-xs text-muted-foreground">
           يُنشأ الحساب بكلمة المرور الافتراضية <b>1234</b>، ويُطلب من المستخدم
           تغييرها عند أول دخول.
         </p>
-      </div>
+      </Card>
 
       {/* قائمة المستخدمين */}
-      <div className="card divide-y divide-slate-100">
+      <Card className="divide-y divide-border">
         {initial.map((u) => (
           <div key={u.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
             <div className="min-w-0">
@@ -100,7 +109,7 @@ export default function UsersManager({
                   {u.email}
                 </span>
                 {u.id === meId && (
-                  <span className="chip bg-naf-50 text-naf-700">أنت</span>
+                  <span className="chip bg-accent text-primary">أنت</span>
                 )}
                 {u.mustChangePassword && (
                   <span className="chip chip-draft">لم يغيّر كلمة المرور</span>
@@ -109,7 +118,7 @@ export default function UsersManager({
             </div>
             <div className="flex items-center gap-2">
               <select
-                className="input py-1.5 text-sm"
+                className={inputVariants({ size: "sm" })}
                 value={u.role}
                 onChange={(e) => patch(u.id, { role: e.target.value })}
                 disabled={u.id === meId}
@@ -117,24 +126,23 @@ export default function UsersManager({
                 <option value="member">عضو</option>
                 <option value="admin">مسؤول</option>
               </select>
-              <button
-                className="btn-ghost py-1.5 text-xs"
+              <Button variant="outline" size="sm"
                 onClick={() => patch(u.id, { action: "reset" })}
               >
                 إعادة تعيين لـ 1234
-              </button>
+              </Button>
               {u.id !== meId && (
                 <button
-                  className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
                   onClick={() => remove(u.id)}
                 >
-                  حذف
+                  <Icon name="trash" className="h-4 w-4" /> حذف
                 </button>
               )}
             </div>
           </div>
         ))}
-      </div>
+      </Card>
     </div>
   );
 }

@@ -9,8 +9,11 @@ import { currentSession, ownerFilter } from "@/lib/session";
 import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { Icon } from "@/components/ui/Icon";
 import { formatDateTime } from "@/lib/utils";
+import { formatNumber } from "@/lib/naf-format";
 import Navbar from "@/components/Navbar";
 import CreateProjectButton from "@/components/CreateProjectButton";
+import { NafLogo } from "@/components/ui/naf-logo";
+import { Card } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -30,21 +33,16 @@ export default async function HomePage() {
       <Navbar />
       <main className="mx-auto max-w-6xl px-4 py-8">
         {/* بطاقة ترحيبية */}
-        <section
-          className="relative mb-8 overflow-hidden rounded-3xl border border-brand-taupe/20 p-8 md:p-10"
-          style={{ background: "linear-gradient(135deg, #2a3149, #232840 55%, #1c2338)" }}
-        >
+        {/* لوحة داكنة مقصودة: نُطاق `dark` يجعلها تستهلك رموز الثيم الداكنة
+            بدل تدرّج مكتوب بقيم حرفية (القاعدة ١: لا قيمة تصميم حرفية). */}
+        <section className="dark relative mb-8 overflow-hidden rounded-xl border border-border bg-card p-8 text-card-foreground md:p-10">
           <div className="grid-bg pointer-events-none absolute inset-0 opacity-[0.15]" />
-          <div
-            className="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full blur-3xl"
-            style={{ background: "radial-gradient(circle, rgba(180,167,143,0.35), transparent 70%)" }}
-          />
           <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-2xl">
-              <h1 className="text-3xl font-extrabold text-brand-cream md:text-4xl">
-                نظام استبانات <span className="text-brand-taupe">ناف</span>
+              <h1 className="text-3xl font-bold text-card-foreground md:text-4xl">
+                نظام استبانات <span className="text-primary">ناف</span>
               </h1>
-              <p className="mt-3 leading-relaxed text-slate-300">
+              <p className="mt-3 text-muted-foreground">
                 منصة موحّدة لبناء الاختبارات، والتقديم الوظيفي، والاستبيانات
                 والاستطلاعات — مع أنواع بيانات متعددة، وقوالب جاهزة، ولوحة ردود
                 تفصيلية، وتصدير بأكثر من صيغة.
@@ -55,11 +53,7 @@ export default async function HomePage() {
                 <Stat n={responseCount} label="رد" />
               </div>
             </div>
-            <img
-              src="/naf-logo.jpg"
-              alt="ناف"
-              className="hidden h-32 w-32 animate-floaty rounded-3xl object-cover shadow-glow ring-1 ring-brand-taupe/40 md:block"
-            />
+            <NafLogo className="hidden h-32 w-32 animate-floaty md:block" />
           </div>
         </section>
 
@@ -70,40 +64,38 @@ export default async function HomePage() {
             <CreateProjectButton />
           </div>
           {projects.length === 0 ? (
-            <div className="card grid place-items-center p-12 text-center text-slate-500">
-              <Icon name="folder" className="mb-2 h-10 w-10 text-slate-300" />
-              لا توجد مشاريع بعد — أنشئ مشروعك الأول لتنظيم نماذجك.
-            </div>
+            <Card className="grid place-items-center p-12 text-center text-muted-foreground">
+              <Icon name="folder" className="mb-2 h-10 w-10 text-muted-foreground" />
+              لم تُنشئ أي مشروع بعد. ابدأ بإنشاء أول مشروع لتنظيم نماذجك.
+            </Card>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {projects.map((p) => (
-                <Link
-                  key={p.id}
-                  href={`/projects/${p.id}`}
-                  className="card group p-5 transition hover:shadow-md"
-                >
+                <Link key={p.id} href={`/projects/${p.id}`} className="group block">
+                  <Card className="p-5 transition hover:shadow-md">
                   <div className="mb-3 flex items-center gap-3">
                     <span
                       className="h-10 w-10 rounded-xl"
                       style={{ background: p.color }}
                     />
                     <div>
-                      <h3 className="font-bold group-hover:text-naf-700">
+                      <h3 className="font-bold group-hover:text-primary">
                         {p.name}
                       </h3>
-                      <p className="text-xs text-slate-400">
-                        {p._count.forms} نموذج
+                      <p className="text-xs text-muted-foreground">
+                        <bdi>{formatNumber(p._count.forms)}</bdi> نموذج
                       </p>
                     </div>
                   </div>
                   {p.description && (
-                    <p className="line-clamp-2 text-sm text-slate-500">
+                    <p className="line-clamp-2 text-sm text-muted-foreground">
                       {p.description}
                     </p>
                   )}
-                  <p className="mt-3 text-xs text-slate-400">
-                    آخر تحديث: {formatDateTime(p.updatedAt)}
-                  </p>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      آخر تحديث: <bdi>{formatDateTime(p.updatedAt)}</bdi>
+                    </p>
+                  </Card>
                 </Link>
               ))}
             </div>
@@ -113,23 +105,23 @@ export default async function HomePage() {
         {/* القوالب الجاهزة */}
         <section>
           <h2 className="mb-1 text-xl font-bold">قوالب جاهزة</h2>
-          <p className="mb-4 text-sm text-slate-500">
+          <p className="mb-4 text-sm text-muted-foreground">
             ابدأ سريعًا بنموذج مبني مسبقًا، ثم خصّصه كما تشاء.
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {templates.map((t) => (
-              <div key={t.id} className="card p-5">
+              <Card key={t.id} className="p-5">
                 <span className={`chip ${FORM_TYPE_CHIP[t.type]}`}>
                   {FORM_TYPE_LABELS[t.type]}
                 </span>
                 <h3 className="mt-3 font-bold">{t.title}</h3>
-                <p className="mt-1 line-clamp-2 text-sm text-slate-500">
+                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                   {t.description}
                 </p>
-                <p className="mt-2 text-xs text-slate-400">
-                  {t._count.questions} سؤال
+                <p className="mt-2 text-xs text-muted-foreground">
+                  <bdi>{formatNumber(t._count.questions)}</bdi> سؤال
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </section>
@@ -141,8 +133,10 @@ export default async function HomePage() {
 function Stat({ n, label }: { n: number; label: string }) {
   return (
     <div>
-      <div className="text-3xl font-extrabold text-brand-cream">{n}</div>
-      <div className="text-brand-taupe">{label}</div>
+      <div className="text-3xl font-bold text-card-foreground">
+        <bdi>{formatNumber(n)}</bdi>
+      </div>
+      <div className="text-primary">{label}</div>
     </div>
   );
 }

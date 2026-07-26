@@ -1,5 +1,6 @@
 "use client";
 import { Icon } from "@/components/ui/Icon";
+import { Input } from "@/components/ui/input";
 
 export default function OptionsEditor({
   options,
@@ -24,16 +25,15 @@ export default function OptionsEditor({
       <div className="space-y-2">
         {options.map((o, i) => (
           <div key={i} className="flex items-center gap-2">
-            <span className="text-slate-400">•</span>
-            <input
-              className="input py-1.5"
+            <span className="text-muted-foreground">•</span>
+            <Input size="sm"
               value={o}
               onChange={(e) => set(i, e.target.value)}
             />
             <button
               type="button"
               onClick={() => remove(i)}
-              className="rounded-lg px-2 py-1 text-red-500 hover:bg-red-50"
+              className="rounded-lg px-2 py-1 text-destructive hover:bg-destructive/10"
               disabled={options.length <= 1}
             >
               <Icon name="x" className="h-4 w-4" />
@@ -44,7 +44,7 @@ export default function OptionsEditor({
       <button
         type="button"
         onClick={add}
-        className="mt-2 text-sm font-medium text-naf-600 hover:underline"
+        className="mt-2 text-sm font-medium text-primary hover:underline"
       >
         + إضافة خيار
       </button>

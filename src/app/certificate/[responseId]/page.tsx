@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { getResponseWithAnswers, getFormWithQuestions } from "@/lib/repo";
 import { parseSettings, safeParse, formatDateTime } from "@/lib/utils";
 import PrintButton from "@/components/PrintButton";
+import { NafLogo } from "@/components/ui/naf-logo";
+import { NAF_PRIMARY } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
 
@@ -30,48 +32,50 @@ export default async function CertificatePage({
   if (!passed) notFound();
 
   const theme = settings.theme || {};
-  const accent = theme.primary || "#44528a";
+  const accent = theme.primary || NAF_PRIMARY;
   const title = settings.exam?.certificateTitle || "شهادة إتمام";
 
   return (
-    <div className="min-h-screen bg-slate-100 p-6 print:bg-white print:p-0">
+    <div className="min-h-screen bg-muted p-6 print:bg-card print:p-0">
       <div className="mx-auto max-w-3xl">
         <PrintButton />
         <div
-          className="relative overflow-hidden rounded-3xl bg-white p-12 text-center shadow-xl print:rounded-none print:shadow-none"
+          className="relative overflow-hidden rounded-xl bg-card p-12 text-center shadow-xl print:rounded-none print:shadow-none"
           style={{ borderTop: `8px solid ${accent}` }}
         >
-          <img
-            src="/naf-logo.jpg"
-            alt="ناف"
-            className="mx-auto mb-6 h-20 w-20 rounded-2xl object-cover"
-          />
-          <h1 className="text-3xl font-extrabold" style={{ color: accent }}>
+          <NafLogo className="mx-auto mb-6 h-20 w-20" />
+          <h1 className="text-3xl font-bold" style={{ color: accent }}>
             {title}
           </h1>
-          <p className="mt-6 text-slate-600">تشهد منصة ناف بأن</p>
+          <p className="mt-6 text-muted-foreground">تشهد منصة ناف بأن</p>
           <p className="mt-2 text-2xl font-bold">
             {meta.email || "المستفيد"}
           </p>
-          <p className="mt-4 leading-relaxed text-slate-600">
-            قد أتمّ بنجاح «<span className="font-semibold">{form.title}</span>»
+          <p className="mt-4 text-muted-foreground">
+            قد أتمّ «<span className="font-semibold">{form.title}</span>»
           </p>
 
           {total > 0 && (
             <div
-              className="mx-auto mt-8 inline-block rounded-2xl px-10 py-4 text-white"
+              className="mx-auto mt-8 inline-block rounded-xl px-10 py-4 text-white"
               style={{ background: accent }}
             >
               <div className="text-sm opacity-90">الدرجة</div>
-              <div className="text-3xl font-extrabold">
-                {score} / {total}
+              <div className="text-3xl font-bold">
+                <bdi>
+                  {score} / {total}
+                </bdi>
               </div>
             </div>
           )}
 
-          <div className="mt-10 flex items-center justify-between border-t border-slate-200 pt-5 text-xs text-slate-500">
-            <span>تاريخ الإصدار: {formatDateTime(response.submittedAt)}</span>
-            <span dir="ltr">رقم الشهادة: {response.id}</span>
+          <div className="mt-10 flex items-center justify-between border-t border-border pt-5 text-xs text-muted-foreground">
+            <span>
+              تاريخ الإصدار: <bdi>{formatDateTime(response.submittedAt)}</bdi>
+            </span>
+            <span>
+              رقم الشهادة: <bdi>{response.id}</bdi>
+            </span>
           </div>
         </div>
       </div>

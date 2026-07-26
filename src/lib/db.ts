@@ -29,6 +29,10 @@ CREATE TABLE IF NOT EXISTS "Project" (
   "id" TEXT NOT NULL PRIMARY KEY,
   "name" TEXT NOT NULL,
   "description" TEXT NOT NULL DEFAULT '',
+  -- القيمة الافتراضية هنا **ميتة**: التطبيق يكتب اللون صراحةً دائمًا
+  -- (انظر createProject و ensureProject في repo.ts، وكلاهما يستخدم
+  -- NAF_PRIMARY من lib/brand.ts). أُبقيت مطابقةً لـ 0001_init.sql لأن تلك
+  -- الهجرة طُبِّقت في الإنتاج ولا تُعدَّل هجرة مُطبَّقة.
   "color" TEXT NOT NULL DEFAULT '#1c59f5',
   "ownerId" TEXT NOT NULL DEFAULT '',
   "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -4,13 +4,15 @@ import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-lea
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Icon } from "@/components/ui/Icon";
+import { Input } from "@/components/ui/input";
+import { NAF_PRIMARY, NAF_CARD } from "@/lib/brand";
 
 // إصلاح أيقونة العلامة الافتراضية في Leaflet مع الحزم
 const icon = L.icon({
   iconUrl:
     "data:image/svg+xml;base64," +
     btoa(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42"><path fill="#44528a" stroke="#fff" stroke-width="2" d="M16 1C8 1 2 7 2 15c0 10 14 26 14 26s14-16 14-26C30 7 24 1 16 1z"/><circle cx="16" cy="15" r="5" fill="#fff"/></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42"><path fill="${NAF_PRIMARY}" stroke="${NAF_CARD}" stroke-width="2" d="M16 1C8 1 2 7 2 15c0 10 14 26 14 26s14-16 14-26C30 7 24 1 16 1z"/><circle cx="16" cy="15" r="5" fill="${NAF_CARD}"/></svg>`
     ),
   iconSize: [32, 42],
   iconAnchor: [16, 42],
@@ -107,7 +109,7 @@ export default function MapPicker({
         type="button"
         onClick={useMyLocation}
         disabled={geoBusy}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium hover:border-naf-400 hover:bg-naf-50 disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:border-primary hover:bg-accent disabled:opacity-60"
       >
         <Icon name="map-pin" className="h-4 w-4" />
         {geoBusy ? "جارٍ تحديد موقعك…" : "استخدم موقعي الحالي"}
@@ -116,10 +118,10 @@ export default function MapPicker({
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className="label">خط العرض (Lat)</label>
-          <input
+          <Input size="sm"
             dir="ltr"
             inputMode="decimal"
-            className="input py-1.5 text-right"
+            className="text-start"
             placeholder="24.7136"
             value={latText}
             onChange={(e) => setLatText(e.target.value)}
@@ -128,10 +130,10 @@ export default function MapPicker({
         </div>
         <div>
           <label className="label">خط الطول (Lng)</label>
-          <input
+          <Input size="sm"
             dir="ltr"
             inputMode="decimal"
-            className="input py-1.5 text-right"
+            className="text-start"
             placeholder="46.6753"
             value={lngText}
             onChange={(e) => setLngText(e.target.value)}
@@ -139,9 +141,13 @@ export default function MapPicker({
           />
         </div>
       </div>
-      {geoError && <p className="text-sm text-red-600">{geoError}</p>}
+      {geoError && (
+        <p className="flex items-center gap-1.5 text-sm text-destructive">
+          <Icon name="alert" className="h-4 w-4" /> {geoError}
+        </p>
+      )}
 
-      <div className="overflow-hidden rounded-xl border border-slate-300">
+      <div className="overflow-hidden rounded-xl border border-border">
         <MapContainer
           center={[center.lat, center.lng]}
           zoom={value ? 13 : zoom}
@@ -156,10 +162,15 @@ export default function MapPicker({
           <Recenter value={value ?? null} />
           {value && <Marker position={[value.lat, value.lng]} icon={icon} />}
         </MapContainer>
-        <div className="bg-slate-50 px-3 py-2 text-xs text-slate-500">
-          {value
-            ? `الإحداثيات: ${value.lat.toFixed(5)} , ${value.lng.toFixed(5)}`
-            : "انقر على الخريطة، أو أدخل الإحداثيات، أو استخدم موقعك الحالي"}
+        <div className="bg-muted px-3 py-2 text-xs text-muted-foreground">
+          {value ? (
+            <>
+              الإحداثيات: <bdi>{value.lat.toFixed(5)}</bdi> ,{" "}
+              <bdi>{value.lng.toFixed(5)}</bdi>
+            </>
+          ) : (
+            "انقر على الخريطة، أو أدخل الإحداثيات، أو استخدم موقعك الحالي"
+          )}
         </div>
       </div>
     </div>

@@ -7,6 +7,18 @@ import {
   REVIEW_STATUS_LABELS,
   REVIEW_STATUS_CHIP,
 } from "@/lib/review";
+import { bidi } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+import { Input, inputVariants } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
+import { Card } from "@/components/ui/card";
+import { formatNumber, formatTime } from "@/lib/naf-format";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableHeader,
+} from "@/components/ui/table";
 
 export interface QuestionStat {
   id: string;
@@ -151,7 +163,7 @@ export default function ResponsesDashboard({
     <div>
       {/* بطاقات إحصائية */}
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <StatCard icon="chart" label="إجمالي الردود" value={String(total)} />
+        <StatCard icon="chart" label="إجمالي الردود" value={formatNumber(total)} />
         <StatCard
           icon="clock"
           label="آخر رد"
@@ -160,21 +172,21 @@ export default function ResponsesDashboard({
         {formType === "EXAM" ? (
           <StatCard icon="target" label="متوسط الدرجات" value={examAvg || "—"} />
         ) : (
-          <StatCard icon="list" label="عدد الأسئلة" value={String(stats.length)} />
+          <StatCard icon="list-checks" label="عدد الأسئلة" value={formatNumber(stats.length)} />
         )}
       </div>
 
       {/* أزرار التصدير + التبويبات */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-1 rounded-xl bg-slate-100 p-1 text-sm">
+        <div className="flex gap-1 rounded-xl bg-muted p-1 text-sm">
           <button
-            className={`rounded-lg px-4 py-1.5 font-medium ${tab === "summary" ? "bg-white shadow-sm" : "text-slate-500"}`}
+            className={`rounded-lg px-4 py-1.5 font-medium ${tab === "summary" ? "bg-card shadow-sm" : "text-muted-foreground"}`}
             onClick={() => setTab("summary")}
           >
             ملخص وتحليلات
           </button>
           <button
-            className={`rounded-lg px-4 py-1.5 font-medium ${tab === "individual" ? "bg-white shadow-sm" : "text-slate-500"}`}
+            className={`rounded-lg px-4 py-1.5 font-medium ${tab === "individual" ? "bg-card shadow-sm" : "text-muted-foreground"}`}
             onClick={() => setTab("individual")}
           >
             الردود الفردية
@@ -184,7 +196,7 @@ export default function ResponsesDashboard({
           {(["csv", "xlsx", "json"] as const).map((fmt) => (
             <a
               key={fmt}
-              className="btn-ghost inline-flex items-center gap-1.5 py-1.5 text-sm"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
               href={exportUrl(fmt)}
             >
               <Icon name="download" className="h-4 w-4" />
@@ -195,10 +207,10 @@ export default function ResponsesDashboard({
       </div>
 
       {total === 0 && (
-        <div className="card grid place-items-center p-12 text-center text-slate-500">
-          <Icon name="mail" className="mb-2 h-10 w-10 text-slate-300" />
-          لا توجد ردود بعد.
-        </div>
+        <Card className="grid place-items-center p-12 text-center text-muted-foreground">
+          <Icon name="mail" className="mb-2 h-10 w-10 text-muted-foreground" />
+          لم يصل أي رد بعد. ابدأ بمشاركة رابط النموذج.
+        </Card>
       )}
 
       {total > 0 && tab === "summary" && (
@@ -215,11 +227,11 @@ export default function ResponsesDashboard({
       {total > 0 && tab === "individual" && (
         <div className="space-y-4">
           <div className="relative">
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <span className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               <Icon name="search" className="h-4 w-4" />
             </span>
-            <input
-              className="input pr-9"
+            <Input
+              className="ps-9"
               aria-label="بحث في الردود"
               placeholder="بحث في الردود…"
               value={query}
@@ -227,13 +239,13 @@ export default function ResponsesDashboard({
             />
           </div>
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-slate-500">من</span>
-            <input type="date" className="input py-1.5" value={from} onChange={(e) => setFrom(e.target.value)} />
-            <span className="text-slate-500">إلى</span>
-            <input type="date" className="input py-1.5" value={to} onChange={(e) => setTo(e.target.value)} />
+            <span className="text-muted-foreground">من</span>
+            <Input size="sm" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <span className="text-muted-foreground">إلى</span>
+            <Input size="sm" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
             {(from || to || query || statusFilter) && (
               <button
-                className="text-naf-600 hover:underline"
+                className="text-primary hover:underline"
                 onClick={() => {
                   setFrom("");
                   setTo("");
@@ -253,11 +265,11 @@ export default function ResponsesDashboard({
                 onClick={() => setStatusFilter("")}
                 className={`chip ${
                   statusFilter === ""
-                    ? "bg-naf-600 text-white"
-                    : "bg-slate-100 text-slate-600"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
                 }`}
               >
-                الكل ({rows.length})
+                الكل (<bdi>{formatNumber(rows.length)}</bdi>)
               </button>
               {statusCounts.map(({ status, count }) => (
                 <button
@@ -267,104 +279,107 @@ export default function ResponsesDashboard({
                   }
                   className={`chip ${
                     statusFilter === status
-                      ? "bg-naf-600 text-white"
+                      ? "bg-primary text-primary-foreground"
                       : REVIEW_STATUS_CHIP[status]
                   }`}
                 >
-                  {REVIEW_STATUS_LABELS[status]} ({count})
+                  {REVIEW_STATUS_LABELS[status]} (<bdi>{formatNumber(count)}</bdi>)
                 </button>
               ))}
             </div>
           )}
           {(query || from || to) && (
-            <p className="text-sm text-slate-400">
-              {filteredRows.length} نتيجة من {rows.length}
+            <p className="text-sm text-muted-foreground">
+              <bdi>{formatNumber(filteredRows.length)}</bdi> نتيجة من{" "}
+              <bdi>{formatNumber(rows.length)}</bdi>
             </p>
           )}
           {filteredRows.map((r) => (
-            <div key={r.id} className="card p-5">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+            <Card key={r.id} className="p-5">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
                 <span className="flex items-center gap-2 font-bold">
-                  رد #{rows.length - rows.indexOf(r)}
+                  رد <bdi>#{rows.length - rows.indexOf(r)}</bdi>
                   <span
                     className={`chip ${REVIEW_STATUS_CHIP[reviewOf(r.id).status]}`}
                   >
                     {REVIEW_STATUS_LABELS[reviewOf(r.id).status]}
                   </span>
                   {reviewOf(r.id).rating > 0 && (
-                    <span className="text-xs text-amber-500">
-                      {"★".repeat(reviewOf(r.id).rating)}
+                    <span className="inline-flex items-center gap-0.5 text-warning">
+                      {Array.from({ length: reviewOf(r.id).rating }, (_, i) => (
+                        <Icon key={i} name="star" className="h-4 w-4" />
+                      ))}
                     </span>
                   )}
                 </span>
                 <div className="flex items-center gap-3">
                   {r.email && (
-                    <span className="chip inline-flex items-center gap-1 bg-slate-100 text-slate-600" dir="ltr">
-                      <Icon name="mail" className="h-3.5 w-3.5" /> {r.email}
+                    <span className="chip inline-flex items-center gap-1 bg-muted text-muted-foreground" dir="ltr">
+                      <Icon name="mail" className="h-4 w-4" /> {r.email}
                     </span>
                   )}
-                  <span className="inline-flex items-center gap-1 text-xs text-slate-400">
-                    <Icon name="clock" className="h-3.5 w-3.5" /> {r.submittedAt}
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <Icon name="clock" className="h-4 w-4" /> {r.submittedAt}
                   </span>
                   <a
                     href={`/forms/${formId}/responses/${r.id}/print`}
                     target="_blank"
-                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100"
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
                   >
-                    <Icon name="printer" className="h-3.5 w-3.5" /> طباعة
+                    <Icon name="printer" className="h-4 w-4" /> طباعة
                   </a>
                   <button
                     onClick={() => deleteResponse(r.id)}
                     disabled={busy === r.id}
-                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50"
                   >
                     {busy === r.id ? (
                       "…"
                     ) : (
                       <>
-                        <Icon name="trash" className="h-3.5 w-3.5" /> حذف
+                        <Icon name="trash" className="h-4 w-4" /> حذف
                       </>
                     )}
                   </button>
                 </div>
               </div>
               {r.score && (
-                <div className="mb-2 inline-block rounded-lg bg-naf-50 px-3 py-1 text-sm font-bold text-naf-700">
-                  الدرجة: {r.score}
+                <div className="mb-2 inline-block rounded-lg bg-accent px-3 py-1 text-sm font-bold text-primary">
+                  الدرجة: <bdi>{r.score}</bdi>
                 </div>
               )}
               <dl className="grid gap-2 sm:grid-cols-2">
                 {r.cells.map((c, j) => (
-                  <div key={j} className="rounded-lg bg-slate-50 p-3">
-                    <dt className="text-xs font-medium text-slate-400">{c.label}</dt>
+                  <div key={j} className="rounded-lg bg-muted p-3">
+                    <dt className="text-xs font-medium text-muted-foreground">{c.label}</dt>
                     <dd className="mt-0.5 text-sm">
                       {c.urls && c.urls.length ? (
-                        <span className="flex flex-col gap-0.5">
+                        <span className="flex flex-col gap-1">
                           {c.urls.map((f, k) => (
                             <a
                               key={k}
                               href={f.url}
                               target="_blank"
-                              className="text-naf-600 underline"
+                              className="text-primary underline"
                             >
                               {f.name || "ملف"}
                             </a>
                           ))}
                         </span>
                       ) : c.url ? (
-                        <a href={c.url} target="_blank" className="text-naf-600 underline">
+                        <a href={c.url} target="_blank" className="text-primary underline">
                           {c.text || "عرض الملف"}
                         </a>
                       ) : c.loc ? (
                         <a
                           href={`https://www.openstreetmap.org/?mlat=${c.loc.lat}&mlon=${c.loc.lng}#map=15/${c.loc.lat}/${c.loc.lng}`}
                           target="_blank"
-                          className="inline-flex items-center gap-1 text-naf-600 underline"
+                          className="inline-flex items-center gap-1 text-primary underline"
                         >
-                          <Icon name="map-pin" className="h-3.5 w-3.5" /> {c.text}
+                          <Icon name="map-pin" className="h-4 w-4" /> {c.text}
                         </a>
                       ) : (
-                        c.text || <span className="text-slate-300">—</span>
+                        c.text || <span className="text-muted-foreground">—</span>
                       )}
                     </dd>
                   </div>
@@ -376,7 +391,7 @@ export default function ResponsesDashboard({
                 review={reviewOf(r.id)}
                 onChange={(patch) => saveReview(r.id, patch)}
               />
-            </div>
+            </Card>
           ))}
         </div>
       )}
@@ -386,24 +401,24 @@ export default function ResponsesDashboard({
 
 function StatCard({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
-    <div className="card flex items-center gap-4 p-5">
-      <span className="grid h-12 w-12 place-items-center rounded-xl bg-naf-50 text-naf-600">
+    <Card className="flex items-center gap-4 p-5">
+      <span className="grid h-12 w-12 place-items-center rounded-xl bg-accent text-primary">
         <Icon name={icon} className="h-6 w-6" />
       </span>
       <div>
-        <div className="text-xs text-slate-400">{label}</div>
-        <div className="text-lg font-extrabold">{value}</div>
+        <div className="text-xs text-muted-foreground">{label}</div>
+        <div className="text-lg font-bold">{value}</div>
       </div>
-    </div>
+    </Card>
   );
 }
 
 function StatBlock({ q }: { q: QuestionStat }) {
   return (
-    <div className="card p-5">
+    <Card className="p-5">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-bold">{q.label}</h3>
-        <span className="text-xs text-slate-400">{q.answered} إجابة</span>
+        <span className="text-xs text-muted-foreground">{q.answered} إجابة</span>
       </div>
 
       {(q.kind === "distribution" || q.kind === "numeric") && q.buckets && (
@@ -413,8 +428,8 @@ function StatBlock({ q }: { q: QuestionStat }) {
           )}
           <div className="flex-1 space-y-2">
             {q.average != null && (
-              <p className="mb-2 text-sm text-slate-500">
-                المتوسط: <span className="font-bold text-naf-700">{q.average.toFixed(2)}</span>
+              <p className="mb-2 text-sm text-muted-foreground">
+                المتوسط: <span className="font-bold text-primary">{q.average.toFixed(2)}</span>
               </p>
             )}
             {q.buckets.map((b) => (
@@ -443,9 +458,9 @@ function StatBlock({ q }: { q: QuestionStat }) {
         <div className="space-y-1.5">
           {q.samples && q.samples.length > 0 ? (
             q.samples.map((s, i) => (
-              <div key={i} className="rounded-lg bg-slate-50 px-3 py-2 text-sm">
+              <div key={i} className="rounded-lg bg-muted px-3 py-2 text-sm">
                 {s.url ? (
-                  <a href={s.url} target="_blank" className="text-naf-600 underline">
+                  <a href={s.url} target="_blank" className="text-primary underline">
                     {s.text}
                   </a>
                 ) : (
@@ -454,23 +469,23 @@ function StatBlock({ q }: { q: QuestionStat }) {
               </div>
             ))
           ) : (
-            <p className="text-sm text-slate-400">لا توجد إجابات</p>
+            <p className="text-sm text-muted-foreground">لا توجد إجابات</p>
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
+// لوحة التصنيف من السجلّ: خمسة رموز فقط، تتبع الوضعين الفاتح والداكن.
+// كانت ثماني قيم hex حرفية من عائلات لونية مختلفة (القاعدة ١).
+// ما زاد على خمسة تصنيفات يعيد استخدام اللوحة بالدور.
 const PIE_COLORS = [
-  "#5566a6",
-  "#22c55e",
-  "#f59e0b",
-  "#ef4444",
-  "#8b5cf6",
-  "#06b6d4",
-  "#ec4899",
-  "#84cc16",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
 ];
 
 function Donut({ data }: { data: { label: string; count: number }[] }) {
@@ -516,7 +531,7 @@ function Donut({ data }: { data: { label: string; count: number }[] }) {
           <div key={i} className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-sm" style={{ background: s.color }} />
             <span className="max-w-[120px] truncate">{s.label}</span>
-            <span className="text-slate-400">{s.pct}%</span>
+            <span className="text-muted-foreground">{s.pct}%</span>
           </div>
         ))}
       </div>
@@ -541,7 +556,7 @@ function CrossTab({
   const qb = choice.find((c) => c.id === bId);
   if (!qa || !qb || aId === bId)
     return (
-      <div className="card p-5">
+      <Card className="p-5">
         <CrossHead
           choice={choice}
           aId={aId}
@@ -549,8 +564,8 @@ function CrossTab({
           setAId={setAId}
           setBId={setBId}
         />
-        <p className="mt-3 text-sm text-slate-400">اختر سؤالين مختلفين.</p>
-      </div>
+        <p className="mt-3 text-sm text-muted-foreground">اختر سؤالين مختلفين.</p>
+      </Card>
     );
 
   // القيم المحتملة لكل سؤال من نتائج التحليل نفسها
@@ -582,7 +597,7 @@ function CrossTab({
   const grand = aVals.reduce((s, av) => s + rowTotal(av), 0);
 
   return (
-    <div className="card p-5">
+    <Card className="p-5">
       <CrossHead
         choice={choice}
         aId={aId}
@@ -590,30 +605,30 @@ function CrossTab({
         setAId={setAId}
         setBId={setBId}
       />
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[420px] border-collapse text-sm">
-          <caption className="sr-only">
-            جدول تقاطعي بين «{qa.label}» و«{qb.label}»
-          </caption>
-          <thead>
+      <div className="mt-4">
+        <Table className="min-w-[420px]">
+          <TableCaption className="sr-only">
+            جدول تقاطعي بين «<bdi>{qa.label}</bdi>» و«<bdi>{qb.label}</bdi>»
+          </TableCaption>
+          <TableHeader>
             <tr>
-              <th scope="col" className="p-2 text-right text-xs text-slate-400">
+              <th scope="col" className="p-2 text-start text-xs text-muted-foreground">
                 {qa.label} / {qb.label}
               </th>
               {bVals.map((bv) => (
-                <th key={bv} scope="col" className="p-2 text-xs font-medium text-slate-600">
+                <th key={bv} scope="col" className="p-2 text-xs font-medium text-muted-foreground">
                   {bv}
                 </th>
               ))}
-              <th scope="col" className="p-2 text-xs text-slate-400">
+              <th scope="col" className="p-2 text-xs text-muted-foreground">
                 المجموع
               </th>
             </tr>
-          </thead>
-          <tbody>
+          </TableHeader>
+          <TableBody>
             {aVals.map((av, i) => (
-              <tr key={av} className={i % 2 ? "bg-slate-50/60" : ""}>
-                <th scope="row" className="p-2 text-right text-sm font-medium text-slate-700">
+              <tr key={av} className={i % 2 ? "bg-muted/60" : ""}>
+                <th scope="row" className="p-2 text-start text-sm font-medium text-foreground">
                   {av}
                 </th>
                 {bVals.map((bv) => {
@@ -622,7 +637,7 @@ function CrossTab({
                     <td key={bv} className="p-2 text-center">
                       <span
                         className={
-                          n > 0 ? "font-semibold text-naf-700" : "text-slate-300"
+                          n > 0 ? "font-semibold text-primary" : "text-muted-foreground"
                         }
                       >
                         {n}
@@ -630,24 +645,24 @@ function CrossTab({
                     </td>
                   );
                 })}
-                <td className="p-2 text-center text-slate-500">{rowTotal(av)}</td>
+                <td className="p-2 text-center text-muted-foreground">{rowTotal(av)}</td>
               </tr>
             ))}
-            <tr className="border-t border-slate-200">
-              <th scope="row" className="p-2 text-right text-xs text-slate-400">
+            <tr className="border-t border-border">
+              <th scope="row" className="p-2 text-start text-xs text-muted-foreground">
                 المجموع
               </th>
               {bVals.map((bv) => (
-                <td key={bv} className="p-2 text-center text-slate-500">
+                <td key={bv} className="p-2 text-center text-muted-foreground">
                   {colTotal(bv)}
                 </td>
               ))}
               <td className="p-2 text-center font-bold">{grand}</td>
             </tr>
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -667,7 +682,7 @@ function CrossHead({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <h3 className="flex items-center gap-2 font-bold">
-        <Icon name="grid" className="h-5 w-5 text-naf-600" /> جدول تقاطعي
+        <Icon name="table" className="h-5 w-5 text-primary" /> جدول تقاطعي
       </h3>
       <div className="ms-auto flex flex-wrap items-center gap-2">
         <label className="sr-only" htmlFor="crosstab-a">
@@ -675,7 +690,7 @@ function CrossHead({
         </label>
         <select
           id="crosstab-a"
-          className="input py-1 text-xs"
+          className={cn(inputVariants(), "py-1 text-xs")}
           value={aId}
           onChange={(e) => setAId(e.target.value)}
         >
@@ -685,13 +700,13 @@ function CrossHead({
             </option>
           ))}
         </select>
-        <span className="text-xs text-slate-400">×</span>
+        <span className="text-xs text-muted-foreground">×</span>
         <label className="sr-only" htmlFor="crosstab-b">
           السؤال الثاني
         </label>
         <select
           id="crosstab-b"
-          className="input py-1 text-xs"
+          className={cn(inputVariants(), "py-1 text-xs")}
           value={bId}
           onChange={(e) => setBId(e.target.value)}
         >
@@ -719,12 +734,12 @@ function ReviewBar({
   const [savedAt, setSavedAt] = useState("");
 
   return (
-    <div className="mt-4 border-t border-slate-100 pt-3">
+    <div className="mt-4 border-t border-border pt-3">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">الحالة</span>
+          <span className="text-xs text-muted-foreground">الحالة</span>
           <select
-            className="input py-1 text-sm"
+            className={cn(inputVariants(), "py-1 text-sm")}
             value={review.status}
             onChange={(e) => onChange({ status: e.target.value })}
           >
@@ -737,14 +752,14 @@ function ReviewBar({
         </div>
 
         <div className="flex items-center gap-1">
-          <span className="text-xs text-slate-400">التقييم</span>
+          <span className="text-xs text-muted-foreground">التقييم</span>
           {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
               title={`${n} من 5`}
               onClick={() => onChange({ rating: review.rating === n ? 0 : n })}
               className={
-                n <= review.rating ? "text-amber-500" : "text-slate-300"
+                n <= review.rating ? "text-warning" : "text-muted-foreground"
               }
             >
               <Icon name="star" className="h-4 w-4" />
@@ -754,17 +769,17 @@ function ReviewBar({
 
         <button
           onClick={() => setOpenNotes((o) => !o)}
-          className="inline-flex items-center gap-1 text-xs font-medium text-naf-600 hover:underline"
+          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
         >
-          <Icon name="edit" className="h-3.5 w-3.5" />
+          <Icon name="edit" className="h-4 w-4" />
           {openNotes ? "إخفاء الملاحظات" : "ملاحظات داخلية"}
         </button>
-        {savedAt && <span className="text-xs text-green-600">حُفظ</span>}
+        {savedAt && <span className="text-xs text-success">حُفظ</span>}
       </div>
 
       {openNotes && (
         <textarea
-          className="input mt-2 text-sm"
+          className={cn(inputVariants(), "h-auto py-2 mt-2 text-sm")}
           rows={3}
           placeholder="ملاحظات داخلية (لا تظهر للمستفيد)"
           value={notes}
@@ -772,7 +787,7 @@ function ReviewBar({
           onBlur={() => {
             if (notes !== review.notes) {
               onChange({ notes });
-              setSavedAt(new Date().toLocaleTimeString("ar-SA"));
+              setSavedAt(formatTime(new Date()));
             }
           }}
         />
@@ -785,30 +800,32 @@ function ReviewBar({
 function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
   if (!funnel.started)
     return (
-      <div className="card p-5 text-sm text-slate-400">
-        <h3 className="mb-1 flex items-center gap-2 font-bold text-slate-700">
-          <Icon name="target" className="h-5 w-5 text-naf-600" /> تحليلات الإكمال
+      <Card className="p-5 text-sm text-muted-foreground">
+        <h3 className="mb-1 flex items-center gap-2 font-bold text-foreground">
+          <Icon name="gauge" className="h-5 w-5 text-primary" /> تحليلات الإكمال
         </h3>
         لم تُسجَّل محاولات تعبئة بعد. تُحتسب من لحظة ضغط «البدء» في النماذج
         المنشورة.
-      </div>
+      </Card>
     );
 
   const dur = (s: number | null) => {
     if (s == null) return "—";
     const m = Math.floor(s / 60);
-    return m > 0 ? `${m} د ${s % 60} ث` : `${s} ث`;
+    return m > 0
+      ? `${bidi(m)} د ${bidi(s % 60)} ث`
+      : `${bidi(s)} ث`;
   };
   const maxDrop = Math.max(1, ...funnel.dropOff.map((d) => d.count));
 
   return (
-    <div className="card p-5">
+    <Card className="p-5">
       <h3 className="mb-4 flex items-center gap-2 font-bold">
-        <Icon name="target" className="h-5 w-5 text-naf-600" /> تحليلات الإكمال
+        <Icon name="gauge" className="h-5 w-5 text-primary" /> تحليلات الإكمال
       </h3>
       <div className="grid gap-4 sm:grid-cols-4">
-        <Metric label="بدأوا التعبئة" value={String(funnel.started)} />
-        <Metric label="أكملوا" value={String(funnel.completed)} />
+        <Metric label="بدأوا التعبئة" value={formatNumber(funnel.started)} />
+        <Metric label="أكملوا" value={formatNumber(funnel.completed)} />
         <Metric
           label="معدّل الإكمال"
           value={funnel.rate == null ? "—" : `${funnel.rate}%`}
@@ -817,9 +834,9 @@ function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
       </div>
 
       {funnel.rate != null && (
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-naf-600"
+            className="h-full rounded-full bg-primary"
             style={{ width: `${funnel.rate}%` }}
           />
         </div>
@@ -827,22 +844,22 @@ function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
 
       {funnel.dropOff.length > 0 && (
         <div className="mt-5">
-          <p className="mb-2 text-sm font-semibold text-slate-700">
+          <p className="mb-2 text-sm font-semibold text-foreground">
             نقاط التسرّب — آخر سؤال وُصل إليه دون إكمال
           </p>
           <div className="space-y-1.5">
             {funnel.dropOff.map((d, i) => (
               <div key={i} className="flex items-center gap-2 text-sm">
-                <span className="w-40 shrink-0 truncate text-slate-600">
+                <span className="w-40 shrink-0 truncate text-muted-foreground">
                   {d.label}
                 </span>
-                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
                   <div
-                    className="h-full rounded-full bg-amber-400"
+                    className="h-full rounded-full bg-warning"
                     style={{ width: `${(d.count / maxDrop) * 100}%` }}
                   />
                 </div>
-                <span className="w-8 text-left text-xs text-slate-500">
+                <span className="w-8 text-end text-xs text-muted-foreground">
                   {d.count}
                 </span>
               </div>
@@ -850,15 +867,15 @@ function FunnelPanel({ funnel }: { funnel: FunnelStats }) {
           </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-slate-50 p-3">
-      <div className="text-xs text-slate-400">{label}</div>
-      <div className="mt-0.5 text-lg font-extrabold">{value}</div>
+    <div className="rounded-xl bg-muted p-3">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-0.5 text-lg font-bold">{value}</div>
     </div>
   );
 }
@@ -866,23 +883,23 @@ function Metric({ label, value }: { label: string; value: string }) {
 function TimelineChart({ data }: { data: { label: string; count: number }[] }) {
   const max = Math.max(...data.map((d) => d.count), 1);
   return (
-    <div className="card p-5">
+    <Card className="p-5">
       <h3 className="mb-4 flex items-center gap-2 font-bold">
-        <Icon name="trend-up" className="h-5 w-5 text-naf-600" /> الردود عبر الزمن
+        <Icon name="trend-up" className="h-5 w-5 text-primary" /> الردود عبر الزمن
       </h3>
       <div className="flex items-end gap-1.5 overflow-x-auto pb-1" style={{ height: 140 }}>
         {data.map((d) => (
           <div key={d.label} className="flex min-w-[28px] flex-1 flex-col items-center justify-end gap-1">
-            <span className="text-[10px] font-bold text-naf-700">{d.count}</span>
+            <span className="text-xs font-bold text-primary">{d.count}</span>
             <div
-              className="w-full rounded-t-md bg-naf-500"
+              className="w-full rounded-t-md bg-primary"
               style={{ height: `${(d.count / max) * 100}%`, minHeight: d.count ? 4 : 0 }}
             />
-            <span className="whitespace-nowrap text-[10px] text-slate-400">{d.label}</span>
+            <span className="whitespace-nowrap text-xs text-muted-foreground">{d.label}</span>
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -892,12 +909,12 @@ function Bar({ label, count, total }: { label: string; count: number; total: num
     <div>
       <div className="mb-0.5 flex justify-between text-xs">
         <span className="truncate">{label}</span>
-        <span className="text-slate-400">
+        <span className="text-muted-foreground">
           {count} ({pct}%)
         </span>
       </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full rounded-full bg-naf-500" style={{ width: `${pct}%` }} />
+      <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+        <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
