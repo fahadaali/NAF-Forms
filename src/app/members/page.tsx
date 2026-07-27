@@ -21,10 +21,7 @@ export default async function MembersPage() {
     <div className="min-h-screen">
       <Navbar crumbs={[{ label: "الفريق والصلاحيات" }]} />
       <main className="mx-auto max-w-4xl px-4 py-8">
-        <h1 className="mb-1 text-2xl font-bold">الفريق والصلاحيات</h1>
-        <p className="mb-6 text-sm text-muted-foreground">
-          الأعضاء يصلون من الدخول الموحّد، والصلاحية تُوزَّع من هنا.
-        </p>
+        <h1 className="mb-6 text-2xl font-bold">الفريق والصلاحيات</h1>
         <MembersManager initial={members} meId={meId} />
       </main>
     </div>
