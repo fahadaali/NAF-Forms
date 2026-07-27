@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS members (
 -- البحث بالبريد عند مطابقة عضو قادم بسجلّ قائم (يستعمله onClaims).
 CREATE INDEX IF NOT EXISTS idx_members_email ON members(email);
 
--- جدول الربط: هوية المركز ← الهوية المحلية.
+-- جدول الربط: من هوية المركز إلى الهوية المحلية.
 -- سطر واحد لكل عضو، ويُنشأ مرة واحدة عند أول دخول موحّد.
 CREATE TABLE IF NOT EXISTS "MemberLink" (
   "user_id"       TEXT NOT NULL PRIMARY KEY,   -- sub — نفس مفتاح members
