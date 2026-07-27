@@ -9,7 +9,7 @@ export type Role = (typeof ROLES)[number];
 // المسمّيات مسجَّلة في naf-terms.md — §٢ تسميات الحقول والأعمدة.
 export const ROLE_LABEL: Record<Role, string> = {
   admin: "مسؤول",
-  editor: "مستخدم (تحرير)",
+  editor: "محرّر",
   viewer: "مستخدم (اطّلاع)",
 };
 
