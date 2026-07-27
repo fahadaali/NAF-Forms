@@ -110,6 +110,24 @@ CREATE TABLE IF NOT EXISTS "WebhookLog" (
   "error" TEXT NOT NULL DEFAULT '',
   "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE IF NOT EXISTS members (
+  user_id      TEXT PRIMARY KEY,
+  display_name TEXT,
+  email        TEXT,
+  role         TEXT NOT NULL DEFAULT 'viewer',
+  perms        TEXT,
+  is_active    INTEGER NOT NULL DEFAULT 1,
+  last_seen_at INTEGER,
+  created_at   INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "MemberLink" (
+  "user_id"     TEXT NOT NULL PRIMARY KEY,
+  "localUserId" TEXT NOT NULL,
+  "linkedAt"    INTEGER NOT NULL,
+  "linkedBy"    TEXT NOT NULL DEFAULT 'email_match'
+);
+CREATE INDEX IF NOT EXISTS idx_members_email ON members(email);
+CREATE UNIQUE INDEX IF NOT EXISTS "MemberLink_localUserId_key" ON "MemberLink"("localUserId");
 CREATE INDEX IF NOT EXISTS "WebhookLog_formId_idx" ON "WebhookLog"("formId");
 CREATE INDEX IF NOT EXISTS "ResponseReview_status_idx" ON "ResponseReview"("status");
 CREATE INDEX IF NOT EXISTS "Visit_formId_idx" ON "Visit"("formId");

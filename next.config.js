@@ -1,3 +1,10 @@
+const { initOpenNextCloudflareForDev } = require("@opennextjs/cloudflare");
+
+// يتيح لـ `next dev` قراءة روابط Cloudflare (D1 و KV) عبر miniflare.
+// لازمٌ للدخول الموحّد: الوسيط يقرأ AUTH_KV و DB من getCloudflareContext،
+// وبدون هذه التهيئة يفشل كل طلب محليًا. لا بديل عنها بتجاوز الحماية.
+initOpenNextCloudflareForDev();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
