@@ -57,6 +57,10 @@ jobs:
           npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0007_response_review.sql
           npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0008_webhook_log.sql
           npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0009_sso_members.sql
+          # 0010 يرفع كل `viewer` قائم إلى `editor` قبل أن يعمل حارس القراءة.
+          # ترتيبه قبل خطوة النشر مقصود: الحارس يبدأ مع الـ Worker الجديد،
+          # فتشغيله قبل الرفع ينزع الكتابة من كل عضو لم يُرقَّ.
+          npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0010_viewer_becomes_reader.sql
 
       - name: بناء التطبيق لـ Workers
         run: npm run cf:build

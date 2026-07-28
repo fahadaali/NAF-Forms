@@ -61,7 +61,10 @@ export default async function HomePage() {
         <section className="mb-10">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold">المشاريع</h2>
-            <CreateProjectButton />
+            {/* «مستخدم (اطّلاع)» يقرأ ولا ينشئ — والوسيط يردّ إنشاءه بـ٤٠٣.
+                والزرّ يُخفى ولا يُعطَّل: زرٌّ معطَّل بلا سبب ظاهر يُقرأ
+                عطلاً في المنصة. */}
+            {session?.role !== "viewer" && <CreateProjectButton />}
           </div>
           {projects.length === 0 ? (
             <Card className="grid place-items-center p-12 text-center text-muted-foreground">
