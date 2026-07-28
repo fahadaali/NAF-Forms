@@ -19,6 +19,7 @@ import {
   TableCaption,
   TableHeader,
 } from "@/components/ui/table";
+import { apiFetch } from "@/lib/api-client";
 
 export interface QuestionStat {
   id: string;
@@ -109,7 +110,7 @@ export default function ResponsesDashboard({
     patch: Partial<{ status: string; rating: number; notes: string }>
   ) {
     setReviews((prev) => ({ ...prev, [id]: { ...reviewOf(id), ...patch } }));
-    await fetch(`/api/responses/${id}/review`, {
+    await apiFetch(`/api/responses/${id}/review`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
@@ -154,7 +155,7 @@ export default function ResponsesDashboard({
   async function deleteResponse(id: string) {
     if (!confirm("حذف هذا الرد نهائيًا؟")) return;
     setBusy(id);
-    await fetch(`/api/responses/${id}`, { method: "DELETE" });
+    await apiFetch(`/api/responses/${id}`, { method: "DELETE" });
     setBusy(null);
     router.refresh();
   }

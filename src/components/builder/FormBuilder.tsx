@@ -16,6 +16,7 @@ import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { Card } from "@/components/ui/card";
 import { formatTime } from "@/lib/naf-format";
+import { apiFetch } from "@/lib/api-client";
 
 let tmpCounter = 0;
 
@@ -124,7 +125,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
 
   async function save(nextStatus?: string) {
     setSaving(true);
-    const res = await fetch(`/api/forms/${initial.id}`, {
+    const res = await apiFetch(`/api/forms/${initial.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -249,7 +250,7 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
   async function saveSlug() {
     setSavingSlug(true);
     setSlugMsg(null);
-    const res = await fetch(`/api/forms/${initial.id}`, {
+    const res = await apiFetch(`/api/forms/${initial.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ slug: slugDraft.trim() }),

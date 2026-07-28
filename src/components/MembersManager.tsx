@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { formatDate } from "@/lib/naf-format";
 import { ROLE_LABEL, ROLES, type MemberRow } from "@/lib/roles";
+import { apiFetch } from "@/lib/api-client";
 
 // شاشة الصلاحيات. الأعضاء يأتون من الدخول الموحّد ولا يُضافون هنا — فلا
 // زرّ إضافة: المنح والسحب قرارُ المركز، وهذه الشاشة توزّع الصلاحية بعده.
@@ -27,7 +28,7 @@ export default function MembersManager({
     setError("");
     setNotice("");
     setBusy(userId);
-    const res = await fetch(`/api/members/${encodeURIComponent(userId)}`, {
+    const res = await apiFetch(`/api/members/${encodeURIComponent(userId)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),

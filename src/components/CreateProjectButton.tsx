@@ -6,6 +6,7 @@ import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { Card } from "@/components/ui/card";
 import { NAF_PRIMARY } from "@/lib/brand";
+import { apiFetch } from "@/lib/api-client";
 
 export default function CreateProjectButton() {
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function CreateProjectButton() {
   async function create() {
     if (!name.trim()) return;
     setBusy(true);
-    const res = await fetch("/api/projects", {
+    const res = await apiFetch("/api/projects", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, description: desc, color }),

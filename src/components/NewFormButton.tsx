@@ -5,6 +5,7 @@ import { FORM_TYPE_LABELS } from "@/lib/field-types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { apiFetch } from "@/lib/api-client";
 
 interface Template {
   id: string;
@@ -29,7 +30,7 @@ export default function NewFormButton({
 
   async function createBlank() {
     setBusy(true);
-    const res = await fetch("/api/forms", {
+    const res = await apiFetch("/api/forms", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ projectId, title, type }),
@@ -40,7 +41,7 @@ export default function NewFormButton({
 
   async function createFromTemplate(templateId: string) {
     setBusy(true);
-    const res = await fetch("/api/forms", {
+    const res = await apiFetch("/api/forms", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ projectId, templateId }),

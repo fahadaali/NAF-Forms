@@ -9,6 +9,7 @@ import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { Card } from "@/components/ui/card";
 import { NAF_FOREGROUND } from "@/lib/brand";
+import { apiFetch } from "@/lib/api-client";
 
 // ترويسة قسم بأيقونة منحنية
 function SectionHead({ icon, children }: { icon: string; children: React.ReactNode }) {
@@ -583,7 +584,7 @@ function IntegrationsPanel({
 
   async function loadLogs() {
     setBusy(true);
-    const res = await fetch(`/api/forms/${formId}/deliveries`);
+    const res = await apiFetch(`/api/forms/${formId}/deliveries`);
     setBusy(false);
     if (res.ok) setLogs((await res.json()).deliveries || []);
   }
@@ -591,7 +592,7 @@ function IntegrationsPanel({
   async function resend() {
     setBusy(true);
     setMsg("");
-    const res = await fetch(`/api/forms/${formId}/deliveries`, { method: "POST" });
+    const res = await apiFetch(`/api/forms/${formId}/deliveries`, { method: "POST" });
     const d = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) {
