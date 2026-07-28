@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { authenticate } from "naf-auth";
+import { authenticate } from "@/lib/naf-id";
 import { ssoConfig, H_SUB, H_ROLE, H_PERMS } from "@/lib/sso";
 
-// الدخول الموحّد: القرار كلّه في `naf-auth` — التحويل إلى المركز، والحالة
-// العابرة، والتحقق من الرمز، وقراءة العضو. وهذا الملف يصل نتيجتها بـ Next.
+// الحارس. القرار كلّه في `src/lib/naf-id/` — التحويل إلى المركز، والتحقق من
+// التوقيع و`exp` في كل طلب محمي، وقراءة العضو. وهذا الملف يصل نتيجتها بـ Next.
 //
 // لماذا هنا لا في `functions/_middleware.js`: هذه المنصة Next.js على Workers
-// عبر OpenNext، ولا يُنفَّذ فيها اصطلاح Pages Functions. والحزمة تصدّر
-// `authenticate` محايدة الإطار لهذا الغرض، فلا يُنسخ منها شيء.
+// عبر OpenNext، ولا يُنفَّذ فيها اصطلاح Pages Functions.
 
 /** ترويسات الهوية تُمسح من الطلب الوارد قبل حقنها — وإلا انتحلها المتصفح. */
 function cleanHeaders(req: NextRequest): Headers {
@@ -20,17 +19,21 @@ function cleanHeaders(req: NextRequest): Headers {
   return h;
 }
 
+/** طلب واجهة برمجية لا يُحوَّل — يعود برمز حالة يفهمه العميل. */
+function isApi(pathname: string): boolean {
+  return pathname.startsWith("/api/");
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const { env } = await getCloudflareContext({ async: true });
-  const config = ssoConfig(env);
+  const bindings = env as unknown as Record<string, unknown>;
+  const config = ssoConfig(bindings);
 
-  const result = await authenticate(req, env, config);
+  const result = await authenticate(req, bindings, config);
 
-  // استجابة جاهزة من الحزمة: تحويل إلى المركز أو إلى صفحة الرفض.
-  if (result.response) {
-    // طلب واجهة برمجية لا يُحوَّل — يعود برمز حالة يفهمه العميل.
-    if (pathname.startsWith("/api/"))
+  if (result.kind === "login" || result.kind === "denied") {
+    if (isApi(pathname))
       return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 401 });
     return new NextResponse(result.response.body, {
       status: result.response.status,
@@ -39,7 +42,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // مسار عام: يمرّ بلا هوية، ومع ذلك تُمسح الترويسات المنتحَلة.
-  if (!result.user) {
+  if (result.kind === "public") {
     return NextResponse.next({ request: { headers: cleanHeaders(req) } });
   }
 
@@ -51,7 +54,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/api/users")
   ) {
     if (result.user.role !== "admin") {
-      if (pathname.startsWith("/api/"))
+      if (isApi(pathname))
         return NextResponse.json({ error: "للمسؤول فقط" }, { status: 403 });
       const url = req.nextUrl.clone();
       url.pathname = "/";
@@ -60,7 +63,7 @@ export async function middleware(req: NextRequest) {
   }
 
   const headers = cleanHeaders(req);
-  headers.set(H_SUB, result.user.id);
+  headers.set(H_SUB, result.sub);
   headers.set(H_ROLE, result.user.role);
   if (result.user.perms) headers.set(H_PERMS, JSON.stringify(result.user.perms));
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { reportAccessChange } from "naf-auth";
+import { memberEmail, reportAccessChange } from "@/lib/naf-id";
 import { requireAdmin } from "@/lib/session";
 import { ssoConfig } from "@/lib/sso";
 import { countActiveAdmins, setMemberActive, setMemberRole } from "@/lib/members";
@@ -50,15 +50,23 @@ export async function PATCH(
 
     await setMemberActive(id, body.isActive);
 
-    // تبليغ المركز (§٣-٦): يظهر أثر التعطيل في شبكة المنصات عند المستخدم.
-    // القاعدة المحلية حُدِّثت سلفاً، فتعذّر التبليغ لا يُلغيها — يُبلَّغ
+    // تبليغ المركز: يوافق جدولُ الوصول ما تراه المنصة، وإلا بقيت بطاقتها
+    // تدعو المستخدم إلى باب لا يفتح فيقرأ رفضاً بلا سبب.
+    //
+    // المركز يعرف الأعضاء بالبريد لا بمعرّف المنصة، فالبريد هو ما يُرسل —
+    // وعضوٌ بلا بريد لا يُبلَّغ عنه، ويُقال ذلك للمسؤول ولا يُبتلع.
+    //
+    // والقاعدة المحلية حُدِّثت سلفاً، فتعذّر التبليغ لا يُلغيها — يُبلَّغ
     // المسؤول أن المركز لم يصله الخبر، ولا يُكشف تفصيل تقني.
     let reported = true;
     try {
       const { env } = await getCloudflareContext({ async: true });
-      await reportAccessChange(env, ssoConfig(env), {
-        userId: id,
-        status: body.isActive ? "active" : "disabled",
+      const bindings = env as unknown as Record<string, unknown>;
+      const email = await memberEmail(bindings, id);
+      if (!email) throw new Error("member_without_email");
+      await reportAccessChange(bindings, ssoConfig(bindings), {
+        email,
+        state: body.isActive ? "granted" : "revoked",
       });
     } catch {
       reported = false;

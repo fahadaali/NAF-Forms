@@ -1,25 +1,15 @@
 // إعداد الدخول الموحّد لهذه المنصة.
 //
-// كل ما هنا إعدادٌ ووصلٌ بالنظام القائم. لا منطق مصادقة: التحقق من التوقيع
-// و`iss` و`aud` و`exp`، وتنقية `next`، والحالة العابرة، والكوكي — كلها في
-// `naf-auth` ولا تُنسخ هنا (§٤ من وثيقة الربط).
-import { createConfig, type AuthConfig, type Claims } from "naf-auth";
+// كل ما هنا إعدادٌ ووصلٌ بالنظام القائم. ومنطق المصادقة — التحقق من التوقيع
+// و`iss` و`aud` و`exp`، وتنقية `next`، والمبادلة، والجلسة، والكوكي — في
+// `src/lib/naf-id/` ولا يُنسخ هنا.
+//
+// والمسارات العامة مكتوبة في `naf-id/config.ts` وأي مسار سواها محمي
+// افتراضياً. والأصول الساكنة مستثناة قبل ذلك في `matcher` بـ src/middleware.ts.
+import { nafIdConfig, type Claims, type NafIdConfig } from "@/lib/naf-id";
 
-// المسارات العامة مكتوبة صراحةً لهذه المنصة، وأي مسار غيرها محمي افتراضياً.
-// والأصول الساكنة مستثناة قبل ذلك في `matcher` بـ src/middleware.ts.
-const PUBLIC_EXACT = [
-  "/auth/callback", // مسار الاستقبال — لا يُحمى وإلا استحال الدخول
-  "/denied", // صفحة الرفض
-  "/api/upload", // رفع مرفق من نموذج عام
-  "/api/logout",
-];
-
-const PUBLIC_PREFIXES = [
-  "/f/", // تعبئة النموذج — جوهر المنتج، بلا حساب
-  "/api/f/",
-  "/uploads/", // مرفقات تُعرض داخل النماذج العامة (قد لا تحمل امتداداً)
-  "/certificate/", // شهادة الاختبار — تُفتح بمعرّف الرد العشوائي
-];
+export { nafIdConfig as ssoConfig };
+export type { NafIdConfig };
 
 // أدوار هذه المنصة مقابل أدوار جدول `User` القائم.
 // القرار: `member` القائم يقابل `editor` فيحتفظ بقدرته على الإنشاء والتحرير،
@@ -38,8 +28,11 @@ function mapLegacyRole(role: string): string {
  * ويُدرَج صفّ `members` هنا بالدور المشتقّ من دوره القديم، فيصل
  * `upsertMember` بعده إلى `ON CONFLICT` ولا يُنزله إلى الدور الافتراضي.
  */
-async function linkExistingUser(claims: Claims, env: any, config: AuthConfig) {
-  const db = env[config.dbBinding];
+export async function linkExistingUser(
+  claims: Claims,
+  env: Record<string, unknown>
+): Promise<void> {
+  const db = env.DB as D1Database;
   const sub = claims.sub;
 
   // مربوط سلفاً: لا شيء يُفعل. الدخول الثاني يمرّ من هنا.
@@ -55,7 +48,7 @@ async function linkExistingUser(claims: Claims, env: any, config: AuthConfig) {
   const legacy = await db
     .prepare(`SELECT "id", "role" FROM "User" WHERE "email" = ?`)
     .bind(email)
-    .first();
+    .first<{ id: string; role: string }>();
   if (!legacy) return;
 
   // المستخدم المحلي مربوط بهوية مركزية أخرى: لا يُربط مرتين.
@@ -73,7 +66,7 @@ async function linkExistingUser(claims: Claims, env: any, config: AuthConfig) {
     .prepare(
       `INSERT INTO members (user_id, display_name, email, role, is_active, created_at)
        VALUES (?, ?, ?, ?, 1, ?)
-       ON CONFLICT(user_id) DO NOTHING`,
+       ON CONFLICT(user_id) DO NOTHING`
     )
     .bind(sub, claims.name ?? null, email, mapLegacyRole(String(legacy.role)), now)
     .run();
@@ -82,19 +75,10 @@ async function linkExistingUser(claims: Claims, env: any, config: AuthConfig) {
     .prepare(
       `INSERT INTO "MemberLink" ("user_id", "localUserId", "linkedAt", "linkedBy")
        VALUES (?, ?, ?, 'email_match')
-       ON CONFLICT("user_id") DO NOTHING`,
+       ON CONFLICT("user_id") DO NOTHING`
     )
     .bind(sub, legacy.id, now)
     .run();
-}
-
-/** إعداد naf-auth لهذه المنصة. القيم المتغيّرة كلها من `wrangler.toml`. */
-export function ssoConfig(env: any): AuthConfig {
-  return createConfig(env, {
-    publicPaths: PUBLIC_EXACT,
-    publicPrefixes: PUBLIC_PREFIXES,
-    onClaims: linkExistingUser,
-  });
 }
 
 /** ترويسات يحقنها الوسيط ليقرأها الخادم — لا تأتي من المتصفح أبداً. */

@@ -1,6 +1,6 @@
 // قراءات جدول الأعضاء لشاشة الصلاحيات.
 //
-// الكتابة عند الدخول تتولّاها `naf-auth` (upsertMember)، وهذه القراءات
+// الكتابة عند الدخول يتولّاها `naf-id` (upsertMember)، وهذه القراءات
 // والتعديلات الإدارية وحدها — لا منطق مصادقة هنا.
 import { getDb } from "@/lib/db";
 import type { MemberRow, Role } from "@/lib/roles";
