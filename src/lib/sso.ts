@@ -88,12 +88,36 @@ async function linkExistingUser(claims: Claims, env: any, config: AuthConfig) {
     .run();
 }
 
+/**
+ * سجلّ الأخطاء — الرمز وحده لا يكفي.
+ *
+ * كل فشل في المبادلة يصل المستخدمَ `auth_failed` واحداً، فبلا حالة ردّ
+ * المركز يستوي في اللوغ سرٌّ خاطئ وصفُّ وصول مفقود وجدولٌ لم يُهاجَر.
+ * والفرق بين تشخيص في دقيقة وآخر في ساعة هو هذا السطر:
+ *
+ *   secret_missing               السرّ غير مضبوط
+ *   exchange_failed — … (401)    السرّ خاطئ أو PLATFORM_ID لا يطابق
+ *   exchange_failed — … (400)    رمز عبور مستهلَك — ابدأ من `/` ولا تحدّث الصفحة
+ *   exchange_failed — … (403)    لا صفّ `granted` في `platform_access`
+ *   bad_issuer / bad_audience    AUTH_ISSUER أو PLATFORM_ID لا يطابق حرفياً
+ *   callback_failed — no such table   هجرة `members` لم تُطبَّق
+ *
+ * والرسالة تُسجَّل ولا تُعرض: الحزمة لا تُرفق نصّ استجابة المركز فيها،
+ * وصفحة الرفض تعرض رمز سبب ثابتاً لا تفصيلاً تقنياً.
+ */
+function logAuthError(code: string, err: unknown) {
+  const message = err instanceof Error ? err.message : "";
+  const detail = message && message !== code ? ` — ${message}` : "";
+  console.error(`naf-auth: ${code}${detail}`);
+}
+
 /** إعداد naf-auth لهذه المنصة. القيم المتغيّرة كلها من `wrangler.toml`. */
 export function ssoConfig(env: any): AuthConfig {
   return createConfig(env, {
     publicPaths: PUBLIC_EXACT,
     publicPrefixes: PUBLIC_PREFIXES,
     onClaims: linkExistingUser,
+    onError: logAuthError,
   });
 }
 

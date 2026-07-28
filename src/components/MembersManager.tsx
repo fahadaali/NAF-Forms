@@ -38,12 +38,21 @@ export default function MembersManager({
       setError(data.error || "حدث خطأ في النظام. أعد المحاولة بعد قليل");
       return;
     }
-    // التعطيل نجح محلياً ولم يصل المركز — يُقال صراحةً ولا يُبتلع.
-    setNotice(
-      data.reported === false
-        ? "تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة"
-        : data.message
-    );
+
+    /* السحب نافذ محلياً فور كتابته، والناقص إظهارُ سببه في شبكة المركز.
+       فيُفصل ما تمّ عمّا لم يتمّ، ولا يُقال «فشل» لفعلٍ نُفِّذ.
+
+       والمنح ليس له نصّ تعذّر مسجَّل في السجلّ — فيأخذ «فشل الاتصال»
+       المسجَّل ولا يُصاغ له نصّ محلي. مرفوعٌ في تقرير هذه الجلسة. */
+    if (data.reported === false) {
+      setNotice(
+        body.isActive === false
+          ? "سُحب الوصول في هذه المنصة، ولم يبلغ السحبُ المركزَ. أعد المحاولة"
+          : "تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة"
+      );
+    } else {
+      setNotice(data.message);
+    }
     router.refresh();
   }
 
@@ -60,6 +69,13 @@ export default function MembersManager({
         </Alert>
       )}
 
+      {/* الشاشة الفارغة تقول متى يظهر العضو ولا تدعو إلى إضافته: لا
+          يُضاف الأعضاء من المنصة — يصلون من المركز. */}
+      {initial.length === 0 ? (
+        <Card className="p-8 text-center text-muted-foreground">
+          لا أعضاء بعد. يظهر العضو هنا بعد أول دخول له.
+        </Card>
+      ) : (
       <Card className="divide-y divide-border">
         {initial.map((m) => (
           <div
@@ -113,18 +129,21 @@ export default function MembersManager({
                 ))}
               </select>
 
+              {/* «سحب» و«منح» زوجٌ مسجَّل. و«تعطيل» ممنوعة هنا صراحةً:
+                  توهم بحالة ثالثة بين النشط والمعطّل. */}
               <Button
                 variant="outline"
                 size="sm"
                 disabled={busy === m.userId}
                 onClick={() => patch(m.userId, { isActive: !m.isActive })}
               >
-                {m.isActive ? "تعطيل" : "تفعيل"}
+                {m.isActive ? "سحب" : "منح"}
               </Button>
             </div>
           </div>
         ))}
       </Card>
+      )}
     </div>
   );
 }

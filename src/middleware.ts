@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { authenticate } from "naf-auth";
+import { authenticate, wantsDocument } from "naf-auth";
 import { ssoConfig, H_SUB, H_ROLE, H_PERMS } from "@/lib/sso";
 
 // الدخول الموحّد: القرار كلّه في `naf-auth` — التحويل إلى المركز، والحالة
@@ -27,11 +27,19 @@ export async function middleware(req: NextRequest) {
 
   const result = await authenticate(req, env, config);
 
-  // استجابة جاهزة من الحزمة: تحويل إلى المركز أو إلى صفحة الرفض.
+  /* استجابة جاهزة من الحزمة: تحويل إلى المركز، أو إلى صفحة الرفض، أو ٤٠١
+     أو ٤٠٣ بجسم يُقرأ. تُمرَّر كما هي ولا يُعاد بناؤها.
+
+     كان هنا فرعٌ يردّ ٤٠١ عارياً على كل ما تحت `/api/`، وهو الخطأ الثامن
+     في تقرير NAF-Accountant: التفريق ببادئة المسار لا بطبيعة الطلب.
+     فتنقّلُ المستخدم إلى رابط تصدير تحت `/api/` — وهي روابط قائمة في هذه
+     المنصة: `‎/api/forms/:id/export` و `‎/uploads/:key` — كان يعطيه `JSON`
+     خاماً مكان أن يعيده إلى الدخول. والردّ العاري كان يسقط الفرع الآخر
+     كذلك: بلا `login` لا تعرف اللوحة أين تعيد المستخدم، وبلا `denied`
+     ولا ٤٠٣ يقرأ العضو المسحوب شاشةً خاوية بلا سبب.
+
+     و`v3.0.0` يحكم بـ`Sec-Fetch-Mode` ثم `Accept` ثم البادئة آخراً. */
   if (result.response) {
-    // طلب واجهة برمجية لا يُحوَّل — يعود برمز حالة يفهمه العميل.
-    if (pathname.startsWith("/api/"))
-      return NextResponse.json({ error: "لا تملك صلاحية الوصول" }, { status: 401 });
     return new NextResponse(result.response.body, {
       status: result.response.status,
       headers: result.response.headers,
@@ -43,7 +51,9 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next({ request: { headers: cleanHeaders(req) } });
   }
 
-  // إعدادات الصلاحيات للمسؤول وحده.
+  /* إعدادات الصلاحيات للمسؤول وحده — تخويلٌ محلي بعد الباب، لا مصادقة.
+     وشكل الردّ يتبع طبيعة الطلب هنا كما يتبعها في الحزمة: تنقّلٌ يعرض
+     صفحة يُحوَّل، ونداءُ `fetch` يأخذ ٤٠٣ بجسم يُقرأ. */
   if (
     pathname.startsWith("/members") ||
     pathname.startsWith("/api/members") ||
@@ -51,8 +61,11 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/api/users")
   ) {
     if (result.user.role !== "admin") {
-      if (pathname.startsWith("/api/"))
-        return NextResponse.json({ error: "للمسؤول فقط" }, { status: 403 });
+      if (!wantsDocument(req, new URL(req.url), config))
+        return NextResponse.json(
+          { ok: false, error: "forbidden", message: "هذه العملية تتطلب صلاحية مسؤول" },
+          { status: 403 },
+        );
       const url = req.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);
