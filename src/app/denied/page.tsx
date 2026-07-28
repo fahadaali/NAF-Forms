@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
-// صفحة الرفض. تعرض السبب النصّي القادم فقط، ولا تكشف تفصيلاً تقنياً ولا
-// مستخدمين آخرين (الاحتراز السابع في §٦ من وثيقة الربط).
+// صفحة الرفض. تعرض سبباً مسجَّلاً واحداً، ولا تكشف تفصيلاً تقنياً ولا
+// مستخدمين آخرين.
 //
 // النصوص كلها مسجَّلة في naf-terms.md ولم يُصَغ منها شيء هنا:
 // - «معطّل» حالةٌ مسجَّلة مع أيقونتها CircleSlash ولونها muted-foreground
@@ -14,16 +14,19 @@ export const dynamic = "force-dynamic";
 // - «انتهت جلسة دخولك. سجّل الدخول من جديد» مسجَّلة في §١٠
 // - «تسجيل الدخول» مسجَّلة في §٢
 
-// رموز الرفض التي ترسلها naf-auth. وما عداها نصٌّ حرّ من المركز يُعرض كما
-// كُتب — وهي القاعدة المسجّلة: لا يُعاد صوغه ولا يُختصر ولا يُستبدل بنصّ عام.
+// رموز الرفض وحدها، ولا نصّ حرّ من الرابط.
+//
+// الرابط يصل من الخارج ويكتبه من شاء: عرضُ ما فيه كما كُتب يجعل أيَّ أحد
+// قادراً على إظهار ما يريد على نطاق المنصة — وهو بعينه ما تجنّبه المركز حين
+// جعل `‎/denied` يحمل معرّفاً لا جملة. فما لا يُعرف رمزُه يُعرض بالرسالة
+// العامة، ولا يُقرأ منه حرف.
 const REASONS: Record<string, string> = {
   not_member: "لا تملك صلاحية الوصول لهذه الصفحة",
-  bad_state: "انتهت جلسة دخولك. سجّل الدخول من جديد",
+  inactive: "معطّل",
   auth_failed: "انتهت جلسة دخولك. سجّل الدخول من جديد",
 };
 
-// حدٌّ للطول: الرابط يصل من الخارج، ونصّ طويل يفسد الصفحة بلا فائدة.
-const MAX_REASON = 300;
+const FALLBACK = REASONS.not_member;
 
 export default async function DeniedPage({
   searchParams,
@@ -32,7 +35,7 @@ export default async function DeniedPage({
 }) {
   const raw = (await searchParams).r ?? "";
   const isInactive = raw === "inactive";
-  const message = REASONS[raw] ?? (raw ? raw.slice(0, MAX_REASON) : REASONS.not_member);
+  const message = REASONS[raw] ?? FALLBACK;
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-8">
