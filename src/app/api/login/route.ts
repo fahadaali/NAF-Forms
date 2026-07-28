@@ -1,41 +1,21 @@
 import { NextResponse } from "next/server";
-import { getUserByEmail } from "@/lib/repo";
-import { verifyPassword, signSession, SESSION_COOKIE } from "@/lib/auth";
-import { rateLimit, clientIp } from "@/lib/rate-limit";
 
-// تسجيل الدخول بالبريد وكلمة المرور
-export async function POST(req: Request) {
-  // حدّ لمحاولات الدخول لكل عنوان IP (حماية من التخمين المتكرر)
-  if (!rateLimit(`login:${clientIp(req)}`, 10, 5 * 60_000))
-    return NextResponse.json(
-      { ok: false, error: "محاولات دخول كثيرة، حاول بعد قليل" },
-      { status: 429 }
-    );
-
-  const { email, password } = await req.json();
-  const user = await getUserByEmail(String(email || "").trim().toLowerCase());
-  if (!user || !(await verifyPassword(String(password || ""), user.passwordHash))) {
-    return NextResponse.json(
-      { ok: false, error: "البريد أو كلمة المرور غير صحيحة" },
-      { status: 401 }
-    );
-  }
-  const token = await signSession({
-    uid: user.id,
-    role: user.role,
-    mustChange: user.mustChangePassword,
-    sv: user.sessionVersion,
-  });
-  const res = NextResponse.json({
-    ok: true,
-    mustChange: user.mustChangePassword,
-    role: user.role,
-  });
-  res.cookies.set(SESSION_COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
-  return res;
+// باب كلمة المرور — **مغلق**.
+//
+// المصادقة كلها في المركز، والدخول من `‎{AUTH_ISSUER}/go/NAF-Forms` وحده.
+//
+// ولماذا يُغلق هنا صراحةً وقد أغلقه الوسيط أصلاً: الوسيط يغلقه لأن المسار
+// خارج قائمة المسارات العامة، وهذه حمايةٌ بالإغفال لا بالقرار. فأيّ إضافةٍ
+// لاحقة للقائمة — أو مسارٌ يُعاد ترتيبه — تفتحه ثانيةً **بلا علامة**،
+// فيمشي طريقان للدخول: أحدهما لا يمرّ بالمركز، ومن سُحب وصولُه مركزياً
+// يعود بكلمة مروره. وهذا هو الخطأ السادس في تقرير NAF-Accountant.
+//
+// والملف باقٍ ولم يُحذف، وجدول `"User"` وتجزئات كلماته باقية كما هي: هذه
+// الدالة لا تقرأ منها ولا تكتب فيها ولا تولّد كوكي جلسة. ورفعُ الباب
+// نهائياً قرارٌ منفصل يُتّخذ على القاعدة لا هنا.
+//
+// ولا نصّ خطأ في الجسم: لا شاشة تعرضه — `/login` خلف الحارس كذلك — وأي
+// جملة تُكتب هنا نصٌّ خارج `naf-terms.md`.
+export async function POST() {
+  return NextResponse.json({ ok: false }, { status: 410 });
 }
