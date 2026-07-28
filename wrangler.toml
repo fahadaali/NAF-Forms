@@ -54,7 +54,7 @@ bucket_name = "naf-forms-uploads"
 # واحد والنشر يفشل.
 [[kv_namespaces]]
 binding = "AUTH_KV"
-id = "<AUTH_KV_NAMESPACE_ID>"
+id = "066edd1565ca496ea91d005f79564cf8"
 
 # متغيّرات عامة (غير سرّية). الأسرار تُضاف عبر: wrangler secret put <NAME>
 [vars]
