@@ -33,6 +33,25 @@ jobs:
           echo "قاعدة D1: $DB_ID"
           sed -i "s/<D1_DATABASE_ID>/$DB_ID/" wrangler.toml
 
+      # مساحة KV للدخول الموحّد — جلسة المنصة وذاكرة المفاتيح.
+      # تُنشأ إن لم تكن، ويُحقن معرّفها في wrangler.toml كما يُحقن معرّف D1،
+      # فلا يُلتزَم معرّف حقيقي في الملف.
+      - name: تجهيز مساحة AUTH_KV
+        run: |
+          KV_ID=$(npx wrangler kv namespace list \
+            | jq -r '.[] | select(.title | endswith("AUTH_KV")) | .id' | head -1)
+          if [ -z "$KV_ID" ] || [ "$KV_ID" = "null" ]; then
+            npx wrangler kv namespace create AUTH_KV
+            KV_ID=$(npx wrangler kv namespace list \
+              | jq -r '.[] | select(.title | endswith("AUTH_KV")) | .id' | head -1)
+          fi
+          if [ -z "$KV_ID" ] || [ "$KV_ID" = "null" ]; then
+            echo "تعذّر إنشاء مساحة AUTH_KV أو قراءتها — الدخول لا يعمل بدونها." >&2
+            exit 1
+          fi
+          echo "مساحة AUTH_KV: $KV_ID"
+          sed -i "s/<AUTH_KV_NAMESPACE_ID>/$KV_ID/" wrangler.toml
+
       # إنشاء حاوية R2 (يتجاهل إن كانت موجودة)
       - name: تجهيز حاوية R2
         run: npx wrangler r2 bucket create naf-forms-uploads || true
@@ -57,6 +76,17 @@ jobs:
 
       - name: النشر
         run: npm run cf:deploy
+
+      # سرّ المنصة عند المركز. لا يُولَّد هنا ولا يُطبع: يولّده المركز عند
+      # إنشاء صفّ المنصة ويعرضه مرة واحدة، ويضعه صاحبه بنفسه.
+      - name: فحص وجود AUTH_CLIENT_SECRET
+        run: |
+          if npx wrangler secret list 2>/dev/null | grep -q AUTH_CLIENT_SECRET; then
+            echo "AUTH_CLIENT_SECRET مضبوط."
+          else
+            echo "::warning::AUTH_CLIENT_SECRET غير مضبوط — كل مبادلة ستفشل ولن يدخل أحد."
+            echo "اضبطه بـ: npx wrangler secret put AUTH_CLIENT_SECRET"
+          fi
 
       # ضبط سرّ الجلسات بعد وجود الـ Worker (مرة واحدة، يُولَّد تلقائيًا)
       - name: ضبط SESSION_SECRET
