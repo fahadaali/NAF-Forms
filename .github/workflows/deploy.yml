@@ -1,10 +1,16 @@
 name: Deploy to Cloudflare
 
 # يعمل يدويًا من تبويب Actions، وعند كل دفع إلى main.
+#
+# CHANGELOG.md مستثنى كما هو مستثنى في سير الإصدار: ذلك السير يلتزم السجلّ
+# ويدفعه إلى main بعد كل إصدار، فبلا هذا الاستثناء يشعل كل إصدارٍ نشراً
+# ثانياً لا يحمل أي تغيير في التطبيق.
 on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths-ignore:
+      - CHANGELOG.md
 
 jobs:
   deploy:
