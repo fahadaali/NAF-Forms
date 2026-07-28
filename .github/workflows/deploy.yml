@@ -50,6 +50,7 @@ jobs:
           npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0006_visits_drafts.sql
           npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0007_response_review.sql
           npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0008_webhook_log.sql
+          npx wrangler d1 execute naf-forms --remote --file=cloudflare/d1/0009_sso_members.sql
 
       - name: بناء التطبيق لـ Workers
         run: npm run cf:build

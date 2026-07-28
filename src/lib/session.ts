@@ -1,23 +1,43 @@
-import { cookies } from "next/headers";
-import { verifySession, SESSION_COOKIE, type Session } from "@/lib/auth";
-import { getUserById, getFormWithQuestions, getProjectById } from "@/lib/repo";
+import { headers } from "next/headers";
+import { type Session } from "@/lib/auth";
+import { getFormWithQuestions, getProjectById } from "@/lib/repo";
+import { getDb } from "@/lib/db";
+import { H_SUB, H_ROLE } from "@/lib/sso";
 
-// قراءة الجلسة من الكوكي (تحقق التوقيع والانتهاء فقط — دون قاعدة البيانات)
-async function rawSession(): Promise<Session | null> {
-  return verifySession((await cookies()).get(SESSION_COOKIE)?.value);
+// الجلسة تأتي من الدخول الموحّد لا من كوكي محلي.
+//
+// الوسيط تحقّق من الرمز عبر `naf-auth` وقرأ العضو من قاعدة هذه المنصة، ثم
+// حقن هويته في ترويسات الطلب. فلا تحقّق ثانياً هنا — ومصدر واحد للحقيقة.
+// والترويسات تُمسح من الطلب الوارد في الوسيط قبل حقنها، فلا تُنتحل.
+//
+// واجهة هذا الملف لم تتغيّر: كل ما يستدعي `currentSession` أو `requireAdmin`
+// يعمل كما كان دون تعديل سطر فيه.
+
+// المعرّف المحلي المربوط بهوية المركز — وهو ما تحمله "Project"."ownerId"
+// و "Form"."ownerId" لكل ما أُنشئ قبل الدخول الموحّد.
+async function localUserId(sub: string): Promise<string> {
+  const row = await getDb().first<{ localUserId: string }>(
+    `SELECT "localUserId" FROM "MemberLink" WHERE "user_id" = ?`,
+    [sub]
+  );
+  // بلا ربط — عضو جديد بلا سجلّ سابق: يملك باسم معرّفه المركزي.
+  return row?.localUserId ?? sub;
 }
 
-// الجلسة الحالية مع التحقق من إصدارها في قاعدة البيانات.
-// إن غُيّرت كلمة المرور أو أُعيد تعيينها فقد ارتفع sessionVersion، فتُرفض
-// كل الكوكيز القديمة (إبطال فعلي للجلسات).
 export async function currentSession(): Promise<Session | null> {
-  const s = await rawSession();
-  if (!s) return null;
-  const user = await getUserById(s.uid);
-  if (!user) return null;
-  if (Number(s.sv ?? 0) !== user.sessionVersion) return null;
-  // نعتمد الدور من قاعدة البيانات حتى يسري تغيير الدور فورًا
-  return { ...s, role: user.role, mustChange: user.mustChangePassword };
+  const h = await headers();
+  const sub = h.get(H_SUB);
+  const role = h.get(H_ROLE);
+  if (!sub || !role) return null;
+
+  return {
+    uid: await localUserId(sub),
+    role,
+    // تغيير كلمة المرور شأن المركز، فلا إلزام محلي بعد اليوم.
+    mustChange: false,
+    sv: 0,
+    exp: 0,
+  };
 }
 
 export async function requireAdmin(): Promise<Session | null> {

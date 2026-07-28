@@ -20,7 +20,27 @@ database_id = "<D1_DATABASE_ID>"
 binding = "BUCKET"
 bucket_name = "naf-forms-uploads"
 
+# مساحة KV للدخول الموحّد: الحالة العابرة (st:) وجلسة المنصة (sess:)
+# وذاكرة JWKS. أنشئها ثم ضع معرّفها:
+#   wrangler kv namespace create naf-forms-auth
+[[kv_namespaces]]
+binding = "AUTH_KV"
+id = "<AUTH_KV_NAMESPACE_ID>"
+
 # متغيّرات عامة (غير سرّية). الأسرار تُضاف عبر: wrangler secret put <NAME>
 [vars]
 FIRST_ADMIN_EMAIL = "fahad2ao@gmail.com"
 # R2_PUBLIC_URL = "https://<your-r2-public-domain>"
+
+# ===== الدخول الموحّد (naf-auth) =====
+# هذان المتغيّران وحدهما ما يختلف بين منصة وأخرى.
+# لم تصلني قيمتاهما في هذه الجلسة، فتُركتا فراغين معلّمين ولم تُخمَّنا.
+# ولا يعمل الدخول قبل ملئهما: naf-auth ترفض البدء بقيمة ناقصة.
+PLATFORM_ID = "<PLATFORM_ID>"
+AUTH_ISSUER = "https://<AUTH_ISSUER_HOST>"
+
+# الدور الافتراضي لأول دخول (§٣-٣ من وثيقة الربط).
+DEFAULT_ROLE = "viewer"
+
+# السرّ لا يُكتب هنا ولا في الكود (الاحتراز الثالث في §٦):
+#   wrangler secret put AUTH_CLIENT_SECRET
