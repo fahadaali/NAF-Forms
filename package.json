@@ -11,7 +11,7 @@
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare preview",
     "cf:deploy": "opennextjs-cloudflare deploy",
-    "check:sso": "node audit/sso-contract-check.mjs"
+    "check:sso": "tsx audit/sso-contract-check.mts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1092.0",

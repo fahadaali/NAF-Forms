@@ -5,6 +5,23 @@ compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 main = ".open-next/worker.js"
 
+# الأصول الساكنة.
+#
+# **ولا `run_worker_first` هنا، بخلاف منصات Hono.** الخطر الذي يعالجه ذاك
+# الخيار هو أن تخدم طبقةُ الأصول `index.html` على الجذر قبل تشغيل الـ Worker
+# فيصل الزائر دون المرور بالوسيط. وهو خطر منصةٍ تبني لوحتها صفحةً واحدة
+# ساكنة — أمّا هنا فالبناء عبر OpenNext لا يضع أي `.html` في مجلّد الأصول:
+#
+#   $ find .open-next/assets -name '*.html'   →   لا شيء
+#   $ find .open-next/assets -maxdepth 2 -not -path '*/_next/*'
+#     BUILD_ID · brand/*.svg · naf-logo.jpg · uploads/.gitkeep · _next/
+#
+# فالصفحات كلها — ومنها المُسبَقة التصيير — يخدمها الـ Worker من ذاكرته،
+# فتمرّ بوسيط Next وبالحارس معه. ورفعُ الخيار هنا كان سيمرّر كل ملف في
+# `_next/static` بالـ Worker بلا فائدة.
+#
+# وهذا فحصٌ يُعاد عند تغيير طريقة البناء: أوّل ملف `.html` يظهر في المجلّد
+# يعيد الخطر، وحينها يُرفع الخيار.
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
