@@ -10,7 +10,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare preview",
-    "cf:deploy": "opennextjs-cloudflare deploy"
+    "cf:deploy": "opennextjs-cloudflare deploy",
+    "test": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1092.0",
@@ -23,7 +24,6 @@
     "eslint-config-next": "^15.5.21",
     "leaflet": "^1.9.4",
     "lucide-react": "1.27.0",
-    "naf-auth": "github:fahadaali/naf-auth#v1.0.0",
     "nanoid": "^5.0.9",
     "next": "^15.5.21",
     "nodemailer": "^6.10.1",
@@ -35,6 +35,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260722.1",
     "@opennextjs/cloudflare": "^1.20.2",
     "@types/better-sqlite3": "^7.6.11",
     "@types/leaflet": "^1.9.14",
