@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
+import { apiFetch } from "@/lib/api-client";
 
 export default function FormRowActions({
   formId,
@@ -24,13 +25,13 @@ export default function FormRowActions({
 
   async function duplicate() {
     setMenu(false);
-    await fetch(`/api/forms/${formId}/duplicate`, { method: "POST" });
+    await apiFetch(`/api/forms/${formId}/duplicate`, { method: "POST" });
     router.refresh();
   }
 
   async function saveTemplate() {
     setMenu(false);
-    await fetch(`/api/forms/${formId}/save-template`, { method: "POST" });
+    await apiFetch(`/api/forms/${formId}/save-template`, { method: "POST" });
     setMsg("تم الحفظ كقالب");
     setTimeout(() => setMsg(""), 2000);
     router.refresh();
@@ -39,7 +40,7 @@ export default function FormRowActions({
   async function remove() {
     setMenu(false);
     if (!confirm("حذف هذا النموذج وجميع ردوده؟")) return;
-    await fetch(`/api/forms/${formId}`, { method: "DELETE" });
+    await apiFetch(`/api/forms/${formId}`, { method: "DELETE" });
     router.refresh();
   }
 

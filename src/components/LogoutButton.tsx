@@ -1,13 +1,18 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 
 export default function LogoutButton() {
-  const router = useRouter();
+  // تنقّلٌ كامل بالمتصفح لا `router.push`.
+  //
+  // بعد الخروج لا جلسة، فأوّل طلبٍ يردّه الوسيط تحويلةً إلى نطاق المركز.
+  // و`router.push` تجلب المسار بـ`fetch`، والمتصفّح لا يتبع تحويلةً إلى
+  // أصل آخر بلا `CORS` — فيسقط الطلب بخطأ شبكة ويبقى المستخدم مكانه
+  // وشاشته فارغة. والتنقّل الكامل يتبعها ويصل إلى الباب.
+  //
+  // والوجهة `/` لا `/login`: باب كلمة المرور أُغلق، والباب في المركز.
   async function logout() {
     await fetch("/api/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
+    window.location.href = "/";
   }
   return (
     <button

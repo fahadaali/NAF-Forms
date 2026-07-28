@@ -6,6 +6,7 @@ import { Input, inputVariants } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Icon } from "@/components/ui/Icon";
+import { apiFetch } from "@/lib/api-client";
 
 interface U {
   id: string;
@@ -30,7 +31,7 @@ export default function UsersManager({
   async function add() {
     setError("");
     setBusy(true);
-    const res = await fetch("/api/users", {
+    const res = await apiFetch("/api/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, role }),
@@ -47,7 +48,7 @@ export default function UsersManager({
   }
 
   async function patch(id: string, body: any) {
-    await fetch(`/api/users/${id}`, {
+    await apiFetch(`/api/users/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -57,7 +58,7 @@ export default function UsersManager({
 
   async function remove(id: string) {
     if (!confirm("حذف هذا المستخدم؟")) return;
-    await fetch(`/api/users/${id}`, { method: "DELETE" });
+    await apiFetch(`/api/users/${id}`, { method: "DELETE" });
     router.refresh();
   }
 

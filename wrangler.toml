@@ -5,6 +5,23 @@ compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 main = ".open-next/worker.js"
 
+# الأصول الساكنة.
+#
+# **ولا `run_worker_first` هنا، بخلاف منصات Hono.** الخطر الذي يعالجه ذاك
+# الخيار هو أن تخدم طبقةُ الأصول `index.html` على الجذر قبل تشغيل الـ Worker
+# فيصل الزائر دون المرور بالوسيط. وهو خطر منصةٍ تبني لوحتها صفحةً واحدة
+# ساكنة — أمّا هنا فالبناء عبر OpenNext لا يضع أي `.html` في مجلّد الأصول:
+#
+#   $ find .open-next/assets -name '*.html'   →   لا شيء
+#   $ find .open-next/assets -maxdepth 2 -not -path '*/_next/*'
+#     BUILD_ID · brand/*.svg · naf-logo.jpg · uploads/.gitkeep · _next/
+#
+# فالصفحات كلها — ومنها المُسبَقة التصيير — يخدمها الـ Worker من ذاكرته،
+# فتمرّ بوسيط Next وبالحارس معه. ورفعُ الخيار هنا كان سيمرّر كل ملف في
+# `_next/static` بالـ Worker بلا فائدة.
+#
+# وهذا فحصٌ يُعاد عند تغيير طريقة البناء: أوّل ملف `.html` يظهر في المجلّد
+# يعيد الخطر، وحينها يُرفع الخيار.
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
@@ -20,12 +37,24 @@ database_id = "<D1_DATABASE_ID>"
 binding = "BUCKET"
 bucket_name = "naf-forms-uploads"
 
-# مساحة KV للدخول الموحّد: الحالة العابرة (st:) وجلسة المنصة (sess:)
-# وذاكرة JWKS. أنشئها ثم ضع معرّفها:
-#   wrangler kv namespace create naf-forms-auth
+# مساحة KV للدخول الموحّد — مفتاحان لا ثالث لهما:
+#   sess:{sid}     جلسة المنصة — عمرها ما بقي من عمر رمز المركز
+#   jwks:{issuer}  كاش مفاتيح التوقيع — خمس دقائق
+#
+# ولا مفتاح حالة عابرة: `state` يولّده المركز ويخزّنه مع رمز العبور ويطابق
+# الاثنين عند المبادلة، وهذه المنصة تعيده كما وصلها. (كان `st:` مذكوراً هنا
+# على عقد naf-auth@v1.0.0، وقد سقط مع الترقية إلى v3.0.0.)
+#
+# والمعرّف يُلتزَم في هذا الملف لا في اللوحة: النشر يقرأ `wrangler.toml`
+# ويجعل ما فيه هو الحقيقة، فربطٌ يُضاف من `Settings ← Bindings` يمحوه أوّل
+# نشر. وهو عنوان مساحة لا مفتاح وصول، فلا سرّ فيه.
+#
+#   npx wrangler kv namespace create AUTH_KV
+# ولا تستعمل `--update-config`: يضيف كتلة ثانية بجانب هذه فيصير ربطان باسم
+# واحد والنشر يفشل.
 [[kv_namespaces]]
 binding = "AUTH_KV"
-id = "<AUTH_KV_NAMESPACE_ID>"
+id = "066edd1565ca496ea91d005f79564cf8"
 
 # متغيّرات عامة (غير سرّية). الأسرار تُضاف عبر: wrangler secret put <NAME>
 [vars]
@@ -34,10 +63,19 @@ FIRST_ADMIN_EMAIL = "fahad2ao@gmail.com"
 
 # ===== الدخول الموحّد (naf-auth) =====
 # هذان المتغيّران وحدهما ما يختلف بين منصة وأخرى.
-# لم تصلني قيمتاهما في هذه الجلسة، فتُركتا فراغين معلّمين ولم تُخمَّنا.
-# ولا يعمل الدخول قبل ملئهما: naf-auth ترفض البدء بقيمة ناقصة.
-PLATFORM_ID = "<PLATFORM_ID>"
-AUTH_ISSUER = "https://<AUTH_ISSUER_HOST>"
+#
+# `PLATFORM_ID` هو `aud` في الرمز، **والمقارنة حرفية ولا تُطبَّع**: حرف واحد
+# بحالة أخرى يجعل كل رمز صحيح يُرفض، والرفض صامت. فحالة الأحرف هنا كما في
+# جدول المنصات حرفياً — `NAF-Forms` بحرفين كبيرين، لا `naf-forms`.
+#
+# ولا يُشتقّ أحدهما من النطاق: نطاق الاستقبال المسجَّل في المركز لهذه المنصة
+# هو `https://naf-forms.naflaw-sa.workers.dev/auth/callback` — بحروف صغيرة —
+# والمعرّف غيره. (وفي منصة التقارير يفترقان أصلاً: `naf-rebort` نطاقه
+# `naf-reports`.)
+#
+# و`AUTH_ISSUER` بلا شرطة أخيرة: `verifyToken` يقارن `iss` حرفياً.
+PLATFORM_ID = "NAF-Forms"
+AUTH_ISSUER = "https://naf-id.pages.dev"
 
 # الدور الافتراضي لأول دخول (§٣-٣ من وثيقة الربط).
 DEFAULT_ROLE = "viewer"

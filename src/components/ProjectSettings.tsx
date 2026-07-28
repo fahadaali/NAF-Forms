@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { Card } from "@/components/ui/card";
+import { apiFetch } from "@/lib/api-client";
 
 export default function ProjectSettings({
   project,
@@ -21,7 +22,7 @@ export default function ProjectSettings({
 
   async function save() {
     setBusy(true);
-    await fetch(`/api/projects/${project.id}`, {
+    await apiFetch(`/api/projects/${project.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, description: desc, color }),
@@ -38,7 +39,7 @@ export default function ProjectSettings({
       )
     )
       return;
-    await fetch(`/api/projects/${project.id}`, { method: "DELETE" });
+    await apiFetch(`/api/projects/${project.id}`, { method: "DELETE" });
     router.push("/");
     router.refresh();
   }

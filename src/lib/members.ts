@@ -30,6 +30,21 @@ export async function listMembers(): Promise<MemberRow[]> {
   }));
 }
 
+/**
+ * بريد العضو — يحتاجه التبليغ العكسي وحده.
+ *
+ * المركز يطابق صفّ الوصول **بالبريد** لا بالمعرّف المركزي، فلا يكفي
+ * تمرير `user_id` إليه. وعضوٌ بلا بريد لا يُبلَّغ عنه.
+ */
+export async function getMemberEmail(userId: string): Promise<string | null> {
+  const row = await getDb().first<{ email: string | null }>(
+    `SELECT email FROM members WHERE user_id = ?`,
+    [userId]
+  );
+  const email = row?.email?.trim();
+  return email ? email : null;
+}
+
 export async function setMemberRole(userId: string, role: Role): Promise<void> {
   await getDb().run(`UPDATE members SET role = ? WHERE user_id = ?`, [role, userId]);
 }
