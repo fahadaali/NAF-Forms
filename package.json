@@ -24,7 +24,7 @@
     "eslint-config-next": "^15.5.21",
     "leaflet": "^1.9.4",
     "lucide-react": "1.27.0",
-    "naf-auth": "github:fahadaali/naf-auth#v3.1.1",
+    "naf-auth": "github:fahadaali/naf-auth#v3.1.2",
     "nanoid": "^5.0.9",
     "next": "^15.5.21",
     "nodemailer": "^6.10.1",

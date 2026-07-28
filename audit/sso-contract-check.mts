@@ -196,14 +196,28 @@ function d1(sql: string, args: any[]) {
         if (!memberLinks.has(args[0])) memberLinks.set(args[0], { localUserId: args[1] });
       },
     };
+  // الإدراج `ON CONFLICT DO NOTHING` في الموضعين — في `onClaims` وفي
+  // `upsertMember` — فصفٌّ قائم لا يُمسّ منه شيء.
   if (q.startsWith("INSERT INTO members"))
     return {
       run: () => {
         const [id, name, email, role] = args;
-        const existing = members.get(id);
-        // ON CONFLICT DO UPDATE يمسّ الاسم والبريد وآخر ظهور فقط.
-        if (existing) Object.assign(existing, { display_name: name, email });
-        else members.set(id, { user_id: id, display_name: name, email, role, is_active: 1 });
+        if (members.has(id)) return;
+        members.set(id, { user_id: id, display_name: name, email, role, is_active: 1 });
+      },
+    };
+  // والصفّ القائم يُحدَّث بجملة `UPDATE` مستقلّة تسمّي أعمدتها، فتُقرأ
+  // أسماؤها من الجملة نفسها ولا يُفترض ترتيبٌ ولا عدد.
+  if (q.startsWith("UPDATE members SET"))
+    return {
+      run: () => {
+        const setClause = q.slice(q.indexOf(" SET ") + 5, q.indexOf(" WHERE "));
+        const cols = setClause.split(",").map((part) => part.trim().split(" ")[0]);
+        const row = members.get(args[args.length - 1]);
+        if (!row) return;
+        cols.forEach((col, i) => {
+          row[col] = args[i];
+        });
       },
     };
   // `getMember` يقرأ الأعمدة بأسمائها المستعارة، فتُعاد كما يقرؤها.
