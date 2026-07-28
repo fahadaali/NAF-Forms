@@ -45,6 +45,22 @@ export async function getMemberEmail(userId: string): Promise<string | null> {
   return email ? email : null;
 }
 
+/**
+ * صلاحية العضو — يحتاجها التبليغ العكسي ليعرضها المركز في صفّ الوصول.
+ *
+ * والمركز يعرضها ولا يقرؤها في قرار دخول: المصادقة مركزية والصلاحيات
+ * موزّعة. وتُرسل مع السحب كما تُرسل مع المنح، فيبقى المسؤول يرى ما كان
+ * يملكه المسحوب حين يحتاج معرفته.
+ */
+export async function getMemberRole(userId: string): Promise<string | null> {
+  const row = await getDb().first<{ role: string | null }>(
+    `SELECT role FROM members WHERE user_id = ?`,
+    [userId]
+  );
+  const role = row?.role?.trim();
+  return role ? role : null;
+}
+
 export async function setMemberRole(userId: string, role: Role): Promise<void> {
   await getDb().run(`UPDATE members SET role = ? WHERE user_id = ?`, [role, userId]);
 }

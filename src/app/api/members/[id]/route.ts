@@ -6,6 +6,7 @@ import { ssoConfig } from "@/lib/sso";
 import {
   countActiveAdmins,
   getMemberEmail,
+  getMemberRole,
   setMemberActive,
   setMemberRole,
 } from "@/lib/members";
@@ -45,6 +46,28 @@ export async function PATCH(
       );
 
     await setMemberRole(id, body.role);
+
+    /* تبليغ المركز بالصلاحية — عرضاً لا حكماً.
+
+       مسؤول النظام يمنح وصولاً إلى هذه المنصة ولا تقول له أي شاشة ماذا صار
+       يرى الممنوح. فيُبلَّغ بما قُرّر هنا ليعرضه في صفّ الوصول، والقرار يبقى
+       هنا: المركز لا يقرأ هذه القيمة في أي قرار دخول.
+
+       وبلا `state`: المنح لم يتغيّر، وكتابته مع كل ترقية تمحو سحباً صادراً
+       من المركز.
+
+       والفشل لا يُرفع إلى المسؤول: الترقية نافذة محلياً فور كتابتها —
+       الوسيط يقرأ الدور في كل طلب — والناقص عرضُها في اللوحة. */
+    const roleEmail = await getMemberEmail(id);
+    if (roleEmail) {
+      try {
+        const { env } = await getCloudflareContext({ async: true });
+        await reportAccessChange(env, ssoConfig(env), { email: roleEmail, role: body.role });
+      } catch {
+        /* عرضٌ متأخّر في المركز، والصلاحية نافذة هنا */
+      }
+    }
+
     return NextResponse.json({ ok: true, message: "تم تحديث الصلاحية" });
   }
 
@@ -61,6 +84,8 @@ export async function PATCH(
        وهذا هو الخطأ التاسع في تقرير NAF-Accountant: مثال الوثيقة كان على
        توقيع محذوف، والتوقيع القائم `{ email, state }`. */
     const email = await getMemberEmail(id);
+    // والصلاحية معه: تُعرض في المركز مع الحالة، ولا تُقرأ في قرار دخول.
+    const role = await getMemberRole(id);
 
     await setMemberActive(id, body.isActive);
 
@@ -82,6 +107,9 @@ export async function PATCH(
         await reportAccessChange(env, ssoConfig(env), {
           email,
           state: body.isActive ? "granted" : "revoked",
+          // السحب لا يمحو الصلاحية المعروضة في المركز — يُبقيها `COALESCE`
+          // هناك — فيبقى المسؤول يرى ما كان يملكه المسحوب.
+          ...(role ? { role } : {}),
         });
       } catch {
         reported = false;

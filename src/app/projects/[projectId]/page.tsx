@@ -60,7 +60,10 @@ export default async function ProjectPage({
                 color: project.color,
               }}
             />
-            <NewFormButton projectId={project.id} templates={templates} />
+            {/* «مستخدم (اطّلاع)» يقرأ ولا ينشئ — والوسيط يردّ إنشاءه بـ٤٠٣. */}
+            {session?.role !== "viewer" && (
+              <NewFormButton projectId={project.id} templates={templates} />
+            )}
           </div>
         </div>
 
