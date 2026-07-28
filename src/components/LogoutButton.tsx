@@ -9,10 +9,20 @@ export default function LogoutButton() {
   // أصل آخر بلا `CORS` — فيسقط الطلب بخطأ شبكة ويبقى المستخدم مكانه
   // وشاشته فارغة. والتنقّل الكامل يتبعها ويصل إلى الباب.
   //
-  // والوجهة `/` لا `/login`: باب كلمة المرور أُغلق، والباب في المركز.
+  // والوجهة يقولها الخادم، وهي المركز لا جذر هذه المنصة. كانت `/`: وهو
+  // محميّ، فيحوّله الوسيط إلى `/go/NAF-Forms`، وجلسة المركز لم تُمسّ فتُصدر
+  // رمزاً جديداً — فيعود الخارجُ إلى شاشته قبل أن يقرأ شيئاً، ويقرأ من ذلك
+  // أن الزرّ لا يعمل.
   async function logout() {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/";
+    let next = "/";
+    try {
+      const res = await fetch("/api/logout", { method: "POST" });
+      const data = (await res.json().catch(() => null)) as { next?: unknown } | null;
+      if (typeof data?.next === "string" && data.next) next = data.next;
+    } catch {
+      // تعذّر النداء: الوجهة تبقى الجذر، والوسيط يردّه إلى الباب.
+    }
+    window.location.href = next;
   }
   return (
     <button
