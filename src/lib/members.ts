@@ -7,6 +7,27 @@ import type { MemberRow, Role } from "@/lib/roles";
 
 export type { MemberRow, Role };
 
+/**
+ * اسم العضو وبريده كما سجّلهما المركز عند الدخول.
+ *
+ * الجلسة تحمل `sub` والدرجة فحسب، فكانت الترويسة تعرض البريد مكان
+ * الاسم — والبريد معرّف دخول لا يُخاطَب به أحد (naf-terms.md §١٠).
+ * والاسم مخزَّن هنا منذ أول دخول في `display_name`.
+ *
+ * يُرجع اسماً فارغاً حين لا يرسل المركز اسماً؛ والبديل يختاره
+ * `naf-app-shell` لا هذه الدالة ولا الشاشة.
+ */
+export async function getMemberIdentity(
+  userId: string
+): Promise<{ name: string | null; email: string | null }> {
+  const row = await getDb().first<{
+    display_name: string | null;
+    email: string | null;
+  }>(`SELECT display_name, email FROM members WHERE user_id = ?`, [userId]);
+
+  return { name: row?.display_name ?? null, email: row?.email ?? null };
+}
+
 export async function listMembers(): Promise<MemberRow[]> {
   const rows = await getDb().all<{
     user_id: string;

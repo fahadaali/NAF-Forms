@@ -72,7 +72,8 @@ function Body({
   crumbs: Crumb[];
   width: PageWidth;
   isAdmin: boolean;
-  name: string;
+  /** يُمرَّر كما هو ولو كان فارغاً — البديل في المكوّن المسجَّل. */
+  name?: string | null;
   email?: string;
   children: ReactNode;
 }) {
@@ -168,7 +169,7 @@ export default function ShellChrome({
   crumbs?: Crumb[];
   width?: PageWidth;
   isAdmin: boolean;
-  name: string;
+  name?: string | null;
   email?: string;
   children: ReactNode;
 }) {
