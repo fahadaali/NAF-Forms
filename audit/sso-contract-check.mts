@@ -27,6 +27,11 @@ import {
   isPublicPath,
   reportAccessChange,
 } from "naf-auth";
+/* أسماء مفاتيح KV واسم كوكي الربط تُستوردان من الحزمة لا تُكتبان هنا:
+   المحاكاة تزرع جلساتٍ في KV مباشرةً، فلو كتبت الاسم بيدها ثم غيّرته
+   الحزمة لمضت الفحوص تزرع في مكانٍ لا يقرؤه أحد — وتمرّ كلُّها. */
+import { sessionKeyFor, userIndexKeyFor } from "naf-auth/safe";
+import { bindCookieName } from "naf-auth/middleware";
 import { ssoConfig } from "@/lib/sso";
 
 const ISSUER = "https://naf-id.pages.dev";
@@ -58,17 +63,23 @@ async function signToken(claims: Record<string, unknown>) {
   return `${input}.${b64(new Uint8Array(sig))}`;
 }
 
-// functions/go/[id].js — يتجاهل أي state يصله ويولّد واحدة من عنده.
+// functions/go/[id].js — يتجاهل أي state يصله ويولّد واحدة من عنده،
+// ويحفظ `bind` كما وصله ليعيده `/api/token` عند المبادلة.
 let seq = 0;
 function centerGo(url: string) {
   const u = new URL(url);
   const next = u.searchParams.get("next") || "/";
+  const bind = u.searchParams.get("bind");
+  if (bind !== null) assert.match(bind, /^[a-f0-9]{64}$/, `bind ليس تجزئة: ${bind}`);
   seq += 1;
   const code = `CODE-${seq}`;
   const state = `STATE-${seq}`;
-  centerKV.set(`code:${code}`, { userId: "user-1", platformId: PLATFORM, state, next });
-  return { code, state, next };
+  centerKV.set(`code:${code}`, { userId: "user-1", platformId: PLATFORM, state, next, bind });
+  return { code, state, next, bind };
 }
+
+/** مقلبٌ يجعل المحاكاة مركزاً أقدم من الحزمة: لا يعرف `bind` ولا يعيده. */
+let centerOmitsBind = false;
 
 // functions/api/token.js — منطق التحقق كما هو مكتوب هناك.
 async function centerToken(body: any) {
@@ -112,7 +123,15 @@ async function centerToken(body: any) {
     iat: now,
     exp: now + 900,
   });
-  return Response.json({ token, tokenType: "Bearer", expiresIn: 900, next: raw.next ?? "/" });
+  /* `bind` يعود كما وصل — والمركز الأقدم لا يعرف الحقل أصلاً، وتلك حالة
+     `legacy_center` التي تُفحص أدناه بمحاكاةٍ تُسقطه. */
+  return Response.json({
+    token,
+    tokenType: "Bearer",
+    expiresIn: 900,
+    next: raw.next ?? "/",
+    ...(centerOmitsBind ? {} : { bind: raw.bind ?? null }),
+  });
 }
 
 // functions/api/internal/access.js
@@ -294,6 +313,41 @@ const ok = (label: string) => {
   pass += 1;
 };
 
+/* المتصفّح يحمل ما كُتب له. و`startLogin` يكتب كوكي ربطٍ في ردّ التحويل،
+   ويجب أن يعود مع الاستقبال — فبدونه يقرأ الحارسُ الطلبَ دخولاً لم يبدأ من
+   هنا. وحارسٌ لا يُختبر إلا بلا كوكي يُختبر في فرعه الاحتياطي وحده. */
+const setCookies = (response: Response): string[] =>
+  typeof (response.headers as any).getSetCookie === "function"
+    ? (response.headers as any).getSetCookie()
+    : [response.headers.get("set-cookie")].filter(Boolean) as string[];
+
+const cookieJar = (response: Response) =>
+  setCookies(response)
+    .map((c) => c.split(";")[0])
+    .filter((c) => !c.endsWith("="))       // ما مُحي لا يُحمل
+    .join("; ");
+
+/* عنوانُ الاستقبال كما يبنيه المركز: `functions/go/[id].js` يضيف `code`
+   و`state`، ويضيف `next` إن لم يكن الجذر (السطر ١٢٧ هناك). وحذفُه من
+   المحاكاة يُخفي أن لفّة الربط تقرأ الوجهة من عنوان الطلب لا من ردّ
+   المبادلة — فتُقرأ اللفّة سليمةً وهي تُسقط وجهةَ صاحبها. */
+const callbackUrl = ({ code, state, next }: { code: string; state: string; next?: string }) => {
+  const q = new URLSearchParams({ code, state });
+  if (next && next !== "/") q.set("next", next);
+  return `/auth/callback?${q}`;
+};
+
+/** رحلةُ دخولٍ كاملة كما يمشيها متصفّح: الحارس ← المركز ← الاستقبال. */
+async function browserLogin(path: string, opts: { tamper?: (rec: any) => void } = {}) {
+  const { response: gate } = await authenticate(R(path), env, config);
+  const goUrl = gate!.headers.get("location")!;
+  const jar = cookieJar(gate!);
+  const { code, state, next } = centerGo(goUrl);
+  if (opts.tamper) opts.tamper(centerKV.get(`code:${code}`));
+  const cb = await handleCallback(R(callbackUrl({ code, state, next }), jar), env, config);
+  return { gate: gate!, goUrl, code, state, next, cb, jar };
+}
+
 /* ═══════════════ الفحوص ═══════════════ */
 
 // -- ١: زائر بلا جلسة على الجذر يُردّ إلى المركز --
@@ -317,17 +371,28 @@ const ok = (label: string) => {
 // -- ٣: التدفّق الكامل عبر المركز، ويعود إلى الوجهة المطلوبة --
 let sessionCookie: string;
 {
-  const { response } = await authenticate(R("/projects/p1"), env, config);
-  const { code, state } = centerGo(response!.headers.get("location")!);
+  const { gate, goUrl, cb } = await browserLogin("/projects/p1");
 
-  const cb = await handleCallback(R(`/auth/callback?code=${code}&state=${state}`), env, config);
+  // الحارس يرسل تجزئةً إلى المركز، وسرَّها في كوكي لا يخرج من المتصفّح.
+  assert.match(
+    new URL(goUrl).searchParams.get("bind") ?? "", /^[a-f0-9]{64}$/,
+    "الحارس لم يُرسل تجزئة الربط",
+  );
+  assert.ok(cookieJar(gate).includes(`${bindCookieName(config)}=`), "لم يُكتب كوكي الربط");
+
   assert.equal(failures.length, 0, `المركز رفض: ${failures.join()}`);
   assert.equal(cb.status, 302);
   assert.equal(cb.headers.get("location"), "/projects/p1");
 
-  sessionCookie = cb.headers.get("set-cookie")!.split(";")[0];
-  assert.match(sessionCookie, /^naf_sid=/);
-  ok("التدفّق الكامل يمرّ ويعود إلى الوجهة المطلوبة");
+  sessionCookie = setCookies(cb).map((c) => c.split(";")[0]).find((c) => c.startsWith("naf_sid="))!;
+  assert.ok(sessionCookie, "لم يُكتب كوكي الجلسة");
+
+  // وكوكي الربط يُمحى بعد استعماله — لا يُترك حتى ينتهي عمره.
+  assert.ok(
+    setCookies(cb).some((c) => c.startsWith(`${bindCookieName(config)}=;`) && /Max-Age=0/.test(c)),
+    "كوكي الربط لم يُمحَ بعد الاستعمال",
+  );
+  ok("التدفّق الكامل يمرّ مربوطاً بالمتصفّح ويعود إلى الوجهة المطلوبة");
 }
 
 // -- ٤: عمر الجلسة لا يتجاوز عمر الرمز --
@@ -355,15 +420,9 @@ let sessionCookie: string;
 
 // -- ٧: رمز العبور لا يُستهلك مرتين --
 {
-  const { response } = await authenticate(R("/"), env, config);
-  const { code, state } = centerGo(response!.headers.get("location")!);
-  await handleCallback(R(`/auth/callback?code=${code}&state=${state}`), env, config);
+  const { code, state, next, jar } = await browserLogin("/");
   failures = [];
-  const replay = await handleCallback(
-    R(`/auth/callback?code=${code}&state=${state}`),
-    env,
-    config,
-  );
+  const replay = await handleCallback(R(callbackUrl({ code, state, next }), jar), env, config);
   assert.equal(replay.headers.get("location"), "/denied?r=auth_failed");
   assert.deepEqual(failures, ["invalid_code"]);
   ok("إعادة استعمال رمز العبور تفشل عند المركز");
@@ -373,8 +432,9 @@ let sessionCookie: string;
 {
   failures = [];
   const { response } = await authenticate(R("/"), env, config);
+  const jar = cookieJar(response!);
   const { code } = centerGo(response!.headers.get("location")!);
-  const cb = await handleCallback(R(`/auth/callback?code=${code}&state=WRONG`), env, config);
+  const cb = await handleCallback(R(`/auth/callback?code=${code}&state=WRONG`, jar), env, config);
   assert.equal(cb.headers.get("location"), "/denied?r=auth_failed");
   assert.deepEqual(failures, ["invalid_state"]);
   ok("حالة لا تطابق ما خزّنه المركز تُرفض");
@@ -399,7 +459,8 @@ let sessionCookie: string;
     iat: now - 1200,
     exp: now - 600,
   });
-  kvStore.set("sess:stale", JSON.stringify({ sub: "user-1", token: stale, exp: now - 600 }));
+  const staleKey = await sessionKeyFor("stale");
+  kvStore.set(staleKey, JSON.stringify({ sub: "user-1", token: stale, exp: now - 600 }));
   const { user, response } = await authenticate(
     H("/api/forms", { cookie: "naf_sid=stale", "sec-fetch-mode": "cors" }),
     env,
@@ -407,7 +468,7 @@ let sessionCookie: string;
   );
   assert.equal(user, undefined, "رمز منتهٍ لا يمرّ");
   assert.equal(response!.status, 401);
-  assert.equal(kvStore.has("sess:stale"), false, "الجلسة تُمسح");
+  assert.equal(kvStore.has(staleKey), false, "الجلسة تُمسح");
   ok("رمز منتهٍ يُبطل الجلسة في كل طلب محمي");
 }
 
@@ -421,7 +482,7 @@ let sessionCookie: string;
     iat: now,
     exp: now + 900,
   });
-  kvStore.set("sess:other", JSON.stringify({ sub: "user-1", token: other, exp: now + 900 }));
+  kvStore.set(await sessionKeyFor("other"), JSON.stringify({ sub: "user-1", token: other, exp: now + 900 }));
   const { user } = await authenticate(R("/api/forms", "naf_sid=other"), env, config);
   assert.equal(user, undefined);
   ok("رمز صادر لمنصة أخرى يُرفض بـ aud");
@@ -484,7 +545,7 @@ let sessionCookie: string;
   const now = Math.floor(Date.now() / 1000);
   members.get("user-1").is_active = 0;
   kvStore.set(
-    "sess:off",
+    await sessionKeyFor("off"),
     JSON.stringify({
       sub: "user-1",
       token: await signToken({ sub: "user-1", iss: ISSUER, aud: PLATFORM, iat: now, exp: now + 900 }),
@@ -534,9 +595,7 @@ let sessionCookie: string;
   failures = [];
   const before = accessRows.length;
 
-  const { response } = await authenticate(R("/"), env, config);
-  const { code, state } = centerGo(response!.headers.get("location")!);
-  const cb = await handleCallback(R(`/auth/callback?code=${code}&state=${state}`), env, config);
+  const { cb } = await browserLogin("/");
   assert.equal(cb.status, 302, "الدخول يجب أن ينجح");
 
   const reported = accessRows.slice(before);
@@ -553,10 +612,8 @@ let sessionCookie: string;
 // -- ١٥: وجهة عدائية من ردّ المبادلة تُنقّى إلى الجذر --
 {
   for (const hostile of ["//evil.sa", "/%2f%2fevil.sa", "/\\evil.sa", "https://evil.sa"]) {
-    const { response } = await authenticate(R("/"), env, config);
-    const { code, state } = centerGo(response!.headers.get("location")!);
-    centerKV.get(`code:${code}`).next = hostile; // مركزٌ مخترَق يعيد وجهة عدائية
-    const cb = await handleCallback(R(`/auth/callback?code=${code}&state=${state}`), env, config);
+    // مركزٌ مخترَق يعيد وجهة عدائية
+    const { cb } = await browserLogin("/", { tamper: (rec) => { rec.next = hostile; } });
     assert.equal(cb.headers.get("location"), "/", `${hostile} خرج بالمستخدم`);
   }
   ok("وجهة عدائية من ردّ المبادلة تُنقّى إلى الجذر");
@@ -566,15 +623,16 @@ let sessionCookie: string;
 {
   const now = Math.floor(Date.now() / 1000);
   const sid = "sid-backchannel";
+  const sessKey = await sessionKeyFor(sid);
   kvStore.set(
-    `sess:${sid}`,
+    sessKey,
     JSON.stringify({
       sub: "user-1",
       token: await signToken({ sub: "user-1", iss: ISSUER, aud: PLATFORM, iat: now, exp: now + 900 }),
       exp: now + 900,
     }),
   );
-  kvStore.set(`usr:user-1:${sid}`, "1");
+  kvStore.set(await userIndexKeyFor("user-1", sid), "1");
 
   const notice = (body: unknown) =>
     new Request(`${ORIGIN}/auth/backchannel-logout`, {
@@ -598,7 +656,7 @@ let sessionCookie: string;
   assert.equal(res.status, 200, "المركز رُدّ إشعارُه");
   const { ended } = (await res.json()) as { ended: number };
   assert.ok(ended >= 1, `لم يُنهَ شيء (${ended})`);
-  assert.equal(kvStore.has(`sess:${sid}`), false, "بقيت الجلسة بعد الإشعار");
+  assert.equal(kvStore.has(sessKey), false, "بقيت الجلسة بعد الإشعار");
   assert.deepEqual(
     [...kvStore.keys()].filter((k) => k.startsWith("usr:user-1:")),
     [],
@@ -625,6 +683,68 @@ let sessionCookie: string;
 
 /* العدد يُتحقَّق منه لا يُطبع وحده: فحصٌ يسقط من الملف بحذفٍ أو بخطأ في دمج
    يبقى العدّاد معه أقلّ، وسطرٌ يقول «١٦/١٧» يُقرأ نجاحاً بلمحة عين. */
-const EXPECTED = 17;
+// -- ١٨: ربط الدخول بالمتصفّح — الحالات الأربع كلُّها --
+//
+// هجمةُ التثبيت: المهاجم يبدأ دخولاً بنفسه فيحصل على رمز عبورٍ صالح، ثم
+// يدفع الضحيّة إلى `‎/auth/callback` به. فتُفتح في متصفّح الضحيّة جلسةٌ
+// باسم المهاجم، وكلُّ ما تكتبه الضحيّة بعدها يقع في حساب المهاجم.
+// والرمز صحيح والحالة صحيحة — فلا شيء قبل الربط يميّز الحالتين.
+{
+  // (أ) كوكي لا يطابق التجزئة العائدة: ردٌّ. هذا متصفّح الضحيّة.
+  {
+    failures = [];
+    const { response } = await authenticate(R("/"), env, config);
+    const { code, state, next } = centerGo(response!.headers.get("location")!); // تجزئةُ المهاجم
+    const victim = `${bindCookieName(config)}=` + "f".repeat(64);               // سرُّ متصفّحٍ آخر
+    const cb = await handleCallback(R(callbackUrl({ code, state, next }), victim), env, config);
+    /* `bad_state` لا `auth_failed`: أكثرُ ما يقع هذا في لسان صاحبه لا في
+       هجمة — بابان مفتوحان، فالثاني يكتب كوكياً فوق الأول ثم يعود الأول
+       فلا يطابق. ونصُّها «انتهت جلسة دخولك. سجّل الدخول من جديد» ومعها
+       زرُّ محاولةٍ تُجدي، وهو الصواب في الحالين. */
+    assert.equal(cb.headers.get("location"), "/denied?r=bad_state", "كوكي مخالف مرّ");
+    assert.equal(
+      setCookies(cb).some((c) => c.startsWith("naf_sid=") && !/Max-Age=0/.test(c)), false,
+      "فُتحت جلسة رغم اختلاف الربط",
+    );
+  }
+
+  // (ب) رمزٌ مربوط بلا كوكي أصلاً: ردٌّ كذلك — لا يكفي ألّا يملك المهاجم سرّاً.
+  {
+    const { response } = await authenticate(R("/"), env, config);
+    const { code, state, next } = centerGo(response!.headers.get("location")!);
+    const cb = await handleCallback(R(callbackUrl({ code, state, next })), env, config);
+    assert.equal(cb.headers.get("location"), "/denied?r=bad_state", "رمز مربوط بلا كوكي مرّ");
+  }
+
+  // (ج) مركزٌ أقدم لا يعرف `bind`: يُقبل الدخول كما كان — منصةٌ سبقت المركزَ
+  //     في الترقية لا تنكسر. وهذا هو الفرع الذي يجعل هذا النشر آمناً بأي ترتيب.
+  {
+    centerOmitsBind = true;
+    failures = [];
+    const { cb } = await browserLogin("/projects/p1");
+    centerOmitsBind = false;
+    assert.equal(cb.status, 302);
+    assert.equal(cb.headers.get("location"), "/projects/p1", "مركزٌ أقدم كسر الدخول");
+    assert.deepEqual(failures, []);
+  }
+
+  // (د) دخولٌ بدأ من شبكة المركز — بطاقةٌ تقصد `‎/go/:id` مباشرةً، فلا كوكي
+  //     ولا تجزئة. يُعاد البدء لفّةً واحدة إلى الوجهة المقصودة، لا إلى مسار
+  //     الاستقبال ومعه رمزٌ استُهلك — وتلك تدور بلا نهاية.
+  {
+    const { code, state, next } = centerGo(`${ISSUER}/go/${PLATFORM}?next=/projects/p1`);
+    const cb = await handleCallback(R(callbackUrl({ code, state, next })), env, config);
+    assert.equal(cb.status, 302);
+    const loc = new URL(cb.headers.get("location")!);
+    assert.equal(loc.origin + loc.pathname, `${ISSUER}/go/${PLATFORM}`, "لم يُعَد البدء من المركز");
+    assert.match(loc.searchParams.get("bind") ?? "", /^[a-f0-9]{64}$/, "العودة بلا تجزئة");
+    assert.equal(loc.searchParams.get("next"), "/projects/p1", "ضاعت الوجهة في لفّة الربط");
+    assert.ok(cookieJar(cb).includes(`${bindCookieName(config)}=`), "اللفّة لم تكتب الكوكي");
+  }
+
+  ok("الربط بالمتصفّح: مخالفٌ يُردّ، وغائبٌ يُردّ، ومركزٌ أقدم يمرّ، وبدءٌ من المركز يلتفّ لفّةً");
+}
+
+const EXPECTED = 18;
 assert.equal(pass, EXPECTED, `عدد الفحوص ${pass} لا ${EXPECTED}`);
 console.log(`\n${pass}/${EXPECTED} فحصاً مرّت.`);
