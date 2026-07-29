@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/session";
 import { listMembers } from "@/lib/members";
 import { H_SUB } from "@/lib/sso";
-import Navbar from "@/components/Navbar";
+import AppChrome from "@/components/AppChrome";
 import MembersManager from "@/components/MembersManager";
 
 export const dynamic = "force-dynamic";
@@ -18,12 +18,9 @@ export default async function MembersPage() {
   const members = await listMembers();
 
   return (
-    <div className="min-h-screen">
-      <Navbar crumbs={[{ label: "الفريق والصلاحيات" }]} />
-      <main className="mx-auto max-w-4xl px-4 py-8">
+    <AppChrome crumbs={[{ label: "الفريق والصلاحيات" }]} width="narrow">
         <h1 className="mb-6 text-2xl font-bold">الفريق والصلاحيات</h1>
         <MembersManager initial={members} meId={meId} />
-      </main>
-    </div>
+    </AppChrome>
   );
 }

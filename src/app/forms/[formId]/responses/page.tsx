@@ -5,7 +5,7 @@ import { authorizeForm } from "@/lib/session";
 import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { safeParse, answerToText, formatDateTime, isInputQuestion } from "@/lib/utils";
 import { Icon } from "@/components/ui/Icon";
-import Navbar from "@/components/Navbar";
+import AppChrome from "@/components/AppChrome";
 import ResponsesDashboard, {
   type QuestionStat,
   type ResponseRow,
@@ -244,14 +244,13 @@ export default async function ResponsesPage({
   };
 
   return (
-    <div className="min-h-screen">
-      <Navbar
-        crumbs={[
-          { label: form.project.name, href: `/projects/${form.projectId}` },
-          { label: form.title },
-        ]}
-      />
-      <main className="mx-auto max-w-5xl px-4 py-8">
+    <AppChrome
+      crumbs={[
+        { label: form.project.name, href: `/projects/${form.projectId}` },
+        { label: form.title },
+      ]}
+      width="wide"
+    >
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold">ردود: {form.title}</h1>
@@ -277,7 +276,6 @@ export default async function ResponsesPage({
           timeline={timeline}
           funnel={funnel}
         />
-      </main>
-    </div>
+    </AppChrome>
   );
 }

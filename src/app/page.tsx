@@ -10,7 +10,7 @@ import { FORM_TYPE_LABELS, FORM_TYPE_CHIP } from "@/lib/field-types";
 import { Icon } from "@/components/ui/Icon";
 import { formatDateTime } from "@/lib/utils";
 import { formatNumber } from "@/lib/naf-format";
-import Navbar from "@/components/Navbar";
+import AppChrome from "@/components/AppChrome";
 import CreateProjectButton from "@/components/CreateProjectButton";
 import { NafLogo } from "@/components/ui/naf-logo";
 import { Card } from "@/components/ui/card";
@@ -29,9 +29,7 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <main className="mx-auto max-w-6xl px-4 py-8">
+    <AppChrome width="wide">
         {/* بطاقة ترحيبية */}
         {/* لوحة داكنة مقصودة: نُطاق `dark` يجعلها تستهلك رموز الثيم الداكنة
             بدل تدرّج مكتوب بقيم حرفية (القاعدة ١: لا قيمة تصميم حرفية). */}
@@ -128,8 +126,7 @@ export default async function HomePage() {
             ))}
           </div>
         </section>
-      </main>
-    </div>
+    </AppChrome>
   );
 }
 

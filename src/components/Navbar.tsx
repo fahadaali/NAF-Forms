@@ -1,3 +1,9 @@
+/* مُستبدَل — لم يعد مستهلَكاً في أي شاشة.
+   حلّ محلّه `AppChrome` (الخادم) و`ShellChrome` (العميل)، وهما يبنيان
+   هيكل ناف المسجَّل: شريط جانبي وترويسة وقائمة حساب ودرج للجوال.
+   أُبقي الملف (قاعدة: لا تُحذف الملفات) ولا يُستأنف استعماله —
+   ترويسةٌ ثانية تعني هيكلين في مستودع واحد. */
+
 import Link from "next/link";
 import LogoutButton from "./LogoutButton";
 import ThemeToggle from "./ThemeToggle";

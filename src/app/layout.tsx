@@ -14,9 +14,15 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
+        {/* تثبيت المظهر قبل أول رسم لتفادي وميض التبديل.
+
+            غياب المفتاح معناه «يتبع النظام» لا «الوضع الفاتح» — وهو العقد
+            المسجَّل في naf-theme-toggle. كان السطر يفحص 'dark' وحدها، فقارئٌ
+            نظامه داكن ولم يختر شيئاً يُفتح له الفاتح ثم يقفز إلى الداكن حين
+            يصل المكوّن، وهو الوميض نفسه الذي يمنعه هذا السطر. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem('naf-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}`,
+            __html: `try{var v=localStorage.getItem('naf-theme');if(v==='dark'||(v!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`,
           }}
         />
       </head>

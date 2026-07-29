@@ -10,7 +10,7 @@ import {
 } from "@/lib/field-types";
 import { formatDateTime } from "@/lib/utils";
 import { Icon } from "@/components/ui/Icon";
-import Navbar from "@/components/Navbar";
+import AppChrome from "@/components/AppChrome";
 import NewFormButton from "@/components/NewFormButton";
 import FormRowActions from "@/components/FormRowActions";
 import ProjectSettings from "@/components/ProjectSettings";
@@ -35,9 +35,7 @@ export default async function ProjectPage({
   if (!project || !canAccessOwned(session, project.ownerId)) notFound();
 
   return (
-    <div className="min-h-screen">
-      <Navbar crumbs={[{ label: project.name }]} />
-      <main className="mx-auto max-w-6xl px-4 py-8">
+    <AppChrome crumbs={[{ label: project.name }]} width="wide">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <span
@@ -126,7 +124,6 @@ export default async function ProjectPage({
             ))}
           </Card>
         )}
-      </main>
-    </div>
+    </AppChrome>
   );
 }

@@ -1,3 +1,8 @@
+/* مُستبدَل — لم يعد مستهلَكاً.
+   حالتان لا ثلاث: قارئٌ نظامه فاتح واختار «الوضع الفاتح» لا يجد طريقاً
+   للعودة إلى «يتبع النظام». المُبدِّل المسجَّل في `@/naf/ui/theme-toggle`
+   وهو العقد المعتمد (CLAUDE.md §٦). أُبقي الملف ولا يُستأنف استعماله. */
+
 "use client";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
