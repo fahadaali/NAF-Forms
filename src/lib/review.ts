@@ -19,14 +19,16 @@ export const REVIEW_STATUS_LABELS: Record<string, string> = {
   REJECTED: "مرفوض",
 };
 
-// أصناف الألوان لكل حالة (تُستخدم مع chip)
+// أصناف الألوان لكل حالة (تُستخدم مع chip).
+// `‎-soft` للخلفية و`‎-strong` للنصّ — القاعدة ٦: اللون الأساس على سطحه
+// الناعم دون AA بحجم الوسم، والتخفيف بـ`‎/15` قيمةٌ منتقاة باليد.
 export const REVIEW_STATUS_CHIP: Record<string, string> = {
   NEW: "bg-muted text-muted-foreground",
-  SCREENING: "bg-info/15 text-info",
-  INTERVIEW: "bg-warning/15 text-warning",
-  OFFER: "bg-chart-4/15 text-chart-4",
-  HIRED: "bg-success/15 text-success",
-  REJECTED: "bg-destructive/15 text-destructive",
+  SCREENING: "bg-info-soft text-info-strong",
+  INTERVIEW: "bg-warning-soft text-warning-strong",
+  OFFER: "bg-chart-4-soft text-chart-4-strong",
+  HIRED: "bg-success-soft text-success-strong",
+  REJECTED: "bg-destructive-soft text-destructive-strong",
 };
 
 export function isReviewStatus(v: unknown): v is ReviewStatus {

@@ -35,6 +35,21 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+
+  /* ═══ `theme-color` بحالتيه — الاستثناء الرابع في القاعدة ١ ═══
+
+     الوسم يأخذ لونًا حرفيًا ولا شيء غيره: لا متصفّح يحلّ `var()` بداخله.
+     وهو الموضع الوحيد في هيكل التطبيق الذي يُكتب فيه لون خلفية باليد.
+
+     وكان غائبًا كليًّا، فشريط المتصفّح على الجوال يأخذ لونًا يخمّنه —
+     ويظهر فاتحًا فوق صفحة داكنة.
+
+     والقيمتان مرآة `--background` في الوضعين، وتُحدَّثان معه. والمانيفست
+     يحمل واحدة فقط (JSON لا يقبل استعلام وسائط)، فهذا الوسم هو ما يفرّق. */
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#e8ebed" },
+    { media: "(prefers-color-scheme: dark)", color: "#1c2433" },
+  ],
 };
 
 export default function RootLayout({

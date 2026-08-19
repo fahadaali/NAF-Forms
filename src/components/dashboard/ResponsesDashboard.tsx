@@ -332,7 +332,7 @@ export default function ResponsesDashboard({
                   <button
                     onClick={() => deleteResponse(r.id)}
                     disabled={busy === r.id}
-                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive-soft disabled:opacity-50"
                   >
                     {busy === r.id ? (
                       "…"

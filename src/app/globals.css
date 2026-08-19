@@ -68,24 +68,30 @@ body {
   .chip {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
   }
-  /* تمييز أنواع النماذج وحالاتها — من لوحة التصنيف في السجلّ (chart-*) */
+  /* تمييز أنواع النماذج وحالاتها — من لوحة التصنيف في السجلّ (chart-*).
+
+     `‎-soft` و`‎-strong` لا `‎/15` واللون الأساس: التخفيف بالشفافية قيمةٌ
+     منتقاة باليد (القاعدة ٦: «لا تعرّف قيمة ناعمة بيدك»)، ونصُّ اللون
+     الأساس عليها يبلغ 2.54–4.81:1 — دون AA لنصّ بحجم الوسم. القياس في
+     `audit/code-audit-2026-08.md`، والنمط الصحيح كان قائمًا في
+     `components/ui/alert.tsx`. */
   .chip-survey {
-    @apply bg-chart-2/15 text-chart-2;
+    @apply bg-chart-2-soft text-chart-2-strong;
   }
   .chip-exam {
-    @apply bg-chart-4/15 text-chart-4;
+    @apply bg-chart-4-soft text-chart-4-strong;
   }
   .chip-job {
-    @apply bg-chart-3/15 text-chart-3;
+    @apply bg-chart-3-soft text-chart-3-strong;
   }
   .chip-draft {
     @apply bg-muted text-muted-foreground;
   }
   .chip-published {
-    @apply bg-success/15 text-success;
+    @apply bg-success-soft text-success-strong;
   }
   .chip-closed {
-    @apply bg-destructive/15 text-destructive;
+    @apply bg-destructive-soft text-destructive-strong;
   }
 
   .glass {
@@ -154,6 +160,62 @@ summary:focus-visible,
   outline: 2px solid var(--ring);
   outline-offset: 2px;
   border-radius: 0.5rem;
+}
+
+/* ===== الطباعة تبقى فاتحة ===== */
+/*
+   الاستثناء الثالث في القاعدة ١: «مستند يُولَّد… يجب أن يبقى فاتحًا مهما
+   كان وضع القارئ — فاتورة داكنة تهدر الحبر، ومذكرة داكنة لا تُقدَّم».
+
+   ولم تكن في المستودع قاعدة `@media print` واحدة. وصفحتا الطباعة —
+   طباعة ردّ فردي، وشهادة الاختبار — تستهلكان `bg-card` و`text-foreground`
+   و`border-border`، وكلها رموز تنقلب مع الوضع. فمن مظهره داكن كان يطبع
+   صفحة سوداء.
+
+   والعلاج عند الرموز لا عند كل صنف: تُعاد قيم الوضع الفاتح على الجذر عند
+   الطباعة، فيتبعها كل ما بُني عليها بلا استثناء — وما يُضاف بعد اليوم
+   يتبعها كذلك.
+
+   والقيم حرفية هنا بالضرورة: `@media print` يلغي `.dark` بإعادة تعريف
+   الرموز، ولا يمكن أن يشير إلى «قيمة الوضع الفاتح» لرمزٍ أُعيد تعريفه.
+   وهي منسوخة من كتلة `:root` في `naf-theme.css` وتُحدَّث معها.
+*/
+@media print {
+  :root,
+  :root.dark {
+    --background: oklch(0.9383 0.0042 236.4993);
+    --foreground: oklch(0.3211 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.3211 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.3211 0 0);
+    --muted: oklch(0.9670 0.0029 264.5419);
+    --muted-foreground: oklch(0.5250 0.0234 264.3637);
+    --border: oklch(0.8717 0.0093 258.3382);
+    --input: oklch(0.8717 0.0093 258.3382);
+  }
+
+  /* الخلفية تُطبع بيضاء والنصّ أسود: الحبر لا يُهدر على لون سطح. */
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  /* ما لا معنى له على الورق */
+  .print\:hidden,
+  nav,
+  [role="tooltip"] {
+    display: none !important;
+  }
+
+  /* الروابط تُطبع نصًّا لا لونًا، والظلال لا تُطبع */
+  a {
+    text-decoration: none !important;
+  }
+  * {
+    box-shadow: none !important;
+  }
 }
 
 /* احترام تقليل الحركة */

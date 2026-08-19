@@ -719,7 +719,7 @@ function IntegrationsPanel({
                 key={l.id}
                 className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-2 text-xs"
               >
-                <span className={`chip ${l.ok ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}`}>
+                <span className={`chip ${l.ok ? "bg-success-soft text-success-strong" : "bg-destructive-soft text-destructive-strong"}`}>
                   {l.ok ? "نجح" : "فشل"}
                 </span>
                 <span className="text-muted-foreground">{l.kind}</span>

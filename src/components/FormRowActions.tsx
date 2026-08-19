@@ -89,7 +89,7 @@ export default function FormRowActions({
             </button>
             <button
               onClick={remove}
-              className="flex w-full items-center gap-2 px-4 py-2 text-start text-destructive hover:bg-destructive/10"
+              className="flex w-full items-center gap-2 px-4 py-2 text-start text-destructive hover:bg-destructive-soft"
             >
               <Icon name="trash" className="h-4 w-4" /> حذف
             </button>

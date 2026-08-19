@@ -25,6 +25,15 @@ export const NAF_PRIMARY = "#937133";
 /** `--background` · oklch(0.9383 0.0042 236.4993) */
 export const NAF_BACKGROUND = "#e8ebed";
 
+/**
+ * `--background` في الوضع الداكن · oklch(0.2598 0.0306 262.6666)
+ *
+ * لموضع واحد: `<meta name="theme-color">` في `app/layout.tsx` — الوسم
+ * يأخذ لونًا حرفيًا ولا يحلّ `var()` (الاستثناء الرابع في القاعدة ١).
+ * ولا يُستهلك في واجهة: الواجهة تأخذ `bg-background` فينقلب معها.
+ */
+export const NAF_BACKGROUND_DARK = "#1c2433";
+
 /** `--foreground` · oklch(0.3211 0 0) */
 export const NAF_FOREGROUND = "#333333";
 

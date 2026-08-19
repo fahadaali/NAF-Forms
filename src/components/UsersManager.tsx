@@ -134,7 +134,7 @@ export default function UsersManager({
               </Button>
               {u.id !== meId && (
                 <button
-                  className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
+                  className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-destructive hover:bg-destructive-soft"
                   onClick={() => remove(u.id)}
                 >
                   <Icon name="trash" className="h-4 w-4" /> حذف

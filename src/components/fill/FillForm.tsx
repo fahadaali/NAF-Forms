@@ -290,10 +290,19 @@ function FillBody({ form, password }: { form: FormDTO; password: string }) {
     color: theme.text,
     minHeight: "100vh",
   };
-  // لون التمييز يأتي من إعدادات النموذج نفسه (اختيار المستخدم، مخزَّن في D1)،
-  // فسطح التعبئة لا يتبع الوضعين الفاتح/الداكن. لذلك يبقى `text-white` هنا بدل
-  // `text-primary-foreground`: الرمز ينقلب مع الوضع والخلفية لا تنقلب.
-  // ربط هذا السطح بالسجلّ موقوف على قرار الألوان المخزَّنة (audit/mapping.md §٥).
+  /* ═══ سطح التعبئة خارج نظام الوضعين — وهذا مقصود ومحدود ═══
+
+     ألوان هذا السطح كلها من إعدادات النموذج نفسه (يختارها صاحبه وتُخزَّن
+     في D1)، فهو لا يتبع الفاتح والداكن ولا يعرف قيم الرموز.
+
+     فيبقى فيه ثلاثة استثناءات، وهي **وحدها** المسموحة هنا:
+       - `text-white` على خلفية التمييز: الرمز ينقلب مع الوضع والخلفية لا تنقلب.
+       - `bg-black/10` لمسار شريط التقدّم، و`bg-black/5` للوحات الثانوية
+         وتحويم زرّ الرجوع: تعتيمُ سطحٍ مجهولِ اللون لا يُكتب برمزٍ دلالي،
+         لأن الرمز يفترض خلفية يعرفها.
+
+     وربط هذا السطح بالسجلّ موقوف على قرار الألوان المخزَّنة
+     (audit/mapping.md §٥). وما عدا هذه الثلاثة في هذا الملف يلتزم الرموز. */
   const accent = theme.primary || NAF_PRIMARY;
 
   // تحقق من بطاقة كاملة (قد تضم عدة أسئلة)
@@ -491,8 +500,8 @@ function FillBody({ form, password }: { form: FormDTO; password: string }) {
             <div
               className={`mx-auto mt-4 inline-block rounded-full px-6 py-2 text-sm font-bold ${
                 result.passed
-                  ? "bg-success/15 text-success"
-                  : "bg-destructive/15 text-destructive"
+                  ? "bg-success-soft text-success-strong"
+                  : "bg-destructive-soft text-destructive-strong"
               }`}
             >
               <span className="inline-flex items-center gap-1">
@@ -513,8 +522,8 @@ function FillBody({ form, password }: { form: FormDTO; password: string }) {
                   key={i}
                   className={`rounded-xl border p-3 text-sm ${
                     r.correct
-                      ? "border-success/30 bg-success/10"
-                      : "border-destructive/30 bg-destructive/10"
+                      ? "border-success/30 bg-success-soft"
+                      : "border-destructive/30 bg-destructive-soft"
                   }`}
                 >
                   <div className="flex items-center gap-1.5 font-semibold">
