@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getPublicForm } from "@/lib/repo";
-import { parseSettings, safeParse } from "@/lib/utils";
+import { parseSettings } from "@/lib/utils";
+import { toLockedForm, toPublicForm } from "@/lib/public-form";
 import type { FormDTO } from "@/lib/types";
 import { Icon } from "@/components/ui/Icon";
 import FillForm from "@/components/fill/FillForm";
@@ -43,34 +44,10 @@ export default async function FillPage({
     // (النشر يتم من صفحة البناء)
   }
 
-  // إزالة الأسرار قبل الإرسال للعميل: كلمة المرور (يُمرَّر مؤشر وجودها فقط)،
-  // وبيانات التكاملات (رابط Sheets ورمز الواجهة البرمجية)، وبيانات الإشعارات.
+  /* النموذج المحميّ لا تُرسل أسئلته قبل كلمة المرور — البوابة على الخادم
+     لا في المتصفّح. و`toPublicForm` تنزع الأسرار في الحالتين. */
   const locked = !!s.access?.password;
-  const fullSettings = { ...s, access: {}, integrations: {}, notify: {} };
-
-  const dto: FormDTO = {
-    id: form.id,
-    slug: form.slug,
-    title: form.title,
-    description: form.description,
-    type: form.type,
-    status: form.status,
-    settings: fullSettings,
-    questions: form.questions.map((q) => {
-      const cfg = safeParse<Record<string, any>>(q.config, {});
-      // عدم كشف الإجابات الصحيحة والدرجات للمستفيد (للاختبارات)
-      const { correctAnswer, points, ...safeCfg } = cfg;
-      return {
-        id: q.id,
-        order: q.order,
-        type: q.type as any,
-        label: q.label,
-        description: q.description,
-        required: q.required,
-        config: safeCfg,
-      };
-    }),
-  };
+  const dto: FormDTO = locked ? toLockedForm(form) : toPublicForm(form);
 
   return (
     <>

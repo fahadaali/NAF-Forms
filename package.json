@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "db:seed": "tsx prisma/seed.ts",
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare preview",
@@ -22,7 +22,6 @@
     "better-sqlite3": "^11.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "eslint-config-next": "^15.5.21",
     "leaflet": "^1.9.4",
     "lucide-react": "1.27.0",
     "naf-auth": "github:fahadaali/naf-auth#v3.3.0",
@@ -37,6 +36,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@opennextjs/cloudflare": "^1.20.2",
     "@resvg/resvg-js": "^2.6.2",
     "@types/better-sqlite3": "^7.6.11",
@@ -46,6 +46,8 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^15.5.21",
     "postcss": "^8.4.47",
     "tailwindcss": "4.3.3",
     "tsx": "^4.19.2",

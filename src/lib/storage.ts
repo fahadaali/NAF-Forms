@@ -31,6 +31,11 @@ function r2PublicBase(): string {
   return base.replace(/\/$/, "");
 }
 
+/** الرابط العام للمرفقات — يحتاجه التحقق من أن رابط الإجابة من تخزيننا. */
+export function publicUploadBase(): string {
+  return r2PublicBase();
+}
+
 export function isR2Configured(): boolean {
   return !!(
     process.env.R2_ACCOUNT_ID &&
@@ -98,7 +103,8 @@ function guessType(key: string): string {
     jpeg: "image/jpeg",
     gif: "image/gif",
     webp: "image/webp",
-    svg: "image/svg+xml",
+    // لا `svg` هنا عمدًا: امتداد SVG ممنوع في الرفع، وملفٌ قديم بهذا
+    // الامتداد يُقدَّم `application/octet-stream` فلا يُفسَّر مستندًا.
     mp4: "video/mp4",
     webm: "video/webm",
     mov: "video/quicktime",

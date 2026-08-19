@@ -16,6 +16,13 @@ import { NAF_PRIMARY } from "@/lib/brand";
 
 type Phase = "intro" | "question" | "done";
 
+/**
+ * الغلاف: بوابة كلمة المرور ثم الجسم.
+ *
+ * الجسم لا يُركَّب إلا ومعه النموذج كاملًا، لأن `baseOrder` و`steps` تُحسبان
+ * مرة واحدة عند التركيب. فالبوابة غلافٌ لا فرعٌ داخل الجسم — ولو كانت فرعًا
+ * لركّب الجسم على أسئلة فارغة ثم بقي عليها.
+ */
 export default function FillForm({
   form,
   locked = false,
@@ -23,6 +30,102 @@ export default function FillForm({
   form: FormDTO;
   locked?: boolean;
 }) {
+  const [unlockedForm, setUnlockedForm] = useState<FormDTO | null>(null);
+  const [password, setPassword] = useState("");
+
+  if (locked && !unlockedForm)
+    return (
+      <PasswordGate
+        form={form}
+        password={password}
+        setPassword={setPassword}
+        onUnlock={setUnlockedForm}
+      />
+    );
+
+  return <FillBody form={unlockedForm ?? form} password={password} />;
+}
+
+/** بوابة كلمة المرور — تنادي الخادم، ولا تعرف من النموذج إلا عنوانه. */
+function PasswordGate({
+  form,
+  password,
+  setPassword,
+  onUnlock,
+}: {
+  form: FormDTO;
+  password: string;
+  setPassword: (v: string) => void;
+  onUnlock: (f: FormDTO) => void;
+}) {
+  const [pwError, setPwError] = useState("");
+  const [checking, setChecking] = useState(false);
+  const theme = form.settings.theme || {};
+  const accent = theme.primary || NAF_PRIMARY;
+
+  async function unlock() {
+    setChecking(true);
+    setPwError("");
+    try {
+      const res = await fetch(`/api/f/${form.slug}/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data?.ok && data.form) onUnlock(data.form as FormDTO);
+      else setPwError(data?.error || "كلمة المرور غير صحيحة");
+    } catch {
+      setPwError("تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة");
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  return (
+    <div
+      style={{ background: theme.background, color: theme.text, minHeight: "100vh" }}
+      className="grid place-items-center px-4"
+    >
+      <div
+        className="w-full max-w-sm rounded-xl p-8 text-center shadow-xl"
+        style={{ background: theme.cardBg }}
+      >
+        <div className="mb-3 flex justify-center text-muted-foreground">
+          <Icon name="lock" className="h-12 w-12" />
+        </div>
+        <h1 className="text-xl font-bold">{form.title}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          هذا النموذج محمي بكلمة مرور. أدخلها للمتابعة.
+        </p>
+        <Input
+          type="password"
+          className="mt-5 text-center"
+          placeholder="كلمة المرور"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && !checking && unlock()}
+          autoFocus
+        />
+        {pwError && (
+          <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-destructive">
+            <Icon name="alert" className="h-4 w-4" /> {pwError}
+          </p>
+        )}
+        <button
+          onClick={unlock}
+          disabled={checking || !password}
+          className="mt-4 w-full rounded-xl px-6 py-3 font-bold text-white shadow-lg disabled:opacity-50"
+          style={{ background: accent }}
+        >
+          {checking ? "جارٍ التحقق…" : "دخول"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FillBody({ form, password }: { form: FormDTO; password: string }) {
   const s = form.settings;
   const theme = s.theme || {};
   const behavior = s.behavior || {};
@@ -47,11 +150,7 @@ export default function FillForm({
   const timeLimit = form.type === "EXAM" ? exam.timeLimitMin : null;
   const [remaining, setRemaining] = useState<number | null>(null);
 
-  // حماية بكلمة مرور + جمع بريد المستفيد
-  const [unlocked, setUnlocked] = useState(!locked);
-  const [password, setPassword] = useState("");
-  const [pwError, setPwError] = useState("");
-  const [checking, setChecking] = useState(false);
+  // جمع بريد المستفيد
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [hp, setHp] = useState(""); // مصيدة سبام
@@ -103,20 +202,6 @@ export default function FillForm({
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  async function unlock() {
-    setChecking(true);
-    setPwError("");
-    const res = await fetch(`/api/f/${form.slug}/verify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    const data = await res.json();
-    setChecking(false);
-    if (data.ok) setUnlocked(true);
-    else setPwError("كلمة المرور غير صحيحة");
-  }
 
   // ترتيب الأسئلة (مع خلطها للاختبارات عند التفعيل) — يُحسب مرة واحدة.
   // نخلط أسئلة الإدخال فقط ونُبقي العناصر التنسيقية (أقسام/فواصل/صور/فيديو)
@@ -185,15 +270,39 @@ export default function FillForm({
   const safeStep = Math.min(step, Math.max(0, steps.length - 1));
   const currentStep = steps[safeStep] || [];
 
+  /* ═══ ترقيم الأسئلة على مستوى النموذج ═══
+
+     كان الرقم فهرسَ العنصر **داخل البطاقة**، والنمط الافتراضي بطاقة لكل
+     سؤال — فكانت كل بطاقة في النموذج تقول «سؤال 1». وفي وضع الصفحة
+     الواحدة كان الفهرس يعدّ الأقسام والصور والفيديو معها، فيقفز الترقيم:
+     سؤال 1 ثم قسم ثم سؤال 3.
+
+     فالرقم من خريطة تُبنى على الأسئلة الظاهرة، وتعدّ أسئلة الإدخال وحدها. */
+  const numberOf = useMemo(() => {
+    const map = new Map<string, number>();
+    let n = 0;
+    for (const q of questions) if (isInputQuestion(q.type)) map.set(q.id, ++n);
+    return map;
+  }, [questions]);
+
   const pageStyle: React.CSSProperties = {
     background: theme.background,
     color: theme.text,
     minHeight: "100vh",
   };
-  // لون التمييز يأتي من إعدادات النموذج نفسه (اختيار المستخدم، مخزَّن في D1)،
-  // فسطح التعبئة لا يتبع الوضعين الفاتح/الداكن. لذلك يبقى `text-white` هنا بدل
-  // `text-primary-foreground`: الرمز ينقلب مع الوضع والخلفية لا تنقلب.
-  // ربط هذا السطح بالسجلّ موقوف على قرار الألوان المخزَّنة (audit/mapping.md §٥).
+  /* ═══ سطح التعبئة خارج نظام الوضعين — وهذا مقصود ومحدود ═══
+
+     ألوان هذا السطح كلها من إعدادات النموذج نفسه (يختارها صاحبه وتُخزَّن
+     في D1)، فهو لا يتبع الفاتح والداكن ولا يعرف قيم الرموز.
+
+     فيبقى فيه ثلاثة استثناءات، وهي **وحدها** المسموحة هنا:
+       - `text-white` على خلفية التمييز: الرمز ينقلب مع الوضع والخلفية لا تنقلب.
+       - `bg-black/10` لمسار شريط التقدّم، و`bg-black/5` للوحات الثانوية
+         وتحويم زرّ الرجوع: تعتيمُ سطحٍ مجهولِ اللون لا يُكتب برمزٍ دلالي،
+         لأن الرمز يفترض خلفية يعرفها.
+
+     وربط هذا السطح بالسجلّ موقوف على قرار الألوان المخزَّنة
+     (audit/mapping.md §٥). وما عدا هذه الثلاثة في هذا الملف يلتزم الرموز. */
   const accent = theme.primary || NAF_PRIMARY;
 
   // تحقق من بطاقة كاملة (قد تضم عدة أسئلة)
@@ -361,48 +470,6 @@ export default function FillForm({
     }
   }
 
-  // ===== بوابة كلمة المرور =====
-  if (!unlocked) {
-    return (
-      <div style={pageStyle} className="grid place-items-center px-4">
-        <div
-          className="w-full max-w-sm rounded-xl p-8 text-center shadow-xl"
-          style={{ background: theme.cardBg }}
-        >
-          <div className="mb-3 flex justify-center text-muted-foreground">
-            <Icon name="lock" className="h-12 w-12" />
-          </div>
-          <h1 className="text-xl font-bold">{form.title}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            هذا النموذج محمي بكلمة مرور. أدخلها للمتابعة.
-          </p>
-          <Input
-            type="password"
-            className="mt-5 text-center"
-            placeholder="كلمة المرور"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && unlock()}
-            autoFocus
-          />
-          {pwError && (
-            <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-destructive">
-              <Icon name="alert" className="h-4 w-4" /> {pwError}
-            </p>
-          )}
-          <button
-            onClick={unlock}
-            disabled={checking || !password}
-            className="mt-4 w-full rounded-xl px-6 py-3 font-bold text-white shadow-lg disabled:opacity-50"
-            style={{ background: accent }}
-          >
-            {checking ? "جارٍ التحقق…" : "دخول"}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // ===== شاشة النهاية =====
   if (phase === "done") {
     const after = s.afterSubmit || {};
@@ -433,8 +500,8 @@ export default function FillForm({
             <div
               className={`mx-auto mt-4 inline-block rounded-full px-6 py-2 text-sm font-bold ${
                 result.passed
-                  ? "bg-success/15 text-success"
-                  : "bg-destructive/15 text-destructive"
+                  ? "bg-success-soft text-success-strong"
+                  : "bg-destructive-soft text-destructive-strong"
               }`}
             >
               <span className="inline-flex items-center gap-1">
@@ -455,8 +522,8 @@ export default function FillForm({
                   key={i}
                   className={`rounded-xl border p-3 text-sm ${
                     r.correct
-                      ? "border-success/30 bg-success/10"
-                      : "border-destructive/30 bg-destructive/10"
+                      ? "border-success/30 bg-success-soft"
+                      : "border-destructive/30 bg-destructive-soft"
                   }`}
                 >
                   <div className="flex items-center gap-1.5 font-semibold">
@@ -657,9 +724,9 @@ export default function FillForm({
           <h1 className="text-2xl font-bold">{form.title}</h1>
           {questions
             .filter((q) => q.type !== "PAGE_BREAK")
-            .map((q, i) => (
+            .map((q) => (
               <div key={q.id} className="rounded-xl p-6 shadow-sm" style={{ background: theme.cardBg }}>
-                <QuestionCard q={q} value={answers[q.id]} onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))} accent={accent} index={i} />
+                <QuestionCard q={q} number={numberOf.get(q.id)} value={answers[q.id]} onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))} accent={accent} />
               </div>
             ))}
           {error && (
@@ -748,6 +815,7 @@ export default function FillForm({
               <div key={q.id} className={multi && i > 0 ? "pt-6" : ""}>
                 <QuestionCard
                   q={q}
+                  number={numberOf.get(q.id)}
                   value={answers[q.id]}
                   onChange={(v) => {
                     setAnswers((a) => ({ ...a, [q.id]: v }));
@@ -755,7 +823,6 @@ export default function FillForm({
                     maybeAutoAdvance(q, v);
                   }}
                   accent={accent}
-                  index={i}
                   remaining={quotaRemaining[q.id]}
                 />
               </div>
@@ -835,17 +902,18 @@ export default function FillForm({
 
 function QuestionCard({
   q,
+  number,
   value,
   onChange,
   accent,
-  index,
   remaining,
 }: {
   q: FormDTO["questions"][number];
+  /** رقم السؤال في النموذج — غائب للعناصر التنسيقية فلا يُعرض لها رأس. */
+  number?: number;
   value: any;
   onChange: (v: any) => void;
   accent: string;
-  index: number;
   remaining?: Record<string, number>;
 }) {
   if (q.type === "SECTION") {
@@ -916,9 +984,11 @@ function QuestionCard({
 
   return (
     <div>
-      <div className="mb-1 text-sm font-medium" style={{ color: accent }}>
-        سؤال <bdi>{index + 1}</bdi>
-      </div>
+      {number !== undefined && (
+        <div className="mb-1 text-sm font-medium" style={{ color: accent }}>
+          سؤال <bdi>{number}</bdi>
+        </div>
+      )}
       <h2 className="text-xl font-bold">
         {q.label}
         {q.required && <span className="ms-1 text-destructive">*</span>}

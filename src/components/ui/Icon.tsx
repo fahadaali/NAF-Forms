@@ -258,6 +258,8 @@ export function IconTip({
   className?: string;
 }) {
   return (
+    // `focus-within` مع `hover`: كان التلميح يظهر بالتحويم وحده، فلا يراه
+    // من يتنقّل بلوحة المفاتيح — وهو من يحتاجه أكثر.
     <span className={`group/tip relative inline-flex ${className}`}>
       {children}
       {/* `left-1/2` + `-translate-x-1/2` تعبير توسيط أفقي، لا خيار اتجاه:
@@ -265,7 +267,7 @@ export function IconTip({
           التوسيط لأن الإزاحة لا تنقلب معه. */}
       <span
         role="tooltip"
-        className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-xl border border-border bg-popover px-2.5 py-1 text-xs font-medium text-popover-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover/tip:opacity-100"
+        className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-xl border border-border bg-popover px-2.5 py-1 text-xs font-medium text-popover-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover/tip:opacity-100 group-focus-within/tip:opacity-100"
       >
         {label}
       </span>

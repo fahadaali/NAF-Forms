@@ -14,14 +14,15 @@ export default async function UsersPage() {
     id: u.id,
     email: u.email,
     role: u.role,
-    mustChangePassword: u.mustChangePassword,
   }));
 
   return (
     <AppChrome crumbs={[{ label: "المستخدمون" }]} width="narrow">
-        <h1 className="mb-1 text-2xl font-bold">المستخدمون</h1>
+        <h1 className="mb-1 text-2xl font-bold">تهيئة مسبقة</h1>
         <p className="mb-6 text-sm text-muted-foreground">
-          إدارة حسابات لوحة التحكم وأدوارها.
+          سجّل بريد العضو وصلاحيته قبل أول دخول له، فيأخذها عند دخوله بدل
+          الصلاحية الافتراضية. وبعد دخوله تُدار صلاحيته من «الفريق
+          والصلاحيات».
         </p>
         <UsersManager initial={users} meId={admin.uid} />
     </AppChrome>

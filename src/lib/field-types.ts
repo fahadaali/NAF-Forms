@@ -317,3 +317,17 @@ export const FORM_STATUS_CHIP: Record<string, string> = {
   PUBLISHED: "chip-published",
   CLOSED: "chip-closed",
 };
+
+// ===== حرّاس القيم =====
+// النوع والحالة يصلان من العميل في `PATCH /api/forms/:id`. بلا حارس تُكتب
+// أي سلسلة في العمود، فتظهر في الشاشات بوسم فارغ لأن جدول المسمّيات لا
+// يعرفها — ويُردّ التقديم لأن `submit` يقارن بـ`PUBLISHED` حرفيًا.
+export const FORM_TYPES = ["SURVEY", "EXAM", "JOB"] as const;
+export const FORM_STATUSES = ["DRAFT", "PUBLISHED", "CLOSED"] as const;
+
+export function isFormType(v: unknown): v is (typeof FORM_TYPES)[number] {
+  return typeof v === "string" && (FORM_TYPES as readonly string[]).includes(v);
+}
+export function isFormStatus(v: unknown): v is (typeof FORM_STATUSES)[number] {
+  return typeof v === "string" && (FORM_STATUSES as readonly string[]).includes(v);
+}

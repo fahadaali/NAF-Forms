@@ -117,6 +117,11 @@
   --success-soft: color-mix(in oklab, var(--success) 14%, var(--card));
   --warning-soft: color-mix(in oklab, var(--warning) 14%, var(--card));
   --info-soft: color-mix(in oklab, var(--info) 14%, var(--card));
+  /* ألوان التصنيف على أسطحها الناعمة — القياس في audit/code-audit-2026-08.md.
+     تُشتقّ بالمزج نفسه فتتبع الوضعين من تعريف واحد. */
+  --chart-2-soft: color-mix(in oklab, var(--chart-2) 14%, var(--card));
+  --chart-3-soft: color-mix(in oklab, var(--chart-3) 14%, var(--card));
+  --chart-4-soft: color-mix(in oklab, var(--chart-4) 14%, var(--card));
 
   /* [جديد] نصّ الحالات فوق خلفياتها الناعمة — قياساً لا تخميناً.
      النصّ بالرمز الأساس على خلفيته الناعمة يعطي 3.7–3.8 فقط، ونصّ الشارة
@@ -128,6 +133,11 @@
   --destructive-strong: oklch(0.5430 0.2078 25.3313);
   --info-strong: oklch(0.5140 0.1200 240.0000);
   --primary-strong: oklch(0.5200 0.0904 80.9413);
+  /* نصّ ألوان التصنيف على أسطحها الناعمة: اللون الأساس يبلغ 3.65–4.81:1
+     وهو دون AA لنصّ بحجم الوسم. هذه القيم مقيسة لتعبر 4.5:1 في الوضعين. */
+  --chart-2-strong: oklch(0.5120 0.1200 240.0000);
+  --chart-3-strong: oklch(0.5020 0.1300 155.0000);
+  --chart-4-strong: oklch(0.5200 0.1500 300.0000);
 
   /* [جديد] السطح العميق — سطح دلاليّ داكن يحمل نصاً فاتحاً: خلفيات الصفحات
      خارج البطاقة، وأغلفة الشرائح وفواصلها وختامها.
@@ -301,6 +311,9 @@
   --destructive-strong: oklch(0.8050 0.1900 25.3313);
   --info-strong: oklch(0.7400 0.1100 240.0000);
   --primary-strong: oklch(0.7450 0.0904 80.9413);
+  --chart-2-strong: oklch(0.7000 0.1200 240.0000);
+  --chart-3-strong: oklch(0.6940 0.1300 155.0000);
+  --chart-4-strong: oklch(0.7130 0.1400 300.0000);
 
   --border: oklch(0.3843 0.0301 269.7337);
   --input: oklch(0.3843 0.0301 269.7337);
@@ -388,6 +401,12 @@
   --color-destructive-strong: var(--destructive-strong);
   --color-info-strong: var(--info-strong);
   --color-primary-strong: var(--primary-strong);
+  --color-chart-2-soft: var(--chart-2-soft);
+  --color-chart-3-soft: var(--chart-3-soft);
+  --color-chart-4-soft: var(--chart-4-soft);
+  --color-chart-2-strong: var(--chart-2-strong);
+  --color-chart-3-strong: var(--chart-3-strong);
+  --color-chart-4-strong: var(--chart-4-strong);
   --color-surface-deep: var(--surface-deep);
   --color-surface-deep-foreground: var(--surface-deep-foreground);
   --color-surface-deep-muted: var(--surface-deep-muted);

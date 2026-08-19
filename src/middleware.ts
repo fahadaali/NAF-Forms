@@ -121,9 +121,18 @@ export async function middleware(req: NextRequest) {
    من صنف الخطأ السادس: لا علامة له حتى يقع.
 
    فالمستثنى الآن مسمّى: أصول Next المبنية، وأيقونات المتصفّح، وما يُخدَم
-   من `public/`. وما عداه يمرّ بالوسيط، ويُمسح منه ما انتُحل. */
+   من `public/`. وما عداه يمرّ بالوسيط، ويُمسح منه ما انتُحل.
+
+   **والمانيفست وأيقوناته منه.** كانا يمرّان بالوسيط، والمتصفّح يجلب
+   `manifest.webmanifest` **بلا كوكيز** افتراضًا (`<link rel="manifest">`
+   لا يرسلها ما لم يُكتب `crossorigin="use-credentials"`). فكان الطلب يقع
+   على الحارس بلا جلسة فيُحوَّل إلى المركز، ويفشل تحميل المانيفست — على
+   المسجَّل وغير المسجَّل معًا، فيسقط كل ما في `docs/naf-pwa.md`.
+
+   وهما أصلان ساكنان لا يحملان بيانات: اسم المنصة وأيقونتها، وكلاهما ظاهر
+   لمن يفتح صفحة التعبئة العامة أصلًا. */
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|icon\\.svg|brand/|naf-logo\\.jpg).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|icon\\.svg|manifest\\.webmanifest|icons/|brand/|naf-logo\\.jpg).*)",
   ],
 };

@@ -37,7 +37,7 @@ const NafLogo = React.forwardRef<HTMLSpanElement, NafLogoProps>(
     if (variant === "mono") {
       return (
         <span ref={ref} className={cn("inline-flex h-12", className)} {...props}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          { }
           <img src={MONO_SOURCE} alt={alt} className={image} />
         </span>
       )
@@ -47,9 +47,9 @@ const NafLogo = React.forwardRef<HTMLSpanElement, NafLogoProps>(
 
     return (
       <span ref={ref} className={cn("inline-flex h-12", className)} {...props}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        { }
         <img src={source.light} alt={alt} className={cn(image, "dark:hidden")} />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        { }
         <img src={source.dark} alt={alt} className={cn(image, "hidden dark:block")} />
       </span>
     )

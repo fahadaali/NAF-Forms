@@ -33,7 +33,7 @@ export default function OptionsEditor({
             <button
               type="button"
               onClick={() => remove(i)}
-              className="rounded-lg px-2 py-1 text-destructive hover:bg-destructive/10"
+              className="rounded-lg px-2 py-1 text-destructive hover:bg-destructive-soft"
               disabled={options.length <= 1}
             >
               <Icon name="x" className="h-4 w-4" />

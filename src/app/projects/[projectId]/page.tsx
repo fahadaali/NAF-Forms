@@ -34,6 +34,8 @@ export default async function ProjectPage({
   // مشروع غير موجود أو لا يملكه المستخدم → صفحة غير موجودة
   if (!project || !canAccessOwned(session, project.ownerId)) notFound();
 
+  const isViewer = session?.role === "viewer";
+
   return (
     <AppChrome crumbs={[{ label: project.name }]} width="wide">
         <div className="mb-6 flex items-start justify-between gap-4">
@@ -49,18 +51,27 @@ export default async function ProjectPage({
               )}
             </div>
           </div>
+          {/* «مستخدم (اطّلاع)» يقرأ ولا يكتب — والوسيط يردّ كل كتابة بـ٤٠٣.
+              والزرّ يُخفى ولا يُعطَّل: زرٌّ معطَّل بلا سبب ظاهر يُقرأ عطلاً
+              في المنصة.
+
+              وكان `NewFormButton` وحده يُخفى، بينما `ProjectSettings`
+              (تعديل المشروع وحذفه) و`FormRowActions` (نسخ وحذف وحفظ كقالب)
+              تبقى ظاهرة له وتردّ ٤٠٣ عند الضغط — أي القاعدة المكتوبة هنا
+              مطبَّقة على ثلث الأزرار. */}
           <div className="flex items-center gap-2">
-            <ProjectSettings
-              project={{
-                id: project.id,
-                name: project.name,
-                description: project.description,
-                color: project.color,
-              }}
-            />
-            {/* «مستخدم (اطّلاع)» يقرأ ولا ينشئ — والوسيط يردّ إنشاءه بـ٤٠٣. */}
-            {session?.role !== "viewer" && (
-              <NewFormButton projectId={project.id} templates={templates} />
+            {!isViewer && (
+              <>
+                <ProjectSettings
+                  project={{
+                    id: project.id,
+                    name: project.name,
+                    description: project.description,
+                    color: project.color,
+                  }}
+                />
+                <NewFormButton projectId={project.id} templates={templates} />
+              </>
             )}
           </div>
         </div>
@@ -118,7 +129,7 @@ export default async function ProjectPage({
                   >
                     <Icon name="edit" className="h-4 w-4" /> تعديل
                   </Link>
-                  <FormRowActions formId={f.id} slug={f.slug} />
+                  {!isViewer && <FormRowActions formId={f.id} slug={f.slug} />}
                 </div>
               </div>
             ))}

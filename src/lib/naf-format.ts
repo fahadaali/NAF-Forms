@@ -20,18 +20,68 @@ const NUMBER_FORMAT = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 })
 
+/* ═══ المنطقة الزمنية ثابتة، لا منطقة البيئة ═══
+
+   كانت الدوال تبني التاريخ من `getFullYear/getMonth/getHours` — أي بمنطقة
+   ما يُنفَّذ فيه الكود. وذلك يعطي ثلاثة أجوبة لسؤال واحد:
+
+     - على Workers منطقة الخادم UTC، فكل تاريخ يُصيَّر على الخادم متأخّر
+       ثلاث ساعات عن التوقيت السعودي — ومنصةُ نماذج تسجّل مواعيد تقديم،
+       وثلاث ساعات تنقل رداً من ليلة إلى ليلة.
+     - في مكوّن عميل منطقةُ متصفّح القارئ، فتُعرض في الشاشة الواحدة قيمتان
+       بمرجعين مختلفين (لوحة الردود مقابل ملف التصدير).
+     - وبين الخادم والمتصفّح اختلافُ ترطيب في كل تاريخ يُصيَّر مرتين.
+
+   فالمرجع واحد مصرَّح به: توقيت الرياض. ولا يتبع صيفاً ولا شتاءً
+   (UTC+3 ثابتاً)، لكنّ `Intl` أدقّ من إزاحةٍ مكتوبة باليد وتبقى صحيحة لو
+   تغيّرت القاعدة يوماً.
+
+   ويُقرأ من `NAF_TIMEZONE` عند الحاجة إلى منصة بمنطقة أخرى. */
+const TIME_ZONE =
+  (typeof process !== "undefined" && process.env?.NAF_TIMEZONE) || "Asia/Riyadh"
+
 const HIJRI_FORMAT = new Intl.DateTimeFormat("en-US-u-ca-islamic-umalqura-nu-latn", {
   year: "numeric",
   month: "2-digit",
   day: "2-digit",
+  timeZone: TIME_ZONE,
+})
+
+// أجزاء التاريخ والوقت في المنطقة المعتمدة — مصدر كل الدوال أدناه.
+const PARTS_FORMAT = new Intl.DateTimeFormat("en-CA", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  timeZone: TIME_ZONE,
 })
 
 function toDate(value: Date | string | number): Date {
   return value instanceof Date ? value : new Date(value)
 }
 
-function pad(value: number): string {
-  return String(value).padStart(2, "0")
+interface Parts {
+  year: string
+  month: string
+  day: string
+  hour: string
+  minute: string
+}
+
+function parts(value: Date | string | number): Parts {
+  const found = PARTS_FORMAT.formatToParts(toDate(value))
+  const get = (type: string) => found.find((p) => p.type === type)?.value ?? ""
+  // ‏`hour12: false` يعطي "24" عند منتصف الليل في بعض المحرّكات
+  const hour = get("hour") === "24" ? "00" : get("hour")
+  return {
+    year: get("year"),
+    month: get("month"),
+    day: get("day"),
+    hour,
+    minute: get("minute"),
+  }
 }
 
 /**
@@ -65,8 +115,8 @@ export function formatNumber(value: number): string {
 
 /** ميلادي: "2026/07/26" */
 export function formatDate(value: Date | string | number): string {
-  const date = toDate(value)
-  return `${date.getFullYear()}/${pad(date.getMonth() + 1)}/${pad(date.getDate())}`
+  const p = parts(value)
+  return `${p.year}/${p.month}/${p.day}`
 }
 
 /** هجري أم القرى: "1448/02/11 هـ" */
@@ -88,14 +138,14 @@ export function formatDualDate(value: Date | string | number): string {
  * أسماء الأشهر العربية ليست صيغة معتمدة لعرض قيمة تاريخ.
  */
 export function formatMonth(value: Date | string | number): string {
-  const date = toDate(value)
-  return `${date.getFullYear()}/${pad(date.getMonth() + 1)}`
+  const p = parts(value)
+  return `${p.year}/${p.month}`
 }
 
 /** نظام ٢٤ ساعة: "14:30" */
 export function formatTime(value: Date | string | number): string {
-  const date = toDate(value)
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}`
+  const p = parts(value)
+  return `${p.hour}:${p.minute}`
 }
 
 /** الجوال السعودي: "+966 5X XXX XXXX" */

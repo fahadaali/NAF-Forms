@@ -7,6 +7,18 @@ export const runtime = "nodejs";
 
 // الحد الأقصى لحجم الملف (يُطبَّق على الخادم، لا على المتصفح فقط)
 const MAX_BYTES = 100 * 1024 * 1024; // 100 ميجابايت (يكفي للفيديو)
+
+/* ═══ SVG ممنوع، وليس صورةً في هذا السياق ═══
+
+   `‎/^image\//‎` كانت تقبل `image/svg+xml`. وSVG مستندٌ يحمل سكربتًا، لا
+   صورة: يُرفع من صفحة تعبئة عامة بلا حساب، ويُقدَّم من `‎/uploads/<key>`
+   على أصل المنصة نفسه — فيصير سكربتًا يعمل في جلسة المشرف حين يفتح ما
+   يظنّه سيرةً ذاتية.
+
+   والمنع هنا لا يُغني عن `nosniff` و`attachment` في مسار التقديم؛ الطبقتان
+   معًا: هذه تمنع الدخول، وتلك تمنع التنفيذ لما دخل قبل اليوم. */
+const BLOCKED = [/^image\/svg/, /^text\/html/, /^application\/xhtml/];
+
 // أنواع المحتوى المسموح بها: صور، فيديو، صوت، ومستندات شائعة
 const ALLOWED = [
   /^image\//,
@@ -18,6 +30,11 @@ const ALLOWED = [
   /^application\/vnd\.ms-(excel|powerpoint)$/,
   /^text\/plain$/,
 ];
+
+// الامتداد يُفحص كذلك: `file.type` يكتبه المتصفّح ويمكن انتحاله، فملفٌ
+// اسمه `x.svg` بنوع `image/png` كان يمرّ ثم يُقدَّم بـ`image/svg+xml`
+// لأن `guessType` تشتقّ من الامتداد.
+const BLOCKED_EXT = /\.(svgz?|html?|xht(ml)?|xml|js|mjs|mhtml?)$/i;
 
 // رفع الملفات (السير الذاتية والمرفقات) عبر طبقة التخزين (R2 أو محلي).
 // المسار عام لأن معبّئ النموذج غير مسجّل الدخول؛ لذا نطبّق حدًّا للمعدّل
@@ -41,7 +58,11 @@ export async function POST(req: Request) {
     );
   }
   const contentType = file.type || "application/octet-stream";
-  if (!ALLOWED.some((re) => re.test(contentType))) {
+  if (
+    BLOCKED.some((re) => re.test(contentType)) ||
+    BLOCKED_EXT.test(file.name) ||
+    !ALLOWED.some((re) => re.test(contentType))
+  ) {
     return NextResponse.json(
       { error: "نوع الملف غير مسموح" },
       { status: 415 }

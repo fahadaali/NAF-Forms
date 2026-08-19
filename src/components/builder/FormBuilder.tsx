@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fieldType, FORM_TYPE_LABELS } from "@/lib/field-types";
@@ -47,27 +47,29 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
     setDirty(true);
   };
 
-  const addQuestion = useCallback(
-    (t: FieldTypeId) => {
-      const def = fieldType(t)!;
-      const id = `tmp-${++tmpCounter}`;
-      setQuestions((prev) => [
-        ...prev,
-        {
-          id,
-          order: prev.length,
-          type: t,
-          label: "",
-          description: "",
-          required: false,
-          config: JSON.parse(JSON.stringify(def.defaultConfig)),
-        },
-      ]);
-      setSelectedId(id);
-      mark();
-    },
-    []
-  );
+  /* بلا `useCallback([])` هنا.
+     كان `addQuestion` مغلّفاً بمصفوفة تبعيات فارغة، فيجمّد نسخة `mark`
+     من العرض الأول — ومعها `snapshot()` التي تقرأ حالة العرض الأول. فكل
+     لقطة تدفعها **إضافةُ سؤال** كانت حالة النموذج عند التحميل لا الحالة
+     الراهنة، والتراجع بعدها يمحو كل ما بينهما. */
+  const addQuestion = (t: FieldTypeId) => {
+    const def = fieldType(t)!;
+    const id = `tmp-${++tmpCounter}`;
+    setQuestions((prev) => [
+      ...prev,
+      {
+        id,
+        order: prev.length,
+        type: t,
+        label: "",
+        description: "",
+        required: false,
+        config: JSON.parse(JSON.stringify(def.defaultConfig)),
+      },
+    ]);
+    setSelectedId(id);
+    mark();
+  };
 
   const updateQuestion = (id: string, patch: Partial<QuestionDTO>) => {
     setQuestions((prev) => prev.map((q) => (q.id === id ? { ...q, ...patch } : q)));
@@ -123,8 +125,11 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
   // مرجع دائم لأحدث save حتى يستدعيه مؤقّت الحفظ التلقائي بقيمة محدّثة
   const saveRef = useRef<(s?: string) => Promise<void>>(async () => {});
 
+  const [saveError, setSaveError] = useState("");
+
   async function save(nextStatus?: string) {
     setSaving(true);
+    setSaveError("");
     const res = await apiFetch(`/api/forms/${initial.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -137,7 +142,28 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
         questions,
       }),
     });
-    const fresh = await res.json();
+
+    /* ═══ الفشل يُقال، ولا يُعلَن حفظاً ═══
+
+       كانت الدالة تقرأ الجسم بلا فحص `res.ok`، فأيّ فشل — ٤٠٣ لصاحب
+       صلاحية «اطّلاع»، ٤٠٩ على رابط مستخدم، خطأ خادم — ينتهي بـ
+       `dirty = false` و«حُفظ 14:32» في الشريط. والمستخدم يغادر واثقاً
+       وقد ضاع عمله.
+
+       والحالة ليست نظرية: الوسيط يسمح لصاحب «اطّلاع» بفتح صفحة البنّاء
+       (لأنها GET) ويردّ `PATCH` بـ٤٠٣ — والحفظ التلقائي يعمل بعد ثلاث
+       ثوانٍ فيقول «حُفظ».
+
+       و`dirty` يبقى مرفوعاً: التغييرات ما زالت غير محفوظة فعلاً، فيبقى
+       تنبيه المغادرة عاملاً. */
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setSaveError(d.error || "تعذّر الحفظ. أعد المحاولة");
+      setSaving(false);
+      return;
+    }
+
+    const fresh = await res.json().catch(() => null);
     // إعادة ربط المعرفات الحقيقية للأسئلة الجديدة
     if (fresh?.questions) {
       setQuestions(
@@ -225,25 +251,44 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
     setCanUndo(true);
   }
 
-  // اختصارات: Ctrl/Cmd+Z للتراجع، Ctrl/Cmd+Shift+Z أو Ctrl+Y للإعادة، Ctrl+S للحفظ
+  /* اختصارات: Ctrl/Cmd+Z للتراجع، Ctrl/Cmd+Shift+Z أو Ctrl+Y للإعادة، Ctrl+S للحفظ.
+
+     المستمع يُركَّب مرة واحدة وينادي عبر **مراجع حيّة**: كان يلتقط `undo`
+     و`redo` من العرض الأول، فـ`future.current.push(snapshot())` فيهما يدفع
+     الحالة الأولى — والإعادة تُرجع النموذج إلى ما كان عليه عند التحميل.
+
+     ولا يُسرَق تراجعُ حقل النصّ: `Ctrl+Z` داخل `input` أو `textarea` هو
+     تراجع المتصفّح عن الكتابة، ولا شأن له ببنية النموذج. */
+  const undoRef = useRef(undo);
+  const redoRef = useRef(redo);
+  undoRef.current = undo;
+  redoRef.current = redo;
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!(e.ctrlKey || e.metaKey)) return;
+      const el = e.target as HTMLElement | null;
+      const typing =
+        !!el &&
+        (el.tagName === "INPUT" ||
+          el.tagName === "TEXTAREA" ||
+          el.isContentEditable);
       const k = e.key.toLowerCase();
       if (k === "s") {
         e.preventDefault();
         void saveRef.current();
       } else if (k === "z" && !e.shiftKey) {
+        if (typing) return;
         e.preventDefault();
-        undo();
+        undoRef.current();
       } else if ((k === "z" && e.shiftKey) || k === "y") {
+        if (typing) return;
         e.preventDefault();
-        redo();
+        redoRef.current();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // تحديث رابط النموذج (مع التحقق من الصيغة والتفرّد على الخادم)
@@ -296,10 +341,14 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
     router.push(`/forms/${initial.id}/responses`);
   }
 
-  const publicUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/f/${slug}`
-      : `/f/${slug}`;
+  /* الأصل يُقرأ بعد التركيب لا أثناء التصيير.
+     كان `typeof window !== "undefined" ? origin+path : path` — فالخادم
+     يصيّر `/f/x` والمتصفّح `https://…/f/x`، وهو اختلاف ترطيب يسجّله React
+     خطأً ويعيد التصيير. والمسار النسبي يعمل في كل موضع عدا ما يحتاج
+     رابطاً مطلقاً (النسخ ورمز QR وكود التضمين). */
+  const [origin, setOrigin] = useState("");
+  useEffect(() => setOrigin(window.location.origin), []);
+  const publicUrl = `${origin}/f/${slug}`;
 
   return (
     // overflow-x-clip: تلميحات أزرار شريط أدوات السؤال معروضة بـ opacity-0
@@ -347,8 +396,13 @@ export default function FormBuilder({ initial }: { initial: FormDTO }) {
             </button>
           </IconTip>
 
-          <span className="text-xs text-muted-foreground" aria-live="polite">
-            {saving
+          <span
+            className={`text-xs ${saveError ? "text-destructive" : "text-muted-foreground"}`}
+            aria-live="polite"
+          >
+            {saveError
+              ? saveError
+              : saving
               ? "جارٍ الحفظ…"
               : dirty
               ? autoSave

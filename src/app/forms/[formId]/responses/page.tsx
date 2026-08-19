@@ -201,31 +201,42 @@ export default async function ResponsesPage({
   // توزيع الردود حسب اليوم (آخر النتائج).
   // `ar-SA` كانت تُنتج أرقامًا عربية-هندية على محور الرسم البياني، و naf-terms
   // §٥ تفرض الأرقام الغربية. نشتقّ اليوم/الشهر من التاريخ المعتمد نفسه.
-  const dayFmt = { format: (d: Date) => formatDate(d).slice(5) }; // MM/DD
-  const byDay = new Map<string, number>();
+  // المفتاح بالسنة والعرض بلا سنة: كان التجميع على `MM/DD` وحدها، فردّان
+  // في اليوم نفسه من سنتين يقعان في عمود واحد.
+  const byDay = new Map<string, { label: string; count: number }>();
   // ترتيب تصاعدي زمنيًا للعرض
   const ordered = [...form.responses].sort(
     (a, b) => a.submittedAt.getTime() - b.submittedAt.getTime()
   );
   for (const r of ordered) {
-    const key = dayFmt.format(r.submittedAt);
-    byDay.set(key, (byDay.get(key) || 0) + 1);
+    const full = formatDate(r.submittedAt); // YYYY/MM/DD
+    const entry = byDay.get(full) ?? { label: full.slice(5), count: 0 };
+    entry.count += 1;
+    byDay.set(full, entry);
   }
-  const timeline = Array.from(byDay.entries())
-    .slice(-30)
-    .map(([label, count]) => ({ label, count }));
+  const timeline = Array.from(byDay.values()).slice(-30);
 
   // متوسط درجات الاختبار
+  /* متوسط الدرجات كنسبة، لا كسرًا على مقام عشوائي.
+
+     كان `t = m.total ?? t` يأخذ قيمة **آخر ردّ** تمرّ عليه الحلقة. ومع بنك
+     أسئلة عشوائي — أو بعد تعديل أسئلة الاختبار — تختلف `total` بين ردّ
+     وآخر، فالمقام لا يمثّل شيئًا والكسر يقارن ما لا يُقارَن.
+
+     فالمتوسط يُحسب على النسب: كل ردّ يُقاس بمقامه هو، ثم تُجمع النسب.
+     والردود بلا مقام (`total = 0`) تُستثنى ولا تُحسب صفرًا. */
   let examAvg: string | null = null;
   if (form.type === "EXAM" && form.responses.length) {
-    let s = 0;
-    let t = 0;
+    let sum = 0;
+    let counted = 0;
     for (const r of form.responses) {
       const m = safeParse<any>(r.meta, {});
-      s += m.score ?? 0;
-      t = m.total ?? t;
+      const total = Number(m.total ?? 0);
+      if (total <= 0) continue;
+      sum += (Number(m.score ?? 0) / total) * 100;
+      counted += 1;
     }
-    examAvg = `${(s / form.responses.length).toFixed(1)} / ${t}`;
+    if (counted) examAvg = `${(sum / counted).toFixed(1)}%`;
   }
 
   // تحليلات الإكمال: معدّل الإكمال، زمن التعبئة، ونقاط التسرّب بأسماء الأسئلة

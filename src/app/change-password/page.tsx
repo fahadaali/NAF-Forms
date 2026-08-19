@@ -1,3 +1,8 @@
+/* شاشة لا تُبلَغ — مثل `/login` تمامًا.
+   كلمة المرور شأن المركز، و`currentSession` تُرجع `mustChange: false`
+   دائمًا، و`/api/change-password` يردّ ٤١٠.
+   أُبقي ولا يُستأنف استعماله (القاعدة ١١: لا يُحذف ملف). */
+
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";

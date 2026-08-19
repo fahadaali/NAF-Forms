@@ -698,7 +698,7 @@ function FileField({
           {files.map((f, i) => (
             <div
               key={`${f.url}-${i}`}
-              className="flex items-center justify-between rounded-xl border border-success/30 bg-success/10 px-4 py-2.5 text-sm"
+              className="flex items-center justify-between rounded-xl border border-success/30 bg-success-soft px-4 py-2.5 text-sm"
             >
               <span className="inline-flex items-center gap-1 truncate text-success">
                 <Icon name="check" className="h-4 w-4 shrink-0" /> {f.name}

@@ -160,8 +160,32 @@ export async function updateUser(
   }
   return getUserById(id);
 }
+/**
+ * كم مشروعًا ونموذجًا يملكها هذا المستخدم.
+ *
+ * يحتاجه الحذف: `"Project"."ownerId"` و`"Form"."ownerId"` تحملان هذا
+ * المعرّف، وحذفُ الصفّ يقطع الربط بالهوية المركزية — فيدخل صاحبه بعده
+ * فلا يجد مشاريعه، وهو الفقد الصامت الذي يمنعه `linkExistingUser`.
+ */
+export async function countOwnedByUser(id: string): Promise<number> {
+  const db = getDb();
+  const p = await db.first<{ c: number }>(
+    `SELECT COUNT(*) as c FROM "Project" WHERE "ownerId" = ?`,
+    [id]
+  );
+  const f = await db.first<{ c: number }>(
+    `SELECT COUNT(*) as c FROM "Form" WHERE "ownerId" = ? AND "isTemplate" = 0`,
+    [id]
+  );
+  return Number(p?.c || 0) + Number(f?.c || 0);
+}
+
 export async function deleteUser(id: string) {
-  await getDb().run(`DELETE FROM "User" WHERE "id" = ?`, [id]);
+  const db = getDb();
+  // صفّ الربط يُحذف معه: بقاؤه يشير إلى سجلّ محلي لم يعد موجودًا، فيرث
+  // عضوٌ جديد بالبريد نفسه ملكيةً لا تخصّه.
+  await db.run(`DELETE FROM "MemberLink" WHERE "localUserId" = ?`, [id]);
+  await db.run(`DELETE FROM "User" WHERE "id" = ?`, [id]);
 }
 
 // ============================ المشاريع ============================
@@ -372,9 +396,17 @@ export async function getFormWithQuestions(id: string) {
   return { ...mapForm(f), questions: qs.map(mapQuestion) };
 }
 
+// النموذج بالرابط العام — **والقوالب مستثناة**.
+//
+// القوالب حالتها `PUBLISHED` في `0003_seed_templates.sql` ورابطها معلوم
+// (`tpl-quiz`)، فكانت `‎/f/tpl-quiz` صفحة تقديم حيّة على الإنترنت تقبل ردودًا
+// تُخزَّن على نموذج لا تعرضه أي شاشة. والقالب مادّة للنسخ لا وجهة للتعبئة.
 export async function getFormBySlug(slug: string) {
   const db = getDb();
-  const f = await db.first(`SELECT * FROM "Form" WHERE "slug" = ?`, [slug]);
+  const f = await db.first(
+    `SELECT * FROM "Form" WHERE "slug" = ? AND "isTemplate" = 0`,
+    [slug]
+  );
   if (!f) return null;
   const qs = await db.all(
     `SELECT * FROM "Question" WHERE "formId" = ? ORDER BY "order" ASC`,
@@ -440,13 +472,25 @@ export async function updateForm(
   await db.run(`UPDATE "Form" SET ${sets.join(", ")} WHERE "id" = ?`, vals);
 }
 
+/* الحذف يشمل ما أضافته الهجرات 0006-0008.
+   كان يحذف الإجابات والردود والأسئلة والنموذج، ويترك `Visit` و`Draft`
+   و`ResponseReview` و`WebhookLog`. وتلك الجداول أُنشئت بلا مفاتيح أجنبية
+   (وD1 لا تفرضها افتراضاً)، فلا شيء ينظّفها: تراكمٌ صامت اليوم، وإحصاءات
+   مضلّلة إن تكرّر معرّف غداً. */
 async function deleteFormCascade(db: Db, formId: string) {
+  await db.run(
+    `DELETE FROM "ResponseReview" WHERE "responseId" IN (SELECT "id" FROM "Response" WHERE "formId" = ?)`,
+    [formId]
+  );
   await db.run(
     `DELETE FROM "Answer" WHERE "responseId" IN (SELECT "id" FROM "Response" WHERE "formId" = ?)`,
     [formId]
   );
   await db.run(`DELETE FROM "Response" WHERE "formId" = ?`, [formId]);
   await db.run(`DELETE FROM "Question" WHERE "formId" = ?`, [formId]);
+  await db.run(`DELETE FROM "Visit" WHERE "formId" = ?`, [formId]);
+  await db.run(`DELETE FROM "Draft" WHERE "formId" = ?`, [formId]);
+  await db.run(`DELETE FROM "WebhookLog" WHERE "formId" = ?`, [formId]);
   await db.run(`DELETE FROM "Form" WHERE "id" = ?`, [formId]);
 }
 export async function deleteForm(id: string) {
@@ -494,16 +538,35 @@ export async function getQuestionIds(formId: string) {
   );
   return rows.map((r: any) => r.id as string);
 }
-export async function deleteQuestions(ids: string[]) {
+export async function deleteQuestions(formId: string, ids: string[]) {
   if (!ids.length) return;
   const db = getDb();
   const ph = ids.map(() => "?").join(",");
-  await db.run(`DELETE FROM "Answer" WHERE "questionId" IN (${ph})`, ids);
-  await db.run(`DELETE FROM "Question" WHERE "id" IN (${ph})`, ids);
+  await db.run(
+    `DELETE FROM "Answer" WHERE "questionId" IN (SELECT "id" FROM "Question" WHERE "id" IN (${ph}) AND "formId" = ?)`,
+    [...ids, formId]
+  );
+  await db.run(
+    `DELETE FROM "Question" WHERE "id" IN (${ph}) AND "formId" = ?`,
+    [...ids, formId]
+  );
 }
-export async function updateQuestion(id: string, p: QuestionInput) {
+// تحديث سؤال — **مقيَّد بالنموذج المصرَّح عليه**.
+//
+// كان الشرط `WHERE "id" = ?` وحده، ومعرّف السؤال يأتي من العميل. فمن يملك
+// نموذجًا واحدًا كان يعيد كتابة أي سؤال في المنصة بـ`PATCH` على نموذجه:
+// نصّه ونوعه و`config` — أي الإجابة الصحيحة في اختبار غيره. والتصريح كان
+// يقع على النموذج المستهدَف ولا يقع على السؤال المُعدَّل.
+//
+// و`formId` في الشرط لا في فحص سابق: فحصٌ ثم تحديث يفترق فيه ما فُحص عمّا
+// كُتب، وشرطٌ واحد لا يفترق.
+export async function updateQuestion(
+  formId: string,
+  id: string,
+  p: QuestionInput
+) {
   await getDb().run(
-    `UPDATE "Question" SET "order" = ?, "type" = ?, "label" = ?, "description" = ?, "required" = ?, "config" = ? WHERE "id" = ?`,
+    `UPDATE "Question" SET "order" = ?, "type" = ?, "label" = ?, "description" = ?, "required" = ?, "config" = ? WHERE "id" = ? AND "formId" = ?`,
     [
       p.order ?? 0,
       p.type,
@@ -512,6 +575,7 @@ export async function updateQuestion(id: string, p: QuestionInput) {
       p.required ? 1 : 0,
       asConfig(p.config),
       id,
+      formId,
     ]
   );
 }
@@ -588,7 +652,11 @@ export async function createResponse(
 export async function deleteResponse(id: string) {
   const db = getDb();
   await db.run(`DELETE FROM "Answer" WHERE "responseId" = ?`, [id]);
+  // مراجعة الرد تُحذف معه: جدول مستقلّ بلا مفتاح أجنبي، فبقاؤها يعني
+  // أن ردًّا جديدًا بالمعرّف نفسه يرث حالةً وتقييمًا ليسا له.
+  await db.run(`DELETE FROM "ResponseReview" WHERE "responseId" = ?`, [id]);
   await db.run(`DELETE FROM "Response" WHERE "id" = ?`, [id]);
+  await db.run(`UPDATE "Visit" SET "responseId" = '' WHERE "responseId" = ?`, [id]);
 }
 
 // ============================ سجل التسليم الخارجي ============================
@@ -744,17 +812,39 @@ export async function startVisit(formId: string) {
   return id;
 }
 
-export async function touchVisit(visitId: string, lastQuestionId: string) {
+/** بداية الزيارة — يقيس بها الخادمُ زمنَ الاختبار. مقيَّدة بالنموذج. */
+export async function getVisitStartedAt(
+  formId: string,
+  visitId: string
+): Promise<Date | null> {
+  const r = await getDb().first<{ startedAt: string }>(
+    `SELECT "startedAt" FROM "Visit" WHERE "id" = ? AND "formId" = ?`,
+    [visitId, formId]
+  );
+  return r ? toDate(r.startedAt) : null;
+}
+
+// الزيارة والمسودّة يُقيَّد تعديلهما بالنموذج: معرّفاهما يصلان من العميل،
+// وبلا القيد يعبث طلبٌ على نموذجٍ بسجلّات نموذجٍ آخر.
+export async function touchVisit(
+  formId: string,
+  visitId: string,
+  lastQuestionId: string
+) {
   await getDb().run(
-    `UPDATE "Visit" SET "lastQuestionId" = ? WHERE "id" = ?`,
-    [lastQuestionId, visitId]
+    `UPDATE "Visit" SET "lastQuestionId" = ? WHERE "id" = ? AND "formId" = ?`,
+    [lastQuestionId, visitId, formId]
   );
 }
 
-export async function completeVisit(visitId: string, responseId: string) {
+export async function completeVisit(
+  formId: string,
+  visitId: string,
+  responseId: string
+) {
   await getDb().run(
-    `UPDATE "Visit" SET "completedAt" = ?, "responseId" = ? WHERE "id" = ?`,
-    [now(), responseId, visitId]
+    `UPDATE "Visit" SET "completedAt" = ?, "responseId" = ? WHERE "id" = ? AND "formId" = ?`,
+    [now(), responseId, visitId, formId]
   );
 }
 
@@ -842,8 +932,11 @@ export async function getDraft(formId: string, token: string) {
   return { id: r.id as string, answers: r.answers as string, email: r.email as string };
 }
 
-export async function deleteDraft(token: string) {
-  await getDb().run(`DELETE FROM "Draft" WHERE "id" = ?`, [token]);
+export async function deleteDraft(formId: string, token: string) {
+  await getDb().run(`DELETE FROM "Draft" WHERE "id" = ? AND "formId" = ?`, [
+    token,
+    formId,
+  ]);
 }
 
 // ============================ حصص الخيارات ============================

@@ -447,7 +447,7 @@ export default function QuestionEditor({
 
             {/* إجابة صحيحة للاختبارات */}
             {formType === "EXAM" && def?.gradable && (
-              <div className="rounded-xl bg-warning/10 p-3">
+              <div className="rounded-xl bg-warning-soft p-3">
                 <label className="label flex items-center gap-2 text-warning">
                   <Icon name="check-circle" className="h-4 w-4" />
                   الإجابة الصحيحة (اختبار)
@@ -868,7 +868,7 @@ function LogicEditor({
 }) {
   const enabled = !!(logic && logic.whenQuestionId);
   return (
-    <div className="rounded-xl bg-info/10 p-3">
+    <div className="rounded-xl bg-info-soft p-3">
       <label className="flex items-center gap-2 text-sm font-semibold text-info">
         <input
           type="checkbox"
