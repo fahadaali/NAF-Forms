@@ -59,8 +59,14 @@ export default function FormRowActions({
         <Icon name={copied ? "check" : "link"} className="h-4 w-4" />
         {copied ? "تم النسخ" : "رابط"}
       </button>
+      {/* الزرّ الوحيد في المنصة الذي كان بلا اسم مقروء: أيقونة نقاط بلا
+          `aria-label` ولا `title`، فقارئ الشاشة يقول «زر» ولا يقول ماذا. */}
       <button
         onClick={() => setMenu((m) => !m)}
+        aria-label="خيارات أخرى"
+        title="خيارات أخرى"
+        aria-haspopup="menu"
+        aria-expanded={menu}
         className="rounded-lg px-2 py-1.5 text-muted-foreground hover:bg-muted"
       >
         <Icon name="more" className="h-4 w-4" />

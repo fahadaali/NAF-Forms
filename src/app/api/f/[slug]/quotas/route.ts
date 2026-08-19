@@ -11,6 +11,10 @@ export async function GET(
   const form = await getFormBySlug((await params).slug);
   if (!form)
     return NextResponse.json({ error: "النموذج غير موجود" }, { status: 404 });
+  // المسودّة معاينة لصاحبها ولا تُستقبل ردودها، فلا تُكشف خياراتها وحصصها
+  // لمن يعرف الرابط. (وبقية مسارات `‎/api/f/` تفحص الحالة أصلاً.)
+  if (form.status !== "PUBLISHED")
+    return NextResponse.json({ remaining: {} });
 
   // الأسئلة التي عُرّفت لها حصص
   const quotaByQ: Record<string, Record<string, number>> = {};

@@ -270,6 +270,21 @@ function FillBody({ form, password }: { form: FormDTO; password: string }) {
   const safeStep = Math.min(step, Math.max(0, steps.length - 1));
   const currentStep = steps[safeStep] || [];
 
+  /* ═══ ترقيم الأسئلة على مستوى النموذج ═══
+
+     كان الرقم فهرسَ العنصر **داخل البطاقة**، والنمط الافتراضي بطاقة لكل
+     سؤال — فكانت كل بطاقة في النموذج تقول «سؤال 1». وفي وضع الصفحة
+     الواحدة كان الفهرس يعدّ الأقسام والصور والفيديو معها، فيقفز الترقيم:
+     سؤال 1 ثم قسم ثم سؤال 3.
+
+     فالرقم من خريطة تُبنى على الأسئلة الظاهرة، وتعدّ أسئلة الإدخال وحدها. */
+  const numberOf = useMemo(() => {
+    const map = new Map<string, number>();
+    let n = 0;
+    for (const q of questions) if (isInputQuestion(q.type)) map.set(q.id, ++n);
+    return map;
+  }, [questions]);
+
   const pageStyle: React.CSSProperties = {
     background: theme.background,
     color: theme.text,
@@ -700,9 +715,9 @@ function FillBody({ form, password }: { form: FormDTO; password: string }) {
           <h1 className="text-2xl font-bold">{form.title}</h1>
           {questions
             .filter((q) => q.type !== "PAGE_BREAK")
-            .map((q, i) => (
+            .map((q) => (
               <div key={q.id} className="rounded-xl p-6 shadow-sm" style={{ background: theme.cardBg }}>
-                <QuestionCard q={q} value={answers[q.id]} onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))} accent={accent} index={i} />
+                <QuestionCard q={q} number={numberOf.get(q.id)} value={answers[q.id]} onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))} accent={accent} />
               </div>
             ))}
           {error && (
@@ -791,6 +806,7 @@ function FillBody({ form, password }: { form: FormDTO; password: string }) {
               <div key={q.id} className={multi && i > 0 ? "pt-6" : ""}>
                 <QuestionCard
                   q={q}
+                  number={numberOf.get(q.id)}
                   value={answers[q.id]}
                   onChange={(v) => {
                     setAnswers((a) => ({ ...a, [q.id]: v }));
@@ -798,7 +814,6 @@ function FillBody({ form, password }: { form: FormDTO; password: string }) {
                     maybeAutoAdvance(q, v);
                   }}
                   accent={accent}
-                  index={i}
                   remaining={quotaRemaining[q.id]}
                 />
               </div>
@@ -878,17 +893,18 @@ function FillBody({ form, password }: { form: FormDTO; password: string }) {
 
 function QuestionCard({
   q,
+  number,
   value,
   onChange,
   accent,
-  index,
   remaining,
 }: {
   q: FormDTO["questions"][number];
+  /** رقم السؤال في النموذج — غائب للعناصر التنسيقية فلا يُعرض لها رأس. */
+  number?: number;
   value: any;
   onChange: (v: any) => void;
   accent: string;
-  index: number;
   remaining?: Record<string, number>;
 }) {
   if (q.type === "SECTION") {
@@ -959,9 +975,11 @@ function QuestionCard({
 
   return (
     <div>
-      <div className="mb-1 text-sm font-medium" style={{ color: accent }}>
-        سؤال <bdi>{index + 1}</bdi>
-      </div>
+      {number !== undefined && (
+        <div className="mb-1 text-sm font-medium" style={{ color: accent }}>
+          سؤال <bdi>{number}</bdi>
+        </div>
+      )}
       <h2 className="text-xl font-bold">
         {q.label}
         {q.required && <span className="ms-1 text-destructive">*</span>}

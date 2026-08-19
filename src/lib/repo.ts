@@ -448,13 +448,25 @@ export async function updateForm(
   await db.run(`UPDATE "Form" SET ${sets.join(", ")} WHERE "id" = ?`, vals);
 }
 
+/* الحذف يشمل ما أضافته الهجرات 0006-0008.
+   كان يحذف الإجابات والردود والأسئلة والنموذج، ويترك `Visit` و`Draft`
+   و`ResponseReview` و`WebhookLog`. وتلك الجداول أُنشئت بلا مفاتيح أجنبية
+   (وD1 لا تفرضها افتراضاً)، فلا شيء ينظّفها: تراكمٌ صامت اليوم، وإحصاءات
+   مضلّلة إن تكرّر معرّف غداً. */
 async function deleteFormCascade(db: Db, formId: string) {
+  await db.run(
+    `DELETE FROM "ResponseReview" WHERE "responseId" IN (SELECT "id" FROM "Response" WHERE "formId" = ?)`,
+    [formId]
+  );
   await db.run(
     `DELETE FROM "Answer" WHERE "responseId" IN (SELECT "id" FROM "Response" WHERE "formId" = ?)`,
     [formId]
   );
   await db.run(`DELETE FROM "Response" WHERE "formId" = ?`, [formId]);
   await db.run(`DELETE FROM "Question" WHERE "formId" = ?`, [formId]);
+  await db.run(`DELETE FROM "Visit" WHERE "formId" = ?`, [formId]);
+  await db.run(`DELETE FROM "Draft" WHERE "formId" = ?`, [formId]);
+  await db.run(`DELETE FROM "WebhookLog" WHERE "formId" = ?`, [formId]);
   await db.run(`DELETE FROM "Form" WHERE "id" = ?`, [formId]);
 }
 export async function deleteForm(id: string) {
@@ -616,7 +628,11 @@ export async function createResponse(
 export async function deleteResponse(id: string) {
   const db = getDb();
   await db.run(`DELETE FROM "Answer" WHERE "responseId" = ?`, [id]);
+  // مراجعة الرد تُحذف معه: جدول مستقلّ بلا مفتاح أجنبي، فبقاؤها يعني
+  // أن ردًّا جديدًا بالمعرّف نفسه يرث حالةً وتقييمًا ليسا له.
+  await db.run(`DELETE FROM "ResponseReview" WHERE "responseId" = ?`, [id]);
   await db.run(`DELETE FROM "Response" WHERE "id" = ?`, [id]);
+  await db.run(`UPDATE "Visit" SET "responseId" = '' WHERE "responseId" = ?`, [id]);
 }
 
 // ============================ سجل التسليم الخارجي ============================

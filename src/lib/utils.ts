@@ -28,6 +28,10 @@ export function parseSettings(raw: string | null | undefined): FormSettings {
     access: { ...DEFAULT_SETTINGS.access, ...parsed.access },
     limits: { ...DEFAULT_SETTINGS.limits, ...parsed.limits },
     notify: { ...DEFAULT_SETTINGS.notify, ...parsed.notify },
+    // `integrations` كانت غائبة عن الدمج وحدها بين عشرة أقسام. لا أثر
+    // اليوم لأن افتراضها `{}`، وأول قيمة افتراضية تُضاف إليه كانت ستسقط
+    // صامتة — وهو أسوأ أصناف الخلل: لا علامة له حتى يقع.
+    integrations: { ...DEFAULT_SETTINGS.integrations, ...parsed.integrations },
     exam: { ...DEFAULT_SETTINGS.exam, ...parsed.exam },
   };
 }
