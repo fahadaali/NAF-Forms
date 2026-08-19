@@ -17,7 +17,7 @@ import {
   validateAnswer,
   computeVisibleQuestions,
 } from "@/lib/utils";
-import { sendMail } from "@/lib/mailer";
+import { escapeHtml, sendMail } from "@/lib/mailer";
 import { deliverAndLog } from "@/lib/deliver";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { formatDate, formatTime } from "@/lib/naf-format";
@@ -236,11 +236,14 @@ export async function POST(
     void sendMail({
       to: notifyTo,
       subject: `رد جديد على «${form.title}»`,
+      // قالب بريد: القيم الحرفية هنا استثناءُ القاعدة ١ الأول — عملاء
+      // البريد لا يقرأون متغيّرات CSS. والقيم مهرَّبة: العنوان والبريد
+      // يكتبهما مستخدمون.
       html: `
         <div dir="rtl" style="font-family:Tahoma,Arial,sans-serif">
-          <h2>وصل رد جديد على النموذج «${form.title}»</h2>
+          <h2>وصل رد جديد على النموذج «${escapeHtml(form.title)}»</h2>
           <p>وقت التقديم: ${formatDate(new Date())} ${formatTime(new Date())}</p>
-          ${email ? `<p>بريد المستفيد: ${email}</p>` : ""}
+          ${email ? `<p>بريد المستفيد: ${escapeHtml(email)}</p>` : ""}
           <p>إجمالي الردود الآن: ${respCount}</p>
         </div>`,
     }).catch(() => {});
@@ -252,7 +255,7 @@ export async function POST(
       to: email,
       subject: settings.notify.confirmSubject || `تأكيد استلام ردك — ${form.title}`,
       html: `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif">
-        <p>${settings.notify.confirmMessage || "تم استلام ردك."}</p>
+        <p>${escapeHtml(settings.notify.confirmMessage || "تم استلام ردك.")}</p>
       </div>`,
     }).catch(() => {});
   }

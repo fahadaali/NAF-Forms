@@ -98,7 +98,8 @@ function guessType(key: string): string {
     jpeg: "image/jpeg",
     gif: "image/gif",
     webp: "image/webp",
-    svg: "image/svg+xml",
+    // لا `svg` هنا عمدًا: امتداد SVG ممنوع في الرفع، وملفٌ قديم بهذا
+    // الامتداد يُقدَّم `application/octet-stream` فلا يُفسَّر مستندًا.
     mp4: "video/mp4",
     webm: "video/webm",
     mov: "video/quicktime",
