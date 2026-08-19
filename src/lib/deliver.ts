@@ -1,4 +1,5 @@
 import { logDelivery } from "./repo";
+import { isDeliverableUrl } from "./url-guard";
 
 // تسليم حمولة JSON إلى وجهة خارجية (Webhook أو Google Sheets) مع إعادة المحاولة
 // وتسجيل النتيجة في سجل التسليم. لا يرمي استثناءً أبدًا حتى لا يفشل الإرسال
@@ -13,28 +14,8 @@ export interface DeliverResult {
 const TIMEOUT_MS = 5000;
 const BACKOFF_MS = [0, 300, 900]; // ثلاث محاولات بتباطؤ تدريجي
 
-/* ═══ الوجهة تُفحص قبل النداء ═══
-
-   الرابط يكتبه محرّر النموذج، والنداء يخرج من خادمنا. فبلا فحص يصير حقلُ
-   إعدادات أداةَ طلبٍ من داخل شبكتنا: `http://169.254.169.254/…` لبيانات
-   المثيل، أو `file:`، أو خدمة داخلية لا تُبلَغ من الخارج.
-
-   والمقبول `https` وحده — و`http` للتطوير المحلي على المضيف نفسه — مع
-   منع العناوين المحجوزة صراحةً. */
-const PRIVATE_HOST =
-  /^(localhost|.*\.local|.*\.internal|\[?::1\]?|0\.0\.0\.0|10\.|127\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/i;
-
-export function isDeliverableUrl(raw: string): boolean {
-  let url: URL;
-  try {
-    url = new URL(raw);
-  } catch {
-    return false;
-  }
-  if (url.protocol !== "https:") return false;
-  if (PRIVATE_HOST.test(url.hostname)) return false;
-  return true;
-}
+/* الوجهة تُفحص قبل النداء — الحارس في `url-guard.ts` وحده، بلا استيراد،
+   ليُختبر منفرداً. */
 
 export async function deliverJson(
   url: string,

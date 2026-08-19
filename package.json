@@ -12,7 +12,9 @@
     "cf:preview": "opennextjs-cloudflare preview",
     "cf:deploy": "opennextjs-cloudflare deploy",
     "check:sso": "tsx audit/sso-contract-check.mts",
-    "icons": "node scripts/build-app-icons.mjs public/brand/naf-mark.svg src/app/naf-theme.css public/icons"
+    "icons": "node scripts/build-app-icons.mjs public/brand/naf-mark.svg src/app/naf-theme.css public/icons",
+    "test": "TZ=America/New_York node --import tsx --test \"tests/**/*.test.ts\"",
+    "check": "npm run lint && npx tsc --noEmit && npm test"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1092.0",
