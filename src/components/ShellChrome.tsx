@@ -45,7 +45,7 @@ const NAV: NavItem[] = [
   },
   {
     href: "/users",
-    label: "المستخدمون",
+    label: "تهيئة مسبقة",
     icon: <Users size={sz} aria-hidden="true" />,
     adminOnly: true,
   },
@@ -57,7 +57,7 @@ function CloseDrawerOnNavigate() {
   const pathname = usePathname();
   useEffect(() => {
     setOpen(false);
-  }, [pathname]);
+  }, [pathname, setOpen]);
   return null;
 }
 

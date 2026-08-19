@@ -1,3 +1,9 @@
+/* شاشة لا تُبلَغ — والباب الذي تطرقه مغلق.
+   المصادقة كلها في المركز، والدخول من `{AUTH_ISSUER}/go/NAF-Forms` وحده.
+   وهذا المسار خلف حارس الدخول الموحّد (خارج `PUBLIC_EXACT` في lib/sso.ts)
+   فلا يصله أحد، ولو وصله لعرض نموذجًا يُرسل إلى `/api/login` الذي يردّ ٤١٠.
+   أُبقي ولا يُستأنف استعماله (القاعدة ١١: لا يُحذف ملف). */
+
 "use client";
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";

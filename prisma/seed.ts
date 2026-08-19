@@ -1,3 +1,9 @@
+/* بذر القوالب — لقاعدة التطوير المحلية وحدها.
+   لا Prisma في هذا المستودع: لا `schema.prisma` ولا الحزمة في
+   `package.json`. المجلّد بقيّة اسمٍ من معمارية أُزيلت، والملف يستورد
+   `src/lib/repo` كبقية الكود. وعلى الإنتاج تُبذر القوالب بهجرة
+   `cloudflare/d1/0003_seed_templates.sql` لا بهذا الملف. */
+
 import {
   getUserByEmail,
   createUser,

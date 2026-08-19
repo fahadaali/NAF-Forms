@@ -160,8 +160,32 @@ export async function updateUser(
   }
   return getUserById(id);
 }
+/**
+ * كم مشروعًا ونموذجًا يملكها هذا المستخدم.
+ *
+ * يحتاجه الحذف: `"Project"."ownerId"` و`"Form"."ownerId"` تحملان هذا
+ * المعرّف، وحذفُ الصفّ يقطع الربط بالهوية المركزية — فيدخل صاحبه بعده
+ * فلا يجد مشاريعه، وهو الفقد الصامت الذي يمنعه `linkExistingUser`.
+ */
+export async function countOwnedByUser(id: string): Promise<number> {
+  const db = getDb();
+  const p = await db.first<{ c: number }>(
+    `SELECT COUNT(*) as c FROM "Project" WHERE "ownerId" = ?`,
+    [id]
+  );
+  const f = await db.first<{ c: number }>(
+    `SELECT COUNT(*) as c FROM "Form" WHERE "ownerId" = ? AND "isTemplate" = 0`,
+    [id]
+  );
+  return Number(p?.c || 0) + Number(f?.c || 0);
+}
+
 export async function deleteUser(id: string) {
-  await getDb().run(`DELETE FROM "User" WHERE "id" = ?`, [id]);
+  const db = getDb();
+  // صفّ الربط يُحذف معه: بقاؤه يشير إلى سجلّ محلي لم يعد موجودًا، فيرث
+  // عضوٌ جديد بالبريد نفسه ملكيةً لا تخصّه.
+  await db.run(`DELETE FROM "MemberLink" WHERE "localUserId" = ?`, [id]);
+  await db.run(`DELETE FROM "User" WHERE "id" = ?`, [id]);
 }
 
 // ============================ المشاريع ============================
