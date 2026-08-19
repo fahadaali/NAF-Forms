@@ -82,6 +82,32 @@ export async function getMemberRole(userId: string): Promise<string | null> {
   return role ? role : null;
 }
 
+/**
+ * هل مالك النموذج ما زال عضواً نشطاً؟
+ *
+ * تحتاجها الواجهة البرمجية: حارسها رمزُ النموذج لا الجلسة، ورمزٌ يبقى
+ * عاملاً بعد سحب الوصول مركزياً هو الباب الثاني الذي كان إغلاقُ المسار
+ * يمنعه. فيُفحص المالك في كل طلب.
+ *
+ * و`"Form"."ownerId"` يحمل المعرّف المحلي لمن له سجلّ قديم، ويحمل `sub`
+ * لمن لا سجلّ له — فيُجرَّب الطريقان.
+ *
+ * وحين لا يُعرف المالك أصلاً (لا صفّ عضو يقابله) تُرجع `true`: الغرض إيقاف
+ * **المسحوب**، لا حجب نموذجٍ سبق نظام العضوية ولا يُحكَم عليه.
+ */
+export async function isOwnerActive(ownerId: string): Promise<boolean> {
+  if (!ownerId) return true;
+  const row = await getDb().first<{ is_active: number }>(
+    `SELECT m.is_active FROM members m
+     WHERE m.user_id = ?
+        OR m.user_id = (SELECT "user_id" FROM "MemberLink" WHERE "localUserId" = ?)
+     LIMIT 1`,
+    [ownerId, ownerId]
+  );
+  if (!row) return true;
+  return Number(row.is_active) === 1;
+}
+
 export async function setMemberRole(userId: string, role: Role): Promise<void> {
   await getDb().run(`UPDATE members SET role = ? WHERE user_id = ?`, [role, userId]);
 }
@@ -91,6 +117,21 @@ export async function setMemberActive(userId: string, isActive: boolean): Promis
     isActive ? 1 : 0,
     userId,
   ]);
+}
+
+/**
+ * هل هذا العضو مسؤولٌ نشط الآن؟
+ *
+ * يحتاجها حارس «آخر مسؤول»: الحارس يمنع نزع آخر مسؤول، فلا بدّ أن يعرف
+ * أوّلًا أن المستهدَف مسؤولٌ نشط — وإلا منع ما لا يمسّ المسؤولين أصلًا.
+ */
+export async function isActiveAdmin(userId: string): Promise<boolean> {
+  const row = await getDb().first<{ n: number }>(
+    `SELECT COUNT(*) AS n FROM members
+     WHERE user_id = ? AND role = 'admin' AND is_active = 1`,
+    [userId]
+  );
+  return Number(row?.n ?? 0) > 0;
 }
 
 export async function countActiveAdmins(): Promise<number> {

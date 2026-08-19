@@ -7,23 +7,34 @@ import {
   answerToText,
 } from "@/lib/utils";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { timingSafeEqualAsync } from "@/lib/compare";
+import { isOwnerActive } from "@/lib/members";
 
 export const runtime = "nodejs";
 
-// واجهة برمجية للقراءة فقط: تسحب ردود نموذج بصيغة JSON.
-// المصادقة برمز خاص بالنموذج: Authorization: Bearer <token>
-// (يُولَّد من تبويب التخصيص → التكاملات، ولا يُرسل أبدًا لصفحة التعبئة.)
-//
-// **وهذا المسار خلف حارس الدخول الموحّد، فالمفتاح الآلي لا يفتحه.**
-// المسار خارج قائمة المسارات العامة في `src/lib/sso.ts`، فالوسيط يردّ
-// عليه ٤٠١ قبل أن يصل هذا الملف — أي أن التكامل الخارجي معطَّل فعلياً منذ
-// الربط. وهو مقصود لا سهو: مفتاحٌ يفتح بيانات بلا مرور بالمركز طريقُ
-// دخولٍ ثانٍ، ومن سُحب وصولُه مركزياً يبقى مفتاحه عاملاً.
-//
-// وفتحه ثانيةً قرارُ منتج لا قرارُ ربط: يستلزم إعلانه مساراً عاماً
-// صراحةً، ومقارنةً ثابتة الزمن للرمز (المقارنة أدناه تقصر عن ذلك: تقرأ
-// `token.charCodeAt(i)` خارج حدوده حين يقصر المُرسَل، وتفرّق بالطول
-// أولاً). مرفوعٌ في تقرير الجلسة ولم يُغيَّر هنا.
+/* واجهة برمجية للقراءة فقط: تسحب ردود نموذج بصيغة JSON.
+   المصادقة برمز خاص بالنموذج: Authorization: Bearer <token>
+   (يُولَّد من تبويب التخصيص → التكاملات، ولا يُرسل أبداً لصفحة التعبئة.)
+
+   **المسار عامّ في `PUBLIC_PREFIXES`، وحراستُه الرمز لا الجلسة.** المنادي
+   خادمٌ خارجي لا متصفّح، فحارس الدخول الموحّد كان يردّه ٤٠١ قبل أن يصل
+   هنا — أي أن الميزة كانت معطّلة بينما تبويب التكاملات يعرضها كاملة
+   بمثال `curl` جاهز. وذلك أسوأ من غيابها.
+
+   وثلاثة شروط تجعل فتحه غير فتحِ باب ثانٍ:
+
+   ١) **مقفل افتراضاً لكل نموذج.** `apiEnabled` يرفعه صاحبه صراحةً، والرمز
+      يُولَّد عندها ويُدوَّر متى شاء.
+
+   ٢) **قراءة نموذج واحد.** الرمز لا يفتح غير النموذج الذي وُلِّد له.
+
+   ٣) **يتبع سحب الوصول.** كل طلب يفحص أن مالك النموذج ما زال عضواً نشطاً
+      في `members` — فمن سُحب وصولُه مركزياً يتوقّف مفتاحه معه، وهو
+      الاعتراض الذي كان الإغلاقُ يعالجه.
+
+   والمقارنة صارت ثابتة الزمن حقاً: كانت تفرّق بالطول أولاً وتخرج عنده،
+   فتُقاس بها بادئةُ الرمز. و`timingSafeEqualAsync` تقارن بصمتين ثابتتَي
+   الطول فلا تكشف طولاً ولا موضعَ اختلاف. */
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -49,12 +60,15 @@ export async function GET(
 
   const auth = req.headers.get("authorization") || "";
   const provided = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-  // مقارنة ثابتة الزمن
-  const same =
-    provided.length === token.length &&
-    provided.split("").reduce((acc, ch, i) => acc | (ch.charCodeAt(0) ^ token.charCodeAt(i)), 0) === 0;
-  if (!same)
+  if (!(await timingSafeEqualAsync(provided, token)))
     return NextResponse.json({ error: "رمز غير صحيح" }, { status: 401 });
+
+  // الرمز يتبع وصول مالكه: من سُحب وصولُه مركزياً لا تُقرأ ردودُه بمفتاحه.
+  if (!(await isOwnerActive(form.ownerId)))
+    return NextResponse.json(
+      { error: "الواجهة البرمجية غير مفعّلة لهذا النموذج" },
+      { status: 403 }
+    );
 
   const { searchParams } = new URL(req.url);
   const limit = Math.min(Number(searchParams.get("limit") || 100), 500);

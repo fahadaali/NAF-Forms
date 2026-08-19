@@ -772,17 +772,39 @@ export async function startVisit(formId: string) {
   return id;
 }
 
-export async function touchVisit(visitId: string, lastQuestionId: string) {
+/** بداية الزيارة — يقيس بها الخادمُ زمنَ الاختبار. مقيَّدة بالنموذج. */
+export async function getVisitStartedAt(
+  formId: string,
+  visitId: string
+): Promise<Date | null> {
+  const r = await getDb().first<{ startedAt: string }>(
+    `SELECT "startedAt" FROM "Visit" WHERE "id" = ? AND "formId" = ?`,
+    [visitId, formId]
+  );
+  return r ? toDate(r.startedAt) : null;
+}
+
+// الزيارة والمسودّة يُقيَّد تعديلهما بالنموذج: معرّفاهما يصلان من العميل،
+// وبلا القيد يعبث طلبٌ على نموذجٍ بسجلّات نموذجٍ آخر.
+export async function touchVisit(
+  formId: string,
+  visitId: string,
+  lastQuestionId: string
+) {
   await getDb().run(
-    `UPDATE "Visit" SET "lastQuestionId" = ? WHERE "id" = ?`,
-    [lastQuestionId, visitId]
+    `UPDATE "Visit" SET "lastQuestionId" = ? WHERE "id" = ? AND "formId" = ?`,
+    [lastQuestionId, visitId, formId]
   );
 }
 
-export async function completeVisit(visitId: string, responseId: string) {
+export async function completeVisit(
+  formId: string,
+  visitId: string,
+  responseId: string
+) {
   await getDb().run(
-    `UPDATE "Visit" SET "completedAt" = ?, "responseId" = ? WHERE "id" = ?`,
-    [now(), responseId, visitId]
+    `UPDATE "Visit" SET "completedAt" = ?, "responseId" = ? WHERE "id" = ? AND "formId" = ?`,
+    [now(), responseId, visitId, formId]
   );
 }
 
@@ -870,8 +892,11 @@ export async function getDraft(formId: string, token: string) {
   return { id: r.id as string, answers: r.answers as string, email: r.email as string };
 }
 
-export async function deleteDraft(token: string) {
-  await getDb().run(`DELETE FROM "Draft" WHERE "id" = ?`, [token]);
+export async function deleteDraft(formId: string, token: string) {
+  await getDb().run(`DELETE FROM "Draft" WHERE "id" = ? AND "formId" = ?`, [
+    token,
+    formId,
+  ]);
 }
 
 // ============================ حصص الخيارات ============================

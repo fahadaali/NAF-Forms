@@ -185,8 +185,24 @@ export function isEmptyAnswer(value: any): boolean {
 const PHONE_RE = /^(?:\+?\d{7,15}|0\d{9})$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** خيارات السؤال كنصوص — `IMAGE_CHOICE` يخزّنها كائنات بعنوان ورابط. */
+export function optionsOf(type: string, config: Record<string, any>): string[] {
+  const raw = Array.isArray(config?.options) ? config.options : [];
+  if (type === "IMAGE_CHOICE")
+    return raw.map((o: any) => String(o?.label ?? "")).filter(Boolean);
+  return raw.map((o: any) => String(o ?? "")).filter(Boolean);
+}
+
+// أنواع تُقيَّد قيمتها بقائمة خيارات معرَّفة
+const CHOICE_TYPES = ["MULTIPLE_CHOICE", "CHECKBOXES", "DROPDOWN", "IMAGE_CHOICE"];
+
 // التحقق من صحة قيمة الحقل حسب نوعه، وإرجاع رسالة الخطأ أو null إن كانت صحيحة.
 // يُستخدم في صفحة التعبئة (قبل الانتقال) وفي الخادم (قبل القبول).
+//
+// **والخادم يتحقّق مما كان يتحقّق منه المتصفّح وحده.** كانت هذه الدالة تفحص
+// أربعة أنواع، فمن أرسل الطلب مباشرةً كتب في «القائمة المنسدلة» ما شاء،
+// وتجاوز حدود المقياس، وأرسل نصًّا بلا حدّ طول. وأثره العملي على الحصص:
+// خيارٌ خارج القائمة لا حصّة له فيمرّ دائمًا.
 export function validateAnswer(
   type: string,
   config: Record<string, any>,
@@ -198,7 +214,39 @@ export function validateAnswer(
     if (type === "CONSENT" && required) return "يجب الموافقة للمتابعة";
     return required ? "هذا الحقل مطلوب" : null;
   }
+
+  // القيمة من قائمة الخيارات المعرَّفة — لكل نوع اختيار
+  if (CHOICE_TYPES.includes(type)) {
+    const allowed = optionsOf(type, config);
+    if (allowed.length) {
+      const picked = Array.isArray(value) ? value : [value];
+      const multi = type === "CHECKBOXES";
+      if (!multi && picked.length > 1) return "اختر خيارًا واحدًا";
+      for (const v of picked) {
+        const str = String(v ?? "");
+        // «خيار آخر» يُقبل نصًّا حرًّا حين يُفعّله صاحب النموذج
+        if (allowed.includes(str)) continue;
+        if (config?.allowOther && str.length <= 500) continue;
+        return "هذا الخيار غير متاح";
+      }
+      const max = Number(config?.maxSelect ?? 0);
+      if (multi && max > 0 && picked.length > max)
+        return `اختر ${bidi(max)} خيارات على الأكثر`;
+    }
+    return null;
+  }
+
   switch (type) {
+    case "SHORT_TEXT":
+    case "PARAGRAPH": {
+      const max = Number(config?.maxLength ?? 0);
+      const len = String(value).length;
+      if (max > 0 && len > max)
+        return `الحد الأقصى ${bidi(max)} حرفًا`;
+      // سقف مطلق يمنع تخزين حمولة ضخمة في إجابة نصّية
+      if (len > 20_000) return `الحد الأقصى ${bidi(20000)} حرفًا`;
+      return null;
+    }
     case "NUMBER": {
       const raw = String(value).trim();
       const n = Number(raw);
@@ -208,6 +256,51 @@ export function validateAnswer(
         return `القيمة يجب ألا تقل عن ${bidi(config.min)}`;
       if (config?.max != null && config.max !== "" && n > Number(config.max))
         return `القيمة يجب ألا تزيد عن ${bidi(config.max)}`;
+      return null;
+    }
+    case "LINEAR_SCALE":
+    case "SLIDER": {
+      const n = Number(value);
+      const min = Number(config?.min ?? (type === "SLIDER" ? 0 : 1));
+      const max = Number(config?.max ?? (type === "SLIDER" ? 100 : 5));
+      if (!Number.isFinite(n) || n < min || n > max)
+        return `القيمة يجب أن تكون بين ${bidi(min)} و${bidi(max)}`;
+      return null;
+    }
+    case "RATING": {
+      const n = Number(value);
+      const max = Number(config?.max ?? 5);
+      if (!Number.isFinite(n) || n < 0 || n > max)
+        return `القيمة يجب أن تكون بين ${bidi(0)} و${bidi(max)}`;
+      return null;
+    }
+    case "GRID": {
+      if (typeof value !== "object" || Array.isArray(value))
+        return "هذا الحقل مطلوب";
+      const rows: string[] = (config?.rows || []).map(String);
+      const cols: string[] = (config?.cols || []).map(String);
+      for (const [row, cell] of Object.entries(value as Record<string, any>)) {
+        if (rows.length && !rows.includes(row)) return "هذا الخيار غير متاح";
+        const chosen = Array.isArray(cell) ? cell : [cell];
+        if (!config?.multi && chosen.length > 1) return "اختر خيارًا واحدًا";
+        for (const c of chosen)
+          if (cols.length && !cols.includes(String(c)))
+            return "هذا الخيار غير متاح";
+      }
+      return null;
+    }
+    case "RANKING": {
+      if (!Array.isArray(value)) return "هذا الخيار غير متاح";
+      const allowed = optionsOf(type, config);
+      if (allowed.length) {
+        const seen = new Set<string>();
+        for (const v of value) {
+          const str = String(v ?? "");
+          if (!allowed.includes(str) || seen.has(str))
+            return "هذا الخيار غير متاح";
+          seen.add(str);
+        }
+      }
       return null;
     }
     case "EMAIL":
@@ -220,11 +313,56 @@ export function validateAnswer(
         ? null
         : "أدخل رقم جوال صحيحًا (مثال: 05xxxxxxxx)";
     }
+    case "DATE":
+      return Number.isNaN(new Date(String(value)).getTime())
+        ? "هذه القيمة ليست تاريخًا صحيحًا"
+        : null;
+    case "TIME":
+      return /^([01]\d|2[0-3]):[0-5]\d$/.test(String(value))
+        ? null
+        : "هذه القيمة ليست وقتًا صحيحًا";
+    case "LOCATION": {
+      const v: any = value;
+      const okLoc =
+        v && typeof v === "object" &&
+        Number.isFinite(Number(v.lat)) && Number.isFinite(Number(v.lng)) &&
+        Math.abs(Number(v.lat)) <= 90 && Math.abs(Number(v.lng)) <= 180;
+      return okLoc ? null : "حدّد موقعًا على الخريطة";
+    }
     case "CONSENT":
       return value === true || !required ? null : "يجب الموافقة للمتابعة";
     default:
       return null;
   }
+}
+
+/**
+ * مرفقات الإجابة — **روابطها من تخزين هذه المنصة وحده**.
+ *
+ * كانت قيمة حقل الملف تُخزَّن كما وصلت، فمن أرسل الطلب مباشرةً كتب
+ * `{ name: "السيرة الذاتية.pdf", url: "https://…" }` لأي عنوان شاء —
+ * فتعرضه لوحة الردود رابطًا يفتحه المشرف على أنه مرفق المتقدّم.
+ *
+ * والمقبول ما يُصدره `‎/api/upload` وحده: مسار `‎/uploads/<key>` النسبي،
+ * أو رابط تحت `R2_PUBLIC_URL` حين يُضبط.
+ */
+export function isOwnUploadUrl(url: unknown, publicBase = ""): boolean {
+  const s = String(url ?? "");
+  if (!s) return false;
+  if (s.startsWith("/uploads/")) return !s.includes("..");
+  if (!publicBase) return false;
+  const base = publicBase.replace(/\/$/, "");
+  return s.startsWith(`${base}/`) && !s.includes("..");
+}
+
+/** ينقّي قيمة حقل الملف: يُبقي المرفقات التي تشير إلى تخزيننا. */
+export function sanitizeFileAnswer(value: any, publicBase = ""): any {
+  const one = (f: any) =>
+    f && typeof f === "object" && isOwnUploadUrl(f.url, publicBase)
+      ? { name: String(f.name ?? "ملف").slice(0, 300), url: String(f.url), size: Number(f.size) || 0 }
+      : null;
+  if (Array.isArray(value)) return value.map(one).filter(Boolean);
+  return one(value);
 }
 
 // حساب درجة الاختبار

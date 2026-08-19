@@ -16,7 +16,11 @@ import {
   isInputQuestion,
   validateAnswer,
   computeVisibleQuestions,
+  sanitizeFileAnswer,
 } from "@/lib/utils";
+import { publicUploadBase } from "@/lib/storage";
+import { timingSafeEqual } from "@/lib/compare";
+import { getVisitStartedAt } from "@/lib/repo";
 import { escapeHtml, sendMail } from "@/lib/mailer";
 import { deliverAndLog } from "@/lib/deliver";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
@@ -73,7 +77,7 @@ export async function POST(
 
   // التحقق من كلمة المرور إن وُجدت
   const password = settings.access?.password || "";
-  if (password && String(body.password || "") !== password)
+  if (password && !timingSafeEqual(String(body.password || ""), password))
     return NextResponse.json({ error: "كلمة المرور غير صحيحة" }, { status: 403 });
 
   // التحقق من بريد المستفيد إن كان مطلوبًا
@@ -112,6 +116,30 @@ export async function POST(
       );
   }
 
+  /* ═══ مؤقّت الاختبار يُقاس على الخادم ═══
+
+     كان العدّ في المتصفّح وحده يسلّم تلقائيًا عند الصفر، ولا شيء في الخادم
+     يقيس زمنًا. فمن أغلق الجافاسكربت أو أرسل الطلب مباشرةً يسلّم بعد
+     انتهاء الوقت بلا مانع.
+
+     والمرجع بداية الزيارة المسجَّلة في `Visit` — لا وقتٌ يرسله العميل،
+     فذلك يُزوَّر. وبلا زيارة مسجَّلة لا يُقاس شيء ولا يُردّ التقديم:
+     الزيارة قد تفشل لأسباب مشروعة (حاجب، شبكة)، ورفضُ ردٍّ صحيح أسوأ من
+     قبول ردٍّ متأخّر. ويُسمح بهامش دقيقة لبطء الشبكة وفارق الساعات.
+     */
+  const limitMin = Number(settings.exam?.timeLimitMin ?? 0);
+  if (form.type === "EXAM" && limitMin > 0 && body.visitId) {
+    const startedAt = await getVisitStartedAt(form.id, String(body.visitId));
+    if (startedAt) {
+      const elapsed = (Date.now() - startedAt.getTime()) / 1000;
+      if (elapsed > limitMin * 60 + 60)
+        return NextResponse.json(
+          { error: "انتهى وقت الاختبار" },
+          { status: 403 }
+        );
+    }
+  }
+
   // التحقق من الأسئلة (إلزامية + صحة الصيغة) مع تجاهل المخفية بالمنطق الشرطي
   // أو المخفية ضمن قسم غير ظاهر، وتجاهل عناصر العرض (نص/صورة/فيديو)
   const visibleIds = new Set(
@@ -128,7 +156,12 @@ export async function POST(
     const sent: string[] = Array.isArray(body.askedIds)
       ? body.askedIds.map((v: unknown) => String(v))
       : [];
-    const valid = sent.filter((id) =>
+    /* التكرار يُزال **قبل** قياس الطول.
+       كان الفحص على طول القائمة والاستعمال على مجموعةٍ منها، فإرسال
+       `["q1","q1","q1","q1","q1"]` مع `questionCount: 5` يمرّ الفحص ثم
+       يصير `askedIds` عنصرًا واحدًا: التحقق والتصحيح على سؤال واحد،
+       و`total` درجتُه وحدها — أي مئة بالمئة بإجابة واحدة. */
+    const valid = [...new Set(sent)].filter((id) =>
       form.questions.some((q) => q.id === id && isInputQuestion(q.type))
     );
     if (valid.length < Math.min(wantCount, totalInputs))
@@ -137,6 +170,15 @@ export async function POST(
         { status: 400 }
       );
     askedIds = new Set(valid);
+  }
+
+  // مرفقات الإجابة تُنقّى قبل أي شيء: ما لا يشير إلى تخزيننا يسقط، فلا
+  // يصل لوحة الردود رابطٌ خارجي بهيئة «السيرة الذاتية».
+  const uploadBase = publicUploadBase();
+  for (const q of form.questions) {
+    if (q.type !== "FILE") continue;
+    if (answers[q.id] !== undefined)
+      answers[q.id] = sanitizeFileAnswer(answers[q.id], uploadBase);
   }
 
   for (const q of form.questions) {
@@ -226,8 +268,8 @@ export async function POST(
 
   // ختم زيارة التعبئة (لحساب معدّل الإكمال والزمن) وحذف المسودّة إن وُجدت
   if (body.visitId)
-    await completeVisit(String(body.visitId), response.id).catch(() => {});
-  if (body.draftToken) await deleteDraft(String(body.draftToken)).catch(() => {});
+    await completeVisit(form.id, String(body.visitId), response.id).catch(() => {});
+  if (body.draftToken) await deleteDraft(form.id, String(body.draftToken)).catch(() => {});
 
   // إشعار بريد للمشرف عند وصول رد جديد (غير حاجب — لا يؤخّر الاستجابة)
   const notifyTo = settings.notify?.email;

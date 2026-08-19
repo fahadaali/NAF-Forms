@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
-import { currentSession } from "@/lib/session";
-import { getUserById } from "@/lib/repo";
+import { currentSession, isAdmin } from "@/lib/session";
 import { getMemberIdentity } from "@/lib/members";
 import { H_SUB } from "@/lib/sso";
 import ShellChrome from "./ShellChrome";
@@ -21,7 +20,19 @@ export default async function AppChrome({
   children: ReactNode;
 }) {
   const session = await currentSession();
-  const me = session ? await getUserById(session.uid) : null;
+
+  /* ═══ «هل هو مسؤول؟» جوابٌ واحد لا جوابان ═══
+
+     كان هنا `getUserById(session.uid)?.role === "admin"` — أي الدور من
+     جدول `User` **القديم**، بينما `requireAdmin` وحارسُ الوسيط يقرآن دور
+     `members`. فمسؤولٌ دخل بالدخول الموحّد ولا سجلّ قديم له بالبريد نفسه
+     — وهي الحالة الطبيعية لكل عضو جديد — كان `getUserById` تُرجع له
+     `null`، فيختفي بندا «الفريق والصلاحيات» و«المستخدمون» من تنقّله
+     بينما تفتح له الشاشتان بكتابة العنوان يدويًا. مسؤولٌ لا يجد شاشته.
+
+     والمصدر الآن `session.role` — وهو ما حقنه الوسيط من `members`، أي ما
+     يُحكَم به فعلًا. */
+  const admin = isAdmin(session);
 
   // الاسم من صفّ العضو في المركز، لا من السجلّ المحلي: جدول `User` المحلي
   // يحمل البريد والدرجة ولا يحمل اسماً، فكانت الترويسة تعرض البريد.
@@ -33,9 +44,9 @@ export default async function AppChrome({
     <ShellChrome
       crumbs={crumbs}
       width={width}
-      isAdmin={me?.role === "admin"}
+      isAdmin={admin}
       name={identity.name}
-      email={me?.email ?? identity.email ?? undefined}
+      email={identity.email ?? undefined}
     >
       {children}
     </ShellChrome>

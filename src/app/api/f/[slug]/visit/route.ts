@@ -36,6 +36,6 @@ export async function PATCH(
   const form = await getFormBySlug((await params).slug);
   if (!form) return NextResponse.json({ ok: false }, { status: 404 });
 
-  await touchVisit(visitId, questionId);
+  await touchVisit(form.id, visitId, questionId);
   return NextResponse.json({ ok: true });
 }

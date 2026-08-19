@@ -31,6 +31,11 @@ function r2PublicBase(): string {
   return base.replace(/\/$/, "");
 }
 
+/** الرابط العام للمرفقات — يحتاجه التحقق من أن رابط الإجابة من تخزيننا. */
+export function publicUploadBase(): string {
+  return r2PublicBase();
+}
+
 export function isR2Configured(): boolean {
   return !!(
     process.env.R2_ACCOUNT_ID &&

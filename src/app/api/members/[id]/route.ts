@@ -7,6 +7,7 @@ import {
   countActiveAdmins,
   getMemberEmail,
   getMemberRole,
+  isActiveAdmin,
   setMemberActive,
   setMemberRole,
 } from "@/lib/members";
@@ -37,9 +38,20 @@ export async function PATCH(
     if (!isRole(body.role))
       return NextResponse.json({ error: "هذا الحقل مطلوب" }, { status: 400 });
 
-    // آخر مسؤول نشط لا تُنزع صلاحيته، وإلا أُغلقت الشاشة على الجميع
-    // ولم يبقَ من يعيد فتحها من داخل المنصة.
-    if (body.role !== "admin" && (await countActiveAdmins()) <= 1)
+    /* ═══ الحارس ينظر إلى **المستهدَف**، لا إلى العدد وحده ═══
+
+       كان الشرط `body.role !== "admin" && countActiveAdmins() <= 1` — بلا
+       نظرٍ إلى من يُعدَّل. وبمسؤولٍ واحد — وهي الحالة الغالبة، والدور
+       الافتراضي `viewer` لا `admin` — كان تخفيضُ **أي** محرّر يُردّ بـ٤٠٩
+       «لا بد من مسؤول واحد على الأقل»، وهي رسالة لا علاقة لها بالسبب.
+
+       فالمنع مشروط باثنين معًا: أن يكون المستهدَف مسؤولًا نشطًا، وأن يكون
+       الوحيد. وما دونهما تخفيضٌ لا يمسّ المسؤولين فيمرّ. */
+    if (
+      body.role !== "admin" &&
+      (await isActiveAdmin(id)) &&
+      (await countActiveAdmins()) <= 1
+    )
       return NextResponse.json(
         { error: "لا بد من مسؤول واحد على الأقل" },
         { status: 409 }
@@ -73,7 +85,13 @@ export async function PATCH(
 
   // سحب الوصول أو منحه
   if (typeof body.isActive === "boolean") {
-    if (!body.isActive && (await countActiveAdmins()) <= 1)
+    // وسحب الوصول مثله: كان يُردّ عن كل عضو ما دام المسؤول واحدًا، فزرّ
+    // «سحب» في شاشة الصلاحيات لا يعمل على أحد. والمنع للمسؤول الأخير وحده.
+    if (
+      !body.isActive &&
+      (await isActiveAdmin(id)) &&
+      (await countActiveAdmins()) <= 1
+    )
       return NextResponse.json(
         { error: "لا بد من مسؤول واحد على الأقل" },
         { status: 409 }
