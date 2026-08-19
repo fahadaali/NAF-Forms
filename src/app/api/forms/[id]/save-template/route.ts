@@ -4,6 +4,7 @@ import { authorizeForm } from "@/lib/session";
 import { nanoid } from "nanoid";
 import { slugify } from "@/lib/utils";
 import { NAF_MUTED_FOREGROUND } from "@/lib/brand";
+import { parseSettings } from "@/lib/utils";
 
 const TEMPLATES_PROJECT_ID = "system-templates";
 
@@ -25,6 +26,23 @@ export async function POST(
     color: NAF_MUTED_FOREGROUND,
   });
 
+  /* ═══ القالب مشترك، فلا يحمل سرًّا ═══
+
+     القوالب تُعرض للجميع وتُنسَخ من الجميع، و`settings` تحمل كلمة مرور
+     النموذج وبريد الإشعار ورابط الـwebhook ورمز الواجهة البرمجية. فحفظُ
+     نموذج محميّ كقالب كان ينشر مفاتيحه على كل من ينسخ القالب.
+
+     والمنزوع هنا هو المنزوع نفسه في `‎/f/[slug]` قبل الإرسال إلى المتصفّح:
+     `access` و`integrations` و`notify`. والتخصيص والسلوك وإعداد الاختبار
+     تبقى، فهي ما يُنسخ لأجله القالب. */
+  const shared = parseSettings(src.settings);
+  const safeSettings = JSON.stringify({
+    ...shared,
+    access: {},
+    integrations: {},
+    notify: {},
+  });
+
   const tpl = await createForm(
     {
       slug: `tpl-${slugify(src.title)}-${nanoid(6)}`,
@@ -34,7 +52,7 @@ export async function POST(
       type: src.type,
       status: "PUBLISHED",
       isTemplate: true,
-      settings: src.settings,
+      settings: safeSettings,
     },
     src.questions.map((q) => ({
       order: q.order,

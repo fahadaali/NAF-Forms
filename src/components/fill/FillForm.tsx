@@ -16,6 +16,13 @@ import { NAF_PRIMARY } from "@/lib/brand";
 
 type Phase = "intro" | "question" | "done";
 
+/**
+ * الغلاف: بوابة كلمة المرور ثم الجسم.
+ *
+ * الجسم لا يُركَّب إلا ومعه النموذج كاملًا، لأن `baseOrder` و`steps` تُحسبان
+ * مرة واحدة عند التركيب. فالبوابة غلافٌ لا فرعٌ داخل الجسم — ولو كانت فرعًا
+ * لركّب الجسم على أسئلة فارغة ثم بقي عليها.
+ */
 export default function FillForm({
   form,
   locked = false,
@@ -23,6 +30,102 @@ export default function FillForm({
   form: FormDTO;
   locked?: boolean;
 }) {
+  const [unlockedForm, setUnlockedForm] = useState<FormDTO | null>(null);
+  const [password, setPassword] = useState("");
+
+  if (locked && !unlockedForm)
+    return (
+      <PasswordGate
+        form={form}
+        password={password}
+        setPassword={setPassword}
+        onUnlock={setUnlockedForm}
+      />
+    );
+
+  return <FillBody form={unlockedForm ?? form} password={password} />;
+}
+
+/** بوابة كلمة المرور — تنادي الخادم، ولا تعرف من النموذج إلا عنوانه. */
+function PasswordGate({
+  form,
+  password,
+  setPassword,
+  onUnlock,
+}: {
+  form: FormDTO;
+  password: string;
+  setPassword: (v: string) => void;
+  onUnlock: (f: FormDTO) => void;
+}) {
+  const [pwError, setPwError] = useState("");
+  const [checking, setChecking] = useState(false);
+  const theme = form.settings.theme || {};
+  const accent = theme.primary || NAF_PRIMARY;
+
+  async function unlock() {
+    setChecking(true);
+    setPwError("");
+    try {
+      const res = await fetch(`/api/f/${form.slug}/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data?.ok && data.form) onUnlock(data.form as FormDTO);
+      else setPwError(data?.error || "كلمة المرور غير صحيحة");
+    } catch {
+      setPwError("تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة");
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  return (
+    <div
+      style={{ background: theme.background, color: theme.text, minHeight: "100vh" }}
+      className="grid place-items-center px-4"
+    >
+      <div
+        className="w-full max-w-sm rounded-xl p-8 text-center shadow-xl"
+        style={{ background: theme.cardBg }}
+      >
+        <div className="mb-3 flex justify-center text-muted-foreground">
+          <Icon name="lock" className="h-12 w-12" />
+        </div>
+        <h1 className="text-xl font-bold">{form.title}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          هذا النموذج محمي بكلمة مرور. أدخلها للمتابعة.
+        </p>
+        <Input
+          type="password"
+          className="mt-5 text-center"
+          placeholder="كلمة المرور"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && !checking && unlock()}
+          autoFocus
+        />
+        {pwError && (
+          <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-destructive">
+            <Icon name="alert" className="h-4 w-4" /> {pwError}
+          </p>
+        )}
+        <button
+          onClick={unlock}
+          disabled={checking || !password}
+          className="mt-4 w-full rounded-xl px-6 py-3 font-bold text-white shadow-lg disabled:opacity-50"
+          style={{ background: accent }}
+        >
+          {checking ? "جارٍ التحقق…" : "دخول"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FillBody({ form, password }: { form: FormDTO; password: string }) {
   const s = form.settings;
   const theme = s.theme || {};
   const behavior = s.behavior || {};
@@ -47,11 +150,7 @@ export default function FillForm({
   const timeLimit = form.type === "EXAM" ? exam.timeLimitMin : null;
   const [remaining, setRemaining] = useState<number | null>(null);
 
-  // حماية بكلمة مرور + جمع بريد المستفيد
-  const [unlocked, setUnlocked] = useState(!locked);
-  const [password, setPassword] = useState("");
-  const [pwError, setPwError] = useState("");
-  const [checking, setChecking] = useState(false);
+  // جمع بريد المستفيد
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [hp, setHp] = useState(""); // مصيدة سبام
@@ -103,20 +202,6 @@ export default function FillForm({
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  async function unlock() {
-    setChecking(true);
-    setPwError("");
-    const res = await fetch(`/api/f/${form.slug}/verify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    const data = await res.json();
-    setChecking(false);
-    if (data.ok) setUnlocked(true);
-    else setPwError("كلمة المرور غير صحيحة");
-  }
 
   // ترتيب الأسئلة (مع خلطها للاختبارات عند التفعيل) — يُحسب مرة واحدة.
   // نخلط أسئلة الإدخال فقط ونُبقي العناصر التنسيقية (أقسام/فواصل/صور/فيديو)
@@ -359,48 +444,6 @@ export default function FillForm({
     } catch {
       /* النسخ اختياري */
     }
-  }
-
-  // ===== بوابة كلمة المرور =====
-  if (!unlocked) {
-    return (
-      <div style={pageStyle} className="grid place-items-center px-4">
-        <div
-          className="w-full max-w-sm rounded-xl p-8 text-center shadow-xl"
-          style={{ background: theme.cardBg }}
-        >
-          <div className="mb-3 flex justify-center text-muted-foreground">
-            <Icon name="lock" className="h-12 w-12" />
-          </div>
-          <h1 className="text-xl font-bold">{form.title}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            هذا النموذج محمي بكلمة مرور. أدخلها للمتابعة.
-          </p>
-          <Input
-            type="password"
-            className="mt-5 text-center"
-            placeholder="كلمة المرور"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && unlock()}
-            autoFocus
-          />
-          {pwError && (
-            <p className="mt-2 flex items-center justify-center gap-1.5 text-sm text-destructive">
-              <Icon name="alert" className="h-4 w-4" /> {pwError}
-            </p>
-          )}
-          <button
-            onClick={unlock}
-            disabled={checking || !password}
-            className="mt-4 w-full rounded-xl px-6 py-3 font-bold text-white shadow-lg disabled:opacity-50"
-            style={{ background: accent }}
-          >
-            {checking ? "جارٍ التحقق…" : "دخول"}
-          </button>
-        </div>
-      </div>
-    );
   }
 
   // ===== شاشة النهاية =====

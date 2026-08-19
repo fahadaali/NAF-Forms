@@ -11,6 +11,7 @@ import {
 } from "@/lib/repo";
 import { authorizeForm } from "@/lib/session";
 import { slugify } from "@/lib/utils";
+import { isFormStatus, isFormType } from "@/lib/field-types";
 
 // حفظ النموذج: البيانات الوصفية + الإعدادات + الأسئلة (upsert)
 export async function PATCH(
@@ -40,10 +41,22 @@ export async function PATCH(
       );
     data.slug = clean;
   }
-  if (body.title !== undefined) data.title = body.title;
-  if (body.description !== undefined) data.description = body.description;
-  if (body.type !== undefined) data.type = body.type;
-  if (body.status !== undefined) data.status = body.status;
+  if (body.title !== undefined) data.title = String(body.title).slice(0, 300);
+  if (body.description !== undefined)
+    data.description = String(body.description).slice(0, 5000);
+  // النوع والحالة من القيم المسجَّلة وحدها: كانا يُكتبان كما وصلا، فحالةٌ
+  // مجهولة تجعل النموذج لا منشورًا ولا مغلقًا ولا مسودة — وكل شاشة تقرؤها
+  // تعرض فراغًا لأن `FORM_STATUS_LABELS[status]` غير معرّفة.
+  if (body.type !== undefined) {
+    if (!isFormType(body.type))
+      return NextResponse.json({ error: "نوع غير معروف" }, { status: 400 });
+    data.type = body.type;
+  }
+  if (body.status !== undefined) {
+    if (!isFormStatus(body.status))
+      return NextResponse.json({ error: "حالة غير معروفة" }, { status: 400 });
+    data.status = body.status;
+  }
   if (body.settings !== undefined)
     data.settings = JSON.stringify(body.settings);
 
@@ -58,7 +71,7 @@ export async function PATCH(
     );
     // حذف المُزالة
     const toDelete = existing.filter((id) => !incomingIds.has(id));
-    if (toDelete.length) await deleteQuestions(toDelete);
+    if (toDelete.length) await deleteQuestions(formId, toDelete);
     // تحديث/إنشاء
     for (let i = 0; i < incoming.length; i++) {
       const q = incoming[i];
@@ -70,8 +83,17 @@ export async function PATCH(
         required: !!q.required,
         config: JSON.stringify(q.config || {}),
       };
+      /* معرّف السؤال يأتي من العميل، فالتحديث مقيَّد بالنموذج المصرَّح
+         عليه (`updateQuestion` تحمل `formId` في شرطها). ومعرّفٌ لا ينتمي
+         إليه لا يُحدِّث شيئًا ولا يُنشئ شيئًا — يُردّ الطلب كله بدل أن
+         يمرّ نصفه. */
       if (q.id && !q.id.startsWith("tmp-")) {
-        await updateQuestion(q.id, payload);
+        if (!existing.includes(q.id))
+          return NextResponse.json(
+            { error: "هذا السؤال لا ينتمي إلى هذا النموذج" },
+            { status: 400 }
+          );
+        await updateQuestion(formId, q.id, payload);
       } else {
         await createQuestion(formId, payload);
       }

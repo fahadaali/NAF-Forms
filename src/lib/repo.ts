@@ -372,9 +372,17 @@ export async function getFormWithQuestions(id: string) {
   return { ...mapForm(f), questions: qs.map(mapQuestion) };
 }
 
+// النموذج بالرابط العام — **والقوالب مستثناة**.
+//
+// القوالب حالتها `PUBLISHED` في `0003_seed_templates.sql` ورابطها معلوم
+// (`tpl-quiz`)، فكانت `‎/f/tpl-quiz` صفحة تقديم حيّة على الإنترنت تقبل ردودًا
+// تُخزَّن على نموذج لا تعرضه أي شاشة. والقالب مادّة للنسخ لا وجهة للتعبئة.
 export async function getFormBySlug(slug: string) {
   const db = getDb();
-  const f = await db.first(`SELECT * FROM "Form" WHERE "slug" = ?`, [slug]);
+  const f = await db.first(
+    `SELECT * FROM "Form" WHERE "slug" = ? AND "isTemplate" = 0`,
+    [slug]
+  );
   if (!f) return null;
   const qs = await db.all(
     `SELECT * FROM "Question" WHERE "formId" = ? ORDER BY "order" ASC`,
@@ -494,16 +502,35 @@ export async function getQuestionIds(formId: string) {
   );
   return rows.map((r: any) => r.id as string);
 }
-export async function deleteQuestions(ids: string[]) {
+export async function deleteQuestions(formId: string, ids: string[]) {
   if (!ids.length) return;
   const db = getDb();
   const ph = ids.map(() => "?").join(",");
-  await db.run(`DELETE FROM "Answer" WHERE "questionId" IN (${ph})`, ids);
-  await db.run(`DELETE FROM "Question" WHERE "id" IN (${ph})`, ids);
+  await db.run(
+    `DELETE FROM "Answer" WHERE "questionId" IN (SELECT "id" FROM "Question" WHERE "id" IN (${ph}) AND "formId" = ?)`,
+    [...ids, formId]
+  );
+  await db.run(
+    `DELETE FROM "Question" WHERE "id" IN (${ph}) AND "formId" = ?`,
+    [...ids, formId]
+  );
 }
-export async function updateQuestion(id: string, p: QuestionInput) {
+// تحديث سؤال — **مقيَّد بالنموذج المصرَّح عليه**.
+//
+// كان الشرط `WHERE "id" = ?` وحده، ومعرّف السؤال يأتي من العميل. فمن يملك
+// نموذجًا واحدًا كان يعيد كتابة أي سؤال في المنصة بـ`PATCH` على نموذجه:
+// نصّه ونوعه و`config` — أي الإجابة الصحيحة في اختبار غيره. والتصريح كان
+// يقع على النموذج المستهدَف ولا يقع على السؤال المُعدَّل.
+//
+// و`formId` في الشرط لا في فحص سابق: فحصٌ ثم تحديث يفترق فيه ما فُحص عمّا
+// كُتب، وشرطٌ واحد لا يفترق.
+export async function updateQuestion(
+  formId: string,
+  id: string,
+  p: QuestionInput
+) {
   await getDb().run(
-    `UPDATE "Question" SET "order" = ?, "type" = ?, "label" = ?, "description" = ?, "required" = ?, "config" = ? WHERE "id" = ?`,
+    `UPDATE "Question" SET "order" = ?, "type" = ?, "label" = ?, "description" = ?, "required" = ?, "config" = ? WHERE "id" = ? AND "formId" = ?`,
     [
       p.order ?? 0,
       p.type,
@@ -512,6 +539,7 @@ export async function updateQuestion(id: string, p: QuestionInput) {
       p.required ? 1 : 0,
       asConfig(p.config),
       id,
+      formId,
     ]
   );
 }
