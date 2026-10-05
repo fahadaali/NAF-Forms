@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { currentSession, isAdmin } from "@/lib/session";
 import { getMemberIdentity } from "@/lib/members";
 import { H_SUB } from "@/lib/sso";
@@ -40,6 +41,11 @@ export default async function AppChrome({
   const sub = (await headers()).get(H_SUB) ?? "";
   const identity = sub ? await getMemberIdentity(sub) : { name: null, email: null };
 
+  // عنوان المركز لزرّ «كل المنصات» — من `AUTH_ISSUER` في بيئة العامل، لا
+  // رقماً ثابتاً في الواجهة. والشبكة جذرُ المركز. وغيابه (خادمٌ بلا مركز)
+  // يعني ألّا يُعرض الزرّ أصلاً بدل أن يشير إلى لا مكان.
+  const center = await centerUrl();
+
   return (
     <ShellChrome
       crumbs={crumbs}
@@ -47,8 +53,19 @@ export default async function AppChrome({
       isAdmin={admin}
       name={identity.name}
       email={identity.email ?? undefined}
+      center={center}
     >
       {children}
     </ShellChrome>
   );
+}
+
+async function centerUrl(): Promise<string | null> {
+  try {
+    const { env } = await getCloudflareContext({ async: true });
+    const issuer = (env as { AUTH_ISSUER?: string }).AUTH_ISSUER;
+    return issuer ? `${issuer.replace(/\/+$/, "")}/` : null;
+  } catch {
+    return null;
+  }
 }

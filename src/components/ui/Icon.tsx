@@ -262,12 +262,15 @@ export function IconTip({
     // من يتنقّل بلوحة المفاتيح — وهو من يحتاجه أكثر.
     <span className={`group/tip relative inline-flex ${className}`}>
       {children}
-      {/* `left-1/2` + `-translate-x-1/2` تعبير توسيط أفقي، لا خيار اتجاه:
-          الزوج يعمل متماثلًا في RTL و LTR. استبداله بـ `start-1/2` يكسر
-          التوسيط لأن الإزاحة لا تنقلب معه. */}
+      {/* التوسيط منطقيّ الاتجاه: `start-1/2` يضع حافة البداية في المنتصف،
+          والإزاحة تنقلب معه بـ`rtl:` — فيبقى التلميح وسطاً في الاتجاهين.
+
+          ومخفيٌّ بالعرض لا بالشفافية: تلميحٌ شفّافٌ ما زال في التخطيط، فإن
+          وقع زرّه قرب حافة الشاشة امتدّ نصفه خارجها ومرّرها أفقياً على 375
+          وهو لا يُرى. وعرضه محدود فيلتفّ نصّه الطويل بدل أن يمتدّ. */}
       <span
         role="tooltip"
-        className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-xl border border-border bg-popover px-2.5 py-1 text-xs font-medium text-popover-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover/tip:opacity-100 group-focus-within/tip:opacity-100"
+        className="pointer-events-none absolute bottom-full start-1/2 z-50 mb-2 hidden w-max max-w-40 -translate-x-1/2 rounded-xl border border-border bg-popover px-2.5 py-1 text-center text-xs font-medium text-popover-foreground shadow-lg rtl:translate-x-1/2 group-hover/tip:block group-focus-within/tip:block"
       >
         {label}
       </span>

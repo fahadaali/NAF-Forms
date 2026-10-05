@@ -251,6 +251,7 @@
   --space-5: calc(var(--spacing) * 5);   /* 20 */
   --space-6: calc(var(--spacing) * 6);   /* 24 */
   --space-7: calc(var(--spacing) * 7);   /* 28 */
+  --space-8: calc(var(--spacing) * 8);   /* 32 */
   --space-9: calc(var(--spacing) * 9);   /* 36 */
 
   /* [جديد] مقاسات الهيكل — عرض الشريط الجانبي وارتفاع الترويسة وحدود
@@ -436,6 +437,7 @@
   --spacing-5: var(--space-5);
   --spacing-6: var(--space-6);
   --spacing-7: var(--space-7);
+  --spacing-8: var(--space-8);
   --spacing-9: var(--space-9);
 
   /* [جديد] مقاسات الهيكل */
