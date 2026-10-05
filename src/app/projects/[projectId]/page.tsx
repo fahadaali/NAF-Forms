@@ -109,7 +109,7 @@ export default async function ProjectPage({
                     <bdi>{formatDateTime(f.updatedAt)}</bdi>
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Link
                     href={`/forms/${f.id}/responses`}
                     className={buttonVariants({ variant: "outline", size: "sm" })}
