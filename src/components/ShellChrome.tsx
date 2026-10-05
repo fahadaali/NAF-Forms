@@ -17,6 +17,7 @@ import {
   ShellBackdrop,
   MenuButton,
   AccountMenu,
+  PlatformsLink,
   Breadcrumbs,
   Page,
   navLinkClassName,
@@ -67,6 +68,7 @@ function Body({
   isAdmin,
   name,
   email,
+  center,
   children,
 }: {
   crumbs: Crumb[];
@@ -75,6 +77,8 @@ function Body({
   /** يُمرَّر كما هو ولو كان فارغاً — البديل في المكوّن المسجَّل. */
   name?: string | null;
   email?: string;
+  /** شبكة المنصات في المركز، من الخادم. فارغةٌ تعني ألّا يُعرض الزرّ. */
+  center?: string | null;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -139,6 +143,8 @@ function Body({
             <Breadcrumbs items={crumbs} />
           </HeaderStart>
           <HeaderEnd>
+            {/* الطريق إلى أخوات هذه المنصة، بجوار الاسم مباشرةً. */}
+            <PlatformsLink href={center} />
             {/* الخروج كان زرّاً في الترويسة يختفي نصّه دون sm فيبقى أيقونة
                 وحدها. صار بنداً باسمه داخل قائمة الحساب في كل مقاس. */}
             <AccountMenu
@@ -164,6 +170,7 @@ export default function ShellChrome({
   isAdmin,
   name,
   email,
+  center,
   children,
 }: {
   crumbs?: Crumb[];
@@ -171,11 +178,19 @@ export default function ShellChrome({
   isAdmin: boolean;
   name?: string | null;
   email?: string;
+  center?: string | null;
   children: ReactNode;
 }) {
   return (
     <AppShell>
-      <Body crumbs={crumbs} width={width} isAdmin={isAdmin} name={name} email={email}>
+      <Body
+        crumbs={crumbs}
+        width={width}
+        isAdmin={isAdmin}
+        name={name}
+        email={email}
+        center={center}
+      >
         {children}
       </Body>
     </AppShell>
