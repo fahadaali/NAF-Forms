@@ -64,7 +64,7 @@ async function centerUrl(): Promise<string | null> {
   try {
     const { env } = await getCloudflareContext({ async: true });
     const issuer = (env as { AUTH_ISSUER?: string }).AUTH_ISSUER;
-    return issuer ? `${issuer}/` : null;
+    return issuer ? `${issuer.replace(/\/+$/, "")}/` : null;
   } catch {
     return null;
   }
